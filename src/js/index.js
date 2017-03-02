@@ -27,12 +27,12 @@ const viewState = {
 	debtMethod: 'avalanche'
 };
 
-function handleCreditCardDebtCalculation(debtName, debtAmount, debtInterest, repayment) {
-	const debt = parseInt(debtAmount) * 100;
-	const rate = parseInt(debtInterest) / 100;
-	const adjustedRepayment = parseInt(repayment) * 100;
-	const thePayment = calculateRepayments(debt, adjustedRepayment, rate);
-	const creditChart = createChart(debtName, thePayment);
+function handleCreditCardDebtCalculation(debt) {
+	const adjustedDebt = parseInt(debt.amount) * 100;
+	const rate = parseInt(debt.interest) / 100;
+	const adjustedRepayment = parseInt(debt.minPayment) * 100;
+	const thePayment = calculateRepayments(adjustedDebt, adjustedRepayment, rate);
+	const creditChart = createChart(debt.name, thePayment);
 	console.log(thePayment);
 	return thePayment;
 }
@@ -128,12 +128,12 @@ function sortByAmount(firstDebt, secondDebt) {
 if (viewState.debtMethod === 'snowball') {
 	const snowballDebts = sortArray(debts, sortByAmount);
 	snowballDebts.forEach(debt => {
-		const repayment = handleCreditCardDebtCalculation(debt.name, debt.amount, debt.interest, debt.minPayment);
+		const repayment = handleCreditCardDebtCalculation(debt);
 		console.log(repayment);
 });
 } else {
 	const avalancheDebts = sortArray(debts, sortByRate).reverse();
 	avalancheDebts.forEach((debt, index) => {
-		handleCreditCardDebtCalculation(debt.name, debt.amount, debt.interest, index === 0 ? debt.minPayment + viewState.extraContributions : debt.minPayment);
+		handleCreditCardDebtCalculation(debt);
 });
 }

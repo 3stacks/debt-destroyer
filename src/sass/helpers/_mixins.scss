@@ -1,0 +1,22 @@
+@mixin square($size) {
+	width: $size;
+	height: $size;
+}
+
+@mixin put-in-rows($items-per-row, $spacing-size) {
+	width: calc(#{100% / $items-per-row} - #{ ($spacing-size / $items-per-row) * ($items-per-row - 1)});
+	height: calc(#{100% / $items-per-row} - #{ ($spacing-size / $items-per-row) * ($items-per-row - 1)});
+	margin-bottom: $spacing-size;
+}
+
+@mixin bp-min($size) {
+	@media only screen and (min-width: $size) {
+		@content
+	}
+}
+
+@mixin bp-max($size) {
+	@media only screen and (max-width: $size) {
+		@content;
+	}
+}

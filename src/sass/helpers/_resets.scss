@@ -1,0 +1,48 @@
+@import "../helpers/mixins";
+@import "../helpers/settings";
+
+* {
+	box-sizing: border-box;
+	margin-top: 0;
+	-webkit-font-smoothing: antialiased;
+}
+
+html {
+	font-size: 62.5%;
+}
+
+// Ensure images don't bleed out of their containers
+picture,
+svg,
+img {
+	max-width: 100%;
+}
+
+// Resets for older browsers
+picture {
+	display: block;
+	width: 100%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-weight: 700;
+	text-transform: uppercase;
+}
+
+figure {
+	margin: 0;
+}
+
+[v-cloak] {
+	display: none !important;
+}
+
+body {
+	margin: 0;
+	background-color: $background-color;
+	font-family: "Avenir", "Helvetica", "Arial", sans-serif;
+	color: $primary-color;
+	text-align: center;
+	font-size: 1.6rem;
+	font-weight: 400;
+}

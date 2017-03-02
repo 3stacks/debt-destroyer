@@ -98,8 +98,9 @@ function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}) 
 				...valueSoFar,
 			[month]: {
 			amountLeft: debt,
-				// If the debt left is less than our regular repayment, just pay what's left
-				amountPaid: debt <= repay ? debt : repay
+			// If the debt left is less than our regular repayment, just pay what's left
+			amountPaid: debt <= repay ? debt : repay,
+			interestPaid: monthlyInterest
 		}
 	});
 	} else {
@@ -107,7 +108,8 @@ function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}) 
 			...valueSoFar,
 			[month]: {
 			amountLeft: 0,
-				amountPaid: 0
+			amountPaid: 0,
+			interestPaid: 0
 		}
 	};
 	}

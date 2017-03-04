@@ -5,24 +5,27 @@ const debts = [
 		name: 'St George',
 		amount: 6000,
 		interest: 0,
-		minPayment: 120
+		minPayment: 120,
+		paidOff: false
 	},
 	{
 		name: 'CBA',
 		amount: 3000,
 		interest: 12,
-		minPayment: 200
+		minPayment: 200,
+		paidOff: false
 	},
 	{
 		name: 'Personal Loan',
 		amount: 10000,
 		interest: 16,
-		minPayment: 524
+		minPayment: 524,
+		paidOff: false
 	}
 ];
 
 const viewState = {
-	extraContributions: 1100,
+	extraContributions: 600,
 	debtMethod: 'avalanche'
 };
 
@@ -32,7 +35,6 @@ function handleCreditCardDebtCalculation(debt) {
 	const adjustedRepayment = parseInt(debt.minPayment) * 100;
 	const thePayment = calculateRepayments(adjustedDebt, adjustedRepayment, rate);
 	const creditChart = createChart(debt.name, thePayment);
-	console.log(thePayment);
 	return thePayment;
 }
 
@@ -62,6 +64,7 @@ function createChart(chartId, paymentGraph) {
 					type: 'bar',
 					yAxisId: 'amount_left',
 					backgroundColor: '#3498db',
+					borderColor: '#3498db',
 					data: Object.values(paymentGraph).map(function(item) {
 						return parseInt(item.amountLeft) / 100;
 					})
@@ -92,25 +95,24 @@ function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}) 
 	if (debt > 0) {
 		const monthlyInterest = (((interest / 12) / 100) * debt) * 100;
 		const newDebt = ((debt + monthlyInterest) - repay);
-		return calculateRepayments(newDebt, repay, interest, month + 1,
-			{
+		return calculateRepayments(newDebt, repay, interest, month + 1, {
 				...valueSoFar,
-			[month]: {
-			amountLeft: debt,
-			// If the debt left is less than our regular repayment, just pay what's left
-			amountPaid: debt <= repay ? debt : repay,
-			interestPaid: monthlyInterest
-		}
-	});
+				[month]: {
+					amountLeft: debt,
+					// If the debt left is less than our regular repayment, just pay what's left
+					amountPaid: debt <= repay ? debt : repay,
+					interestPaid: monthlyInterest
+				}
+		});
 	} else {
 		return {
 			...valueSoFar,
 			[month]: {
-			amountLeft: 0,
-			amountPaid: 0,
-			interestPaid: 0
-		}
-	};
+				amountLeft: 0,
+				amountPaid: 0,
+				interestPaid: 0
+			}
+		};
 	}
 }
 
@@ -130,11 +132,10 @@ if (viewState.debtMethod === 'snowball') {
 	const snowballDebts = sortArray(debts, sortByAmount);
 	snowballDebts.forEach(debt => {
 		const repayment = handleCreditCardDebtCalculation(debt);
-		console.log(repayment);
-});
+	});
 } else {
 	const avalancheDebts = sortArray(debts, sortByRate).reverse();
 	avalancheDebts.forEach((debt, index) => {
-		handleCreditCardDebtCalculation(debt);
-});
+		const repayment = handleCreditCardDebtCalculation(debt);
+	});
 }

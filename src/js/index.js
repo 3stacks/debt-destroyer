@@ -1,5 +1,4 @@
 import Chart from 'chart.js';
-Chart.defaults.global.defaultFontColor = '#fff';
 
 const debts = [
 	{

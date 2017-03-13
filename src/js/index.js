@@ -96,7 +96,7 @@ function createChart(chartId, paymentGraph) {
 
 function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}, extraContributions, monthToAddExtraContributions) {
 	if (debt > 0) {
-		const adjustedRepayment = month === parseFloat(monthToAddExtraContributions) + 1 ? (repay + (extraContributions * 100)) : repay;
+		const adjustedRepayment = month === parseFloat(monthToAddExtraContributions) ? (repay + (extraContributions * 100)) : repay;
 		const monthlyInterest = (((interest / 12) / 100) * debt) * 100;
 		const newDebt = ((debt + monthlyInterest) - adjustedRepayment);
 		return calculateRepayments(newDebt, adjustedRepayment, interest, month + 1, {

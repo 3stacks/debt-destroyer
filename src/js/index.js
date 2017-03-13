@@ -1,4 +1,5 @@
 import Chart from 'chart.js';
+import moment from 'moment';
 
 const debts = [
 	{
@@ -46,7 +47,9 @@ function createChart(chartId, paymentGraph) {
 	return new Chart(id, {
 		type: 'bar',
 		data: {
-			labels: Object.keys(paymentGraph),
+			labels: Object.keys(paymentGraph).map(month => {
+				return moment().add(month, 'months').format('MMM, YYYY');
+			}),
 			datasets: [
 				{
 					label: 'Amount Paid',

@@ -26,14 +26,14 @@ const debts = [
 
 const viewState = {
 	extraContributions: 600,
-	debtMethod: 'avalanche'
+	debtMethod: 'snowball'
 };
 
-function handleCreditCardDebtCalculation(debt) {
+function handleCreditCardDebtCalculation(debt, prevDebtPaidOffMonth) {
 	const adjustedDebt = parseInt(debt.amount) * 100;
 	const rate = parseInt(debt.interest) / 100;
-	const adjustedRepayment = parseInt(debt.minPayment) * 100;
-	const thePayment = calculateRepayments(adjustedDebt, adjustedRepayment, rate);
+	const adjustedRepayment = prevDebtPaidOffMonth ? parseInt(debt.minPayment) * 100 : (parseInt(debt.minPayment) + parseInt(viewState.extraContributions)) * 100;
+	const thePayment = calculateRepayments(adjustedDebt, adjustedRepayment, rate, 1, {}, viewState.extraContributions, prevDebtPaidOffMonth);
 	const creditChart = createChart(debt.name, thePayment);
 	return thePayment;
 }
@@ -91,19 +91,21 @@ function createChart(chartId, paymentGraph) {
 	});
 }
 
-function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}) {
+function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}, extraContributions, monthToAddExtraContributions) {
 	if (debt > 0) {
+		const adjustedRepayment = month === parseFloat(monthToAddExtraContributions) + 1 ? (repay + (extraContributions * 100)) : repay;
+		console.log(extraContributions);
 		const monthlyInterest = (((interest / 12) / 100) * debt) * 100;
-		const newDebt = ((debt + monthlyInterest) - repay);
-		return calculateRepayments(newDebt, repay, interest, month + 1, {
+		const newDebt = ((debt + monthlyInterest) - adjustedRepayment);
+		return calculateRepayments(newDebt, adjustedRepayment, interest, month + 1, {
 				...valueSoFar,
 				[month]: {
 					amountLeft: debt,
 					// If the debt left is less than our regular repayment, just pay what's left
-					amountPaid: debt <= repay ? debt : repay,
+					amountPaid: debt <= adjustedRepayment ? debt : adjustedRepayment,
 					interestPaid: monthlyInterest
 				}
-		});
+		}, extraContributions, monthToAddExtraContributions);
 	} else {
 		return {
 			...valueSoFar,
@@ -130,9 +132,20 @@ function sortByAmount(firstDebt, secondDebt) {
 
 if (viewState.debtMethod === 'snowball') {
 	const snowballDebts = sortArray(debts, sortByAmount);
-	snowballDebts.forEach(debt => {
-		const repayment = handleCreditCardDebtCalculation(debt);
-	});
+	const processedDebts = snowballDebts.reduce((acc, debt, index) => {
+		if (index === 0) {
+			return [
+				...acc,
+				handleCreditCardDebtCalculation(debt)
+			];
+		} else {
+			const monthsOfPreviousDebt = Object.keys(acc[acc.length - 1]);
+			return [
+				...acc,
+				handleCreditCardDebtCalculation(debt, monthsOfPreviousDebt[monthsOfPreviousDebt.length - 1])
+			];
+		}
+	}, []);
 } else {
 	const avalancheDebts = sortArray(debts, sortByRate).reverse();
 	avalancheDebts.forEach((debt, index) => {

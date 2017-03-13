@@ -1,5 +1,7 @@
 import Chart from 'chart.js';
 import moment from 'moment';
+import Vue from 'vue';
+import addDebtForm from './components/add-debt-form';
 
 const debts = [
 	{
@@ -26,8 +28,8 @@ const debts = [
 ];
 
 const viewState = {
-	extraContributions: 600,
-	debtMethod: 'snowball'
+	extraContributions: 3620,
+	debtMethod: 'avalanche'
 };
 
 function handleCreditCardDebtCalculation(debt, prevDebtPaidOffMonth) {
@@ -147,3 +149,10 @@ const processedDebts = sortedDebts.reduce((acc, debt, index) => {
 		];
 	}
 }, []);
+
+const pageView = new Vue({
+	el: '#root',
+	components: {
+		'add-debt-form': addDebtForm
+	}
+});

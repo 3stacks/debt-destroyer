@@ -94,7 +94,6 @@ function createChart(chartId, paymentGraph) {
 function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}, extraContributions, monthToAddExtraContributions) {
 	if (debt > 0) {
 		const adjustedRepayment = month === parseFloat(monthToAddExtraContributions) + 1 ? (repay + (extraContributions * 100)) : repay;
-		console.log(extraContributions);
 		const monthlyInterest = (((interest / 12) / 100) * debt) * 100;
 		const newDebt = ((debt + monthlyInterest) - adjustedRepayment);
 		return calculateRepayments(newDebt, adjustedRepayment, interest, month + 1, {
@@ -130,25 +129,18 @@ function sortByAmount(firstDebt, secondDebt) {
 	return firstDebt.amount - secondDebt.amount;
 }
 
-if (viewState.debtMethod === 'snowball') {
-	const snowballDebts = sortArray(debts, sortByAmount);
-	const processedDebts = snowballDebts.reduce((acc, debt, index) => {
-		if (index === 0) {
-			return [
-				...acc,
-				handleCreditCardDebtCalculation(debt)
-			];
-		} else {
-			const monthsOfPreviousDebt = Object.keys(acc[acc.length - 1]);
-			return [
-				...acc,
-				handleCreditCardDebtCalculation(debt, monthsOfPreviousDebt[monthsOfPreviousDebt.length - 1])
-			];
-		}
-	}, []);
-} else {
-	const avalancheDebts = sortArray(debts, sortByRate).reverse();
-	avalancheDebts.forEach((debt, index) => {
-		const repayment = handleCreditCardDebtCalculation(debt);
-	});
-}
+const sortedDebts = viewState.debtMethod === 'snowball' ? sortArray(debts, sortByAmount) : sortArray(debts, sortByRate).reverse();
+const processedDebts = sortedDebts.reduce((acc, debt, index) => {
+	if (index === 0) {
+		return [
+			...acc,
+			handleCreditCardDebtCalculation(debt)
+		];
+	} else {
+		const monthsOfPreviousDebt = Object.keys(acc[acc.length - 1]);
+		return [
+			...acc,
+			handleCreditCardDebtCalculation(debt, monthsOfPreviousDebt[monthsOfPreviousDebt.length - 1])
+		];
+	}
+}, []);

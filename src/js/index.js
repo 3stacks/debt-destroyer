@@ -2,6 +2,7 @@ import Chart from 'chart.js';
 import moment from 'moment';
 import Vue from 'vue';
 import addDebtForm from './components/add-debt-form';
+import {sortArray, sortByRate, sortByAmount } from './utils';
 
 const debts = [
 	{

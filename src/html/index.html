@@ -10,8 +10,8 @@
     </head>
     <body>
 		<div id="root">
-			<add-debt-form></add-debt-form>
-			<div id="chart_container"></div>
+			<add-debt-form v-if="viewState.addDebtMode"></add-debt-form>
 		</div>
+		<div id="chart_container"></div>
 	</body>
 </html>

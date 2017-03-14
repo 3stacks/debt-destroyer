@@ -1,10 +1,27 @@
 export default {
 	template: `
 		<div>
-			<label>
-				Debt Name
-				<input type="text">
-			</label>
+			<form>
+				<label>
+					Name
+					<input type="text">
+				</label>
+				<label>
+					Amount
+					<input type="number">
+				</label>
+				<label>
+					Annual Percentage Rate (APR)
+					<input type="number">
+				</label>
+				<label>
+					Minimum Monthly Repayment
+					<input type="number">
+				</label>
+				<button type="button">
+					Add Debt
+				</button>
+			</form>
 		</div>
 	`
 }

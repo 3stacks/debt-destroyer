@@ -30,7 +30,9 @@ const debts = [
 
 const viewState = {
 	extraContributions: 3620,
-	debtMethod: 'avalanche'
+	debtMethod: 'avalanche',
+	debts: null,
+	addDebtMode: true
 };
 
 function handleCreditCardDebtCalculation(debt, prevDebtPaidOffMonth) {
@@ -123,18 +125,6 @@ function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}, 
 	}
 }
 
-function sortArray(array, sortFunction) {
-	return [...array].sort(sortFunction);
-}
-
-function sortByRate(firstDebt, secondDebt) {
-	return firstDebt.interest - secondDebt.interest;
-}
-
-function sortByAmount(firstDebt, secondDebt) {
-	return firstDebt.amount - secondDebt.amount;
-}
-
 const sortedDebts = viewState.debtMethod === 'snowball' ? sortArray(debts, sortByAmount) : sortArray(debts, sortByRate).reverse();
 const processedDebts = sortedDebts.reduce((acc, debt, index) => {
 	if (index === 0) {
@@ -153,6 +143,9 @@ const processedDebts = sortedDebts.reduce((acc, debt, index) => {
 
 const pageView = new Vue({
 	el: '#root',
+	data: {
+		viewState
+	},
 	components: {
 		'add-debt-form': addDebtForm
 	}

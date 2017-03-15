@@ -38,7 +38,8 @@ const userData = {
 const viewState = {
 	debtMethod: 'avalanche',
 	editMode: true,
-	addDebtMode: false
+	addDebtMode: false,
+	activeCharts: []
 };
 
 function handleCreditCardDebtCalculation(debt, prevDebtPaidOffMonth) {
@@ -83,34 +84,58 @@ function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}, 
 	}
 }
 
-const sortedDebts = viewState.debtMethod === 'snowball' ? sortArray(userData.debts, sortByAmount) : sortArray(userData.debts, sortByRate).reverse();
-const processedDebts = sortedDebts.reduce((acc, debt, index) => {
-	if (index === 0) {
-		return [
-			...acc,
-			handleCreditCardDebtCalculation(debt)
-		];
-	} else {
-		const monthsOfPreviousDebt = Object.keys(acc[acc.length - 1].repayments);
-		return [
-			...acc,
-			handleCreditCardDebtCalculation(debt, monthsOfPreviousDebt[monthsOfPreviousDebt.length - 1])
-		];
-	}
-}, []);
-
-processedDebts.forEach(processedDebt => {
-	createChart(processedDebt.name, processedDebt.repayments);
-});
+function calculateDebts() {
+	const sortedDebts = viewState.debtMethod === 'snowball' ? sortArray(userData.debts, sortByAmount) : sortArray(userData.debts, sortByRate).reverse();
+	const processedDebts = sortedDebts.reduce((acc, debt, index) => {
+		if (index === 0) {
+			return [
+				...acc,
+				handleCreditCardDebtCalculation(debt)
+			];
+		} else {
+			const monthsOfPreviousDebt = Object.keys(acc[acc.length - 1].repayments);
+			return [
+				...acc,
+				handleCreditCardDebtCalculation(debt, monthsOfPreviousDebt[monthsOfPreviousDebt.length - 1])
+			];
+		}
+	}, []);
+	const labels = Object.keys(processedDebts[processedDebts.length - 1].repayments).map(month => {
+		return moment().add(month, 'months').format('MMM, YYYY');
+	});
+	processedDebts.forEach(processedDebt => {
+		const chartReference = viewState.activeCharts.find(chart => chart.name === processedDebt.name);
+		if (!!chartReference) {
+			const chart = chartReference.chart;
+			const debtBreakdown = processedDebt.repayments;
+			chart.data.labels = labels;
+			// Update Amount Paid dataset
+			chart.data.datasets[0].data = Object.values(debtBreakdown).map(function(item) {
+				return parseInt(item.amountPaid) / 100;
+			});
+			// Update Amount Left dataset
+			chart.data.datasets[1].data = Object.values(debtBreakdown).map(function(item) {
+				return parseInt(item.amountLeft) / 100;
+			});
+			chart.update();
+		} else {
+			viewState.activeCharts = [
+				...viewState.activeCharts,
+				{
+					name: processedDebt.name,
+					chart: createChart(processedDebt.name, processedDebt.repayments, labels)
+				}
+			];
+		}
+	});
+}
 
 const pageView = new Vue({
 	el: '#root',
 	methods: {
 		handleDebtValueChanged(debtId, valueToChange, newValue) {
-			console.log(newValue);
 			userData.debts = userData.debts.map(debt => {
 				if (debt.id === debtId) {
-					console.log('hello');
 					return {
 						...debt,
 						[valueToChange]: newValue
@@ -119,8 +144,14 @@ const pageView = new Vue({
 					return debt;
 				}
 			});
-			console.log(userData.debts);
-			// this.$set('userData', 'debts', userData.debts);
+			if (valueToChange !== 'name') {
+				return calculateDebts();
+			}
+		},
+		handleExtraContributionsChanged(changeEvent) {
+			userData.extraContributions = changeEvent.target.value;
+			return calculateDebts();
+		},
 		handleDebtMethodChanged(changeEvent) {
 			viewState.debtMethod = changeEvent.target.value;
 			return calculateDebts();

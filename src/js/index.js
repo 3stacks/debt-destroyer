@@ -1,9 +1,9 @@
-import Chart from 'chart.js';
 import moment from 'moment';
 import Vue from 'vue';
 import addDebtForm from './components/add-debt-form';
 import userDebts from './components/user-debts';
 import {sortArray, sortByRate, sortByAmount } from './utils';
+import {createChart} from './utils/chart'
 
 const userData = {
 	debts: [
@@ -55,61 +55,6 @@ function handleCreditCardDebtCalculation(debt, prevDebtPaidOffMonth) {
 		interestPaid,
 		totalPaid: (debt.amount * 100) + interestPaid
 	};
-}
-
-function createChart(chartId, paymentGraph) {
-	const canvas = document.createElement('canvas');
-	const id = chartId;
-	canvas.id = id;
-	document.getElementById('chart_container').appendChild(canvas);
-	return new Chart(id, {
-		type: 'bar',
-		data: {
-			labels: Object.keys(paymentGraph).map(month => {
-				return moment().add(month, 'months').format('MMM, YYYY');
-			}),
-			datasets: [
-				{
-					label: 'Amount Paid',
-					type: 'line',
-					yAxisId: 'amount_paid',
-					borderColor: '#e74c3c',
-					backgroundColor: '#e74c3c',
-					fill: false,
-					data: Object.values(paymentGraph).map(function(item) {
-						return parseInt(item.amountPaid) / 100;
-					})
-				},
-				{
-					label: 'Amount Remaining',
-					type: 'bar',
-					yAxisId: 'amount_left',
-					backgroundColor: '#3498db',
-					borderColor: '#3498db',
-					data: Object.values(paymentGraph).map(function(item) {
-						return parseInt(item.amountLeft) / 100;
-					})
-				}
-			],
-			borderWidth: 1
-		},
-		options: {
-			scales: {
-				yAxes: [
-					{
-						stacked: false,
-						position: 'left',
-						id: 'amount_left'
-					},
-					{
-						stacked: false,
-						position: 'right',
-						id: 'amount_paid'
-					}
-				]
-			}
-		}
-	});
 }
 
 function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}, extraContributions, monthToAddExtraContributions) {

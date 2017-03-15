@@ -10,6 +10,14 @@
     </head>
     <body>
 		<div id="root">
+			<label>
+				Snowball
+				<input type="radio" name="debt-method" value="snowball" @change="handleDebtMethodChanged" checked>
+			</label>
+			<label>
+				Avalanche
+				<input type="radio" name="debt-method" value="avalanche" @change="handleDebtMethodChanged">
+			</label>
 			<user-debts :debts="userData.debts" :edit-mode="viewState.editMode" :handle-value-changed="handleDebtValueChanged"></user-debts>
 			<add-debt-form v-if="viewState.addDebtMode"></add-debt-form>
 		</div>

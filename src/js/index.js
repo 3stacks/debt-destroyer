@@ -176,6 +176,9 @@ const pageView = new Vue({
 			});
 			console.log(userData.debts);
 			// this.$set('userData', 'debts', userData.debts);
+		handleDebtMethodChanged(changeEvent) {
+			viewState.debtMethod = changeEvent.target.value;
+			return calculateDebts();
 		}
 	},
 	data: {

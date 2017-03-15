@@ -18,6 +18,10 @@
 				Avalanche
 				<input type="radio" name="debt-method" value="avalanche" @change="handleDebtMethodChanged">
 			</label>
+			<label>
+				Extra Contributions
+				<input type="number" @input="handleExtraContributionsChanged" v-bind:value="userData.extraContributions">
+			</label>
 			<user-debts :debts="userData.debts" :edit-mode="viewState.editMode" :handle-value-changed="handleDebtValueChanged"></user-debts>
 			<add-debt-form v-if="viewState.addDebtMode"></add-debt-form>
 		</div>

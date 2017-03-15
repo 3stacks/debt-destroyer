@@ -1,46 +1,6 @@
 import moment from 'moment';
-import Vue from 'vue';
-import addDebtForm from './components/add-debt-form';
-import userDebts from './components/user-debts';
-import {sortArray, sortByRate, sortByAmount } from './utils/utils';
-import {createChart} from './utils/chart'
-
-const userData = {
-	debts: [
-		{
-			id: 1,
-			name: 'St George',
-			amount: 5700,
-			interest: 0,
-			minPayment: 120,
-			paidOff: false
-		},
-		{
-			id: 2,
-			name: 'CBA',
-			amount: 2400,
-			interest: 12,
-			minPayment: 200,
-			paidOff: false
-		},
-		{
-			id: 3,
-			name: 'Personal Loan',
-			amount: 9500,
-			interest: 16,
-			minPayment: 524,
-			paidOff: false
-		}
-	],
-	extraContributions: 4055,
-};
-
-const viewState = {
-	debtMethod: 'avalanche',
-	editMode: true,
-	addDebtMode: false,
-	activeCharts: []
-};
+import {sortArray, sortByRate, sortByAmount } from './functions';
+import {createChart} from './chart'
 
 function handleCreditCardDebtCalculation(debt, prevDebtPaidOffMonth) {
 	const adjustedDebt = parseInt(debt.amount) * 100;
@@ -64,13 +24,13 @@ function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}, 
 		const monthlyInterest = (((interest / 12) / 100) * debt) * 100;
 		const newDebt = ((debt + monthlyInterest) - adjustedRepayment);
 		return calculateRepayments(newDebt, adjustedRepayment, interest, month + 1, {
-				...valueSoFar,
-				[month]: {
-					amountLeft: debt,
-					// If the debt left is less than our regular repayment, just pay what's left
-					amountPaid: debt <= adjustedRepayment ? debt : adjustedRepayment,
-					interestPaid: monthlyInterest
-				}
+			...valueSoFar,
+			[month]: {
+				amountLeft: debt,
+				// If the debt left is less than our regular repayment, just pay what's left
+				amountPaid: debt <= adjustedRepayment ? debt : adjustedRepayment,
+				interestPaid: monthlyInterest
+			}
 		}, extraContributions, monthToAddExtraContributions);
 	} else {
 		return {
@@ -84,7 +44,7 @@ function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}, 
 	}
 }
 
-function calculateDebts() {
+export function calculateDebts(viewState) {
 	const sortedDebts = viewState.debtMethod === 'snowball' ? sortArray(userData.debts, sortByAmount) : sortArray(userData.debts, sortByRate).reverse();
 	const processedDebts = sortedDebts.reduce((acc, debt, index) => {
 		if (index === 0) {
@@ -129,42 +89,3 @@ function calculateDebts() {
 		}
 	});
 }
-
-const pageView = new Vue({
-	el: '#root',
-	methods: {
-		handleDebtValueChanged(debtId, valueToChange, newValue) {
-			userData.debts = userData.debts.map(debt => {
-				if (debt.id === debtId) {
-					return {
-						...debt,
-						[valueToChange]: newValue
-					}
-				} else {
-					return debt;
-				}
-			});
-			if (valueToChange !== 'name') {
-				return calculateDebts();
-			}
-		},
-		handleExtraContributionsChanged(changeEvent) {
-			userData.extraContributions = changeEvent.target.value;
-			return calculateDebts();
-		},
-		handleDebtMethodChanged(changeEvent) {
-			viewState.debtMethod = changeEvent.target.value;
-			return calculateDebts();
-		}
-	},
-	data: {
-		viewState,
-		userData
-	},
-	components: {
-		'add-debt-form': addDebtForm,
-		'user-debts': userDebts
-	}
-});
-
-window.zz = pageView;

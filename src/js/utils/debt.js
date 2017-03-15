@@ -2,7 +2,7 @@ import moment from 'moment';
 import {sortArray, sortByRate, sortByAmount } from './functions';
 import {createChart} from './chart'
 
-function handleCreditCardDebtCalculation(debt, prevDebtPaidOffMonth) {
+function handleCreditCardDebtCalculation(userData, debt, prevDebtPaidOffMonth) {
 	const adjustedDebt = parseInt(debt.amount) * 100;
 	const rate = parseInt(debt.interest) / 100;
 	const adjustedRepayment = prevDebtPaidOffMonth ? parseInt(debt.minPayment) * 100 : (parseInt(debt.minPayment) + parseInt(userData.extraContributions)) * 100;
@@ -44,19 +44,19 @@ function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}, 
 	}
 }
 
-export function calculateDebts(viewState) {
-	const sortedDebts = viewState.debtMethod === 'snowball' ? sortArray(userData.debts, sortByAmount) : sortArray(userData.debts, sortByRate).reverse();
+export function calculateDebts(appState) {
+	const sortedDebts = appState.viewState.debtMethod === 'snowball' ? sortArray(appState.userData.debts, sortByAmount) : sortArray(appState.userData.debts, sortByRate).reverse();
 	const processedDebts = sortedDebts.reduce((acc, debt, index) => {
 		if (index === 0) {
 			return [
 				...acc,
-				handleCreditCardDebtCalculation(debt)
+				handleCreditCardDebtCalculation(appState.userData, debt)
 			];
 		} else {
 			const monthsOfPreviousDebt = Object.keys(acc[acc.length - 1].repayments);
 			return [
 				...acc,
-				handleCreditCardDebtCalculation(debt, monthsOfPreviousDebt[monthsOfPreviousDebt.length - 1])
+				handleCreditCardDebtCalculation(appState.userData, debt, monthsOfPreviousDebt[monthsOfPreviousDebt.length - 1])
 			];
 		}
 	}, []);
@@ -64,7 +64,7 @@ export function calculateDebts(viewState) {
 		return moment().add(month, 'months').format('MMM, YYYY');
 	});
 	processedDebts.forEach(processedDebt => {
-		const chartReference = viewState.activeCharts.find(chart => chart.name === processedDebt.name);
+		const chartReference = appState.viewState.activeCharts.find(chart => chart.name === processedDebt.name);
 		if (!!chartReference) {
 			const chart = chartReference.chart;
 			const debtBreakdown = processedDebt.repayments;
@@ -79,8 +79,8 @@ export function calculateDebts(viewState) {
 			});
 			chart.update();
 		} else {
-			viewState.activeCharts = [
-				...viewState.activeCharts,
+			appState.viewState.activeCharts = [
+				...appState.viewState.activeCharts,
 				{
 					name: processedDebt.name,
 					chart: createChart(processedDebt.name, processedDebt.repayments, labels)

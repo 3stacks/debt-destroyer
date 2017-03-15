@@ -3,9 +3,28 @@
 @import "helpers/settings";
 @import "helpers/mixins";
 
-label {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	flex-direction: column;
+.component__text-field-toggle {
+	label {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-direction: column;
+
+		&:hover {
+			input {
+				border-color: #00d1b2;
+			}
+		}
+	}
+
+	input {
+		&:focus {
+			border-color: #00d1b2;
+		}
+		border: 1px solid transparent;
+		-webkit-appearance: none;
+		outline: none;
+		line-height: 1rem;
+		transition: border-color 0.25s ease-out;
+	}
 }

@@ -6,9 +6,9 @@
 .component__text-field-toggle {
 	label {
 		display: flex;
-		justify-content: space-between;
+		justify-content: flex-start;
 		align-items: center;
-		flex-direction: column;
+		margin-bottom: 1rem;
 
 		&:hover {
 			input {
@@ -26,5 +26,18 @@
 		outline: none;
 		line-height: 1rem;
 		transition: border-color 0.25s ease-out;
+		padding: 0.5rem;
+		font-size: 1.6rem;
+	}
+}
+
+.component__user-debt {
+	margin-bottom: 1rem;
+	padding: 1rem;
+	box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.4);
+	&__container {
+		@include grid((
+			'x x x',
+		));
 	}
 }

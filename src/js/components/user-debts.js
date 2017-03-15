@@ -2,8 +2,8 @@ import textFieldToggle from './text-field-toggle';
 
 export default {
 	template: `
-		<div>
-			<div v-if="debts.length !== 0" v-for="debt in debts">
+		<div class="component__user-debt__container">
+			<div v-if="debts.length !== 0" v-for="debt in debts" class="component__user-debt">
 				<text-field-toggle 
 					label="Debt Name" 
 					type="text"

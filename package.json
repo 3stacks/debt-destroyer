@@ -35,6 +35,7 @@
     "browserify": "^13.0.0",
     "concurrently": "^2.2.0",
     "cpx": "^1.3.2",
+    "grassy": "^0.1.0",
     "gulp": "^3.9.1",
     "gulp-rename": "^1.2.2",
     "gulp-sass": "^2.3.1",

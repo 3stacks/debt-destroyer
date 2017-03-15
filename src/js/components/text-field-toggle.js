@@ -16,27 +16,25 @@ export default {
 		handleValueChanged: {
 			type: Function,
 			required: true
-		}
+		},
+		debt: {
+			type: Object,
+			required: true
+		},
+		property: String
 	},
 	methods: {
-		handleKeyDown(KeyboardEvent) {
-			const input = KeyboardEvent.target;
-			if (KeyboardEvent.key === 'Escape') {
-				return input.value = this.$props.value;
-			}
-			if (KeyboardEvent.key === 'Enter') {
-				return this.$props.handleValueChanged(input.value);
-			}
-		},
-		handleBlur() {
-			return this.$refs.input.value = this.$props.value;
+		handleInputChange(keyboardEvent) {
+			const input = keyboardEvent.target;
+			const debt = this.$props.debt;
+			return this.$props.handleValueChanged(debt.id, this.$props.property, input.value);
 		}
 	},
 	template: `
 		<div class="component__text-field-toggle">
 			<label>
 				{{ label }}:
-				<input ref="input" @blur="handleBlur" @keydown="handleKeyDown" v-bind:value="value" :type="type" v-bind:placeholder="placeholder">
+				<input ref="input" @input="handleInputChange" v-bind:value="value" :type="type" v-bind:placeholder="placeholder">
 			</label>
 		</div>
 	`

@@ -2,6 +2,7 @@ import Chart from 'chart.js';
 import moment from 'moment';
 import Vue from 'vue';
 import addDebtForm from './components/add-debt-form';
+import userDebts from './components/user-debts';
 import {sortArray, sortByRate, sortByAmount } from './utils';
 
 const userData = {
@@ -182,6 +183,9 @@ const pageView = new Vue({
 		userData
 	},
 	components: {
-		'add-debt-form': addDebtForm
+		'add-debt-form': addDebtForm,
+		'user-debts': userDebts
 	}
 });
+
+window.zz = pageView;

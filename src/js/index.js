@@ -40,6 +40,15 @@ const viewState = {
 	activeCharts: []
 };
 
+function destroyCharts() {
+	viewState.activeCharts.forEach(chart => {
+		chart.chart.destroy();
+		const chartContainer = document.getElementById(chart.name);
+		chartContainer.parentNode.removeChild(chartContainer);
+	});
+	return viewState.activeCharts = [];
+}
+
 const pageView = new Vue({
 	el: '#root',
 	methods: {
@@ -64,6 +73,7 @@ const pageView = new Vue({
 		},
 		handleDebtMethodChanged(changeEvent) {
 			viewState.debtMethod = changeEvent.target.value;
+			destroyCharts();
 			return calculateDebts({viewState, userData});
 		}
 	},

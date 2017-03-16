@@ -7,7 +7,7 @@ const userData = {
 	debts: [
 		{
 			id: 1,
-			name: 'St George',
+			name: 'Credit Card 1',
 			amount: 5700,
 			interest: 0,
 			minPayment: 120,
@@ -15,7 +15,7 @@ const userData = {
 		},
 		{
 			id: 2,
-			name: 'CBA',
+			name: 'Credit Card 2',
 			amount: 2400,
 			interest: 12,
 			minPayment: 200,

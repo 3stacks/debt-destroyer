@@ -5,7 +5,7 @@ import {createChart} from './chart'
 function handleCreditCardDebtCalculation(userData, debt, prevDebtPaidOffMonth) {
 	const adjustedDebt = parseInt(debt.amount) * 100;
 	const rate = parseInt(debt.interest) / 100;
-	const adjustedRepayment = prevDebtPaidOffMonth ? parseInt(debt.minPayment) * 100 : (parseInt(debt.minPayment) + parseInt(userData.extraContributions)) * 100;
+	const adjustedRepayment = prevDebtPaidOffMonth ? parseInt(debt.minPayment) * 100 : ((parseInt(debt.minPayment) * 100) + (parseInt(userData.extraContributions) * 100));
 	const repayments = calculateRepayments(adjustedDebt, adjustedRepayment, rate, 1, {}, userData.extraContributions, prevDebtPaidOffMonth);
 	const interestPaid = Object.values(repayments).reduce((acc, curr) => {
 		return acc + curr.interestPaid;

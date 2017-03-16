@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import addDebtForm from './components/add-debt-form';
 import userDebts from './components/user-debts';
+import debtStory from './components/debt-story';
 import {calculateDebts} from './utils/debt';
 
 const userData = {
@@ -64,7 +65,7 @@ const pageView = new Vue({
 				}
 			});
 			if (valueToChange !== 'name') {
-				return calculateDebts({viewState, userData});
+				calculateDebts({viewState, userData});
 			}
 		},
 		handleExtraContributionsChanged(changeEvent) {
@@ -83,7 +84,8 @@ const pageView = new Vue({
 	},
 	components: {
 		'add-debt-form': addDebtForm,
-		'user-debts': userDebts
+		'user-debts': userDebts,
+		'debt-story': debtStory
 	}
 });
 

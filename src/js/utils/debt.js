@@ -53,10 +53,12 @@ export function calculateDebts(appState) {
 				handleCreditCardDebtCalculation(appState.userData, debt)
 			];
 		} else {
-			const monthsOfPreviousDebt = Object.keys(acc[acc.length - 1].repayments);
+			const previousDebtRepayments = acc[acc.length - 1].repayments;
+			const monthsOfPreviousDebt = Object.keys(previousDebtRepayments);
+			const lastMonth = Math.max.apply(null, monthsOfPreviousDebt);
 			return [
 				...acc,
-				handleCreditCardDebtCalculation(appState.userData, debt, monthsOfPreviousDebt[monthsOfPreviousDebt.length - 1])
+				handleCreditCardDebtCalculation(appState.userData, debt, lastMonth)
 			];
 		}
 	}, []);

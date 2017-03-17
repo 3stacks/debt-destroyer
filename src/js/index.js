@@ -2,6 +2,7 @@ import Vue from 'vue';
 import addDebtForm from './components/add-debt-form';
 import userDebts from './components/user-debts';
 import debtStory from './components/debt-story';
+import modal from './components/modal';
 import {calculateDebts} from './utils/debt';
 
 const userData = {
@@ -11,24 +12,21 @@ const userData = {
 			name: 'Credit Card 1',
 			amount: 5700,
 			interest: 0,
-			minPayment: 120,
-			paidOff: false
+			minPayment: 120
 		},
 		{
 			id: 2,
 			name: 'Credit Card 2',
 			amount: 2400,
 			interest: 12,
-			minPayment: 200,
-			paidOff: false
+			minPayment: 200
 		},
 		{
 			id: 3,
 			name: 'Personal Loan',
 			amount: 9500,
 			interest: 16,
-			minPayment: 524,
-			paidOff: false
+			minPayment: 524
 		}
 	],
 	extraContributions: 4055,
@@ -38,7 +36,8 @@ const viewState = {
 	debtMethod: 'avalanche',
 	editMode: true,
 	addDebtMode: false,
-	activeCharts: []
+	activeCharts: [],
+	isPayOffHelpModalOpen: false
 };
 
 function destroyCharts() {
@@ -76,6 +75,24 @@ const pageView = new Vue({
 			viewState.debtMethod = changeEvent.target.value;
 			destroyCharts();
 			return calculateDebts({viewState, userData});
+		},
+		handleNewDebtButtonPressed() {
+			userData.debts = [
+				...userData.debts,
+				{
+					id: `debt-${Math.random()}`,
+					name: 'New debt',
+					amount: 0,
+					interest: 0,
+					minPayment: 0
+				}
+			]
+		},
+		handleDeleteDebtButtonPressed() {
+
+		},
+		handlePayOffHelpButtonPressed() {
+			return viewState.isPayOffHelpModalOpen = !viewState.isPayOffHelpModalOpen;
 		}
 	},
 	data: {
@@ -83,6 +100,7 @@ const pageView = new Vue({
 		userData
 	},
 	components: {
+		'modal-dialog': modal,
 		'add-debt-form': addDebtForm,
 		'user-debts': userDebts,
 		'debt-story': debtStory

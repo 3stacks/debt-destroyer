@@ -9,22 +9,51 @@
 		<script src="bundle.js" defer></script>
     </head>
     <body>
-		<div id="root">
-			<label>
-				Snowball
-				<input type="radio" name="debt-method" value="snowball" @change="handleDebtMethodChanged" checked>
-			</label>
-			<label>
-				Avalanche
-				<input type="radio" name="debt-method" value="avalanche" @change="handleDebtMethodChanged">
-			</label>
-			<label>
-				Extra Contributions
-				<input type="number" @input="handleExtraContributionsChanged" v-bind:value="userData.extraContributions">
-			</label>
-			<user-debts :debts="userData.debts" :edit-mode="viewState.editMode" :handle-value-changed="handleDebtValueChanged"></user-debts>
-			<add-debt-form v-if="viewState.addDebtMode"></add-debt-form>
+		<div class="nav is-info">
+			<div class="container">
+				<div class="nav-left"></div>
+			</div>
 		</div>
-		<div id="chart_container"></div>
+		<div class="section">
+			<div class="container">
+				<div id="root">
+					<p>
+						Select your debt pay-off method <button class="button" @click="handlePayOffHelpButtonPressed">?</button>
+					</p>
+					<modal-dialog v-if="viewState.isPayOffHelpModalOpen" title="Debt Pay Off Methodology" :handle-close-requested="handlePayOffHelpButtonPressed">
+						<div slot="body">
+							<p>
+								Hello
+							</p>
+						</div>
+						<div slot="footer">
+							<a class="button is-success" @click="handlePayOffHelpButtonPressed">
+								Accept
+							</a>
+						</div>
+					</modal-dialog>
+					<div>
+						<label>
+							Snowball
+							<input type="radio" name="debt-method" value="snowball" @change="handleDebtMethodChanged" checked>
+						</label>
+					</div>
+					<div>
+						<label>
+							Avalanche
+							<input type="radio" name="debt-method" value="avalanche" @change="handleDebtMethodChanged">
+						</label>
+					</div>
+					<label class="flex-label">
+						Extra Contributions
+						<input type="number" @input="handleExtraContributionsChanged" v-bind:value="userData.extraContributions">
+					</label>
+					<user-debts :debts="userData.debts" :edit-mode="viewState.editMode" :handle-new-debt-button-pressed="handleNewDebtButtonPressed" :handle-value-changed="handleDebtValueChanged"></user-debts>
+					<add-debt-form v-if="viewState.addDebtMode"></add-debt-form>
+					<div id="chart_container"></div>
+					<debt-story v-if="userData.processedDebts" :user-data="userData"></debt-story>
+				</div>
+			</div>
+		</div>
 	</body>
 </html>

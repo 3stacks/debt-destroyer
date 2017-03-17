@@ -1,7 +1,14 @@
+@import "vendor/bulma";
+
 @import "helpers/resets";
 @import "helpers/utils";
 @import "helpers/settings";
 @import "helpers/mixins";
+
+.nav {
+	background-color: $blue;
+	height: 60px;
+}
 
 .component__text-field-toggle {
 	label {
@@ -40,4 +47,10 @@
 			'x x x',
 		));
 	}
+}
+
+.flex-label {
+	justify-content: space-between;
+	align-items: center;
+	flex-direction: column;
 }

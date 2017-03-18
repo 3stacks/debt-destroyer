@@ -1,12 +1,14 @@
 import moment from 'moment';
 import {sortArray, sortByRate, sortByAmount } from './functions';
-import {createChart} from './chart'
+import {createChart} from './chart';
+import isSet from 'is-it-set';
 
 function handleDebtCalculation(userData, debt, prevDebtPaidOffMonth, lastMonthLeftOverMoney) {
 	const adjustedDebt = parseInt(debt.amount) * 100;
-	const rate = parseInt(debt.interest) / 100;
-	const adjustedRepayment = prevDebtPaidOffMonth ? parseInt(debt.minPayment) * 100 : ((parseInt(debt.minPayment) * 100) + (parseInt(userData.extraContributions) * 100));
-	const repayments = calculateRepayments(adjustedDebt, adjustedRepayment, rate, 1, {}, userData.extraContributions, prevDebtPaidOffMonth, lastMonthLeftOverMoney);
+	const adjustedRate = parseInt(debt.interest) / 100;
+	const adjustedRepayment = parseInt(debt.minPayment) * 100;
+	const parsedExtraContributions = isSet(userData.extraContributions) ? (userData.extraContributions * 100) : 0;
+	const repayments = calculateRepayments(adjustedDebt, adjustedRepayment, adjustedRate, 1, {}, parsedExtraContributions, prevDebtPaidOffMonth, lastMonthLeftOverMoney);
 	const interestPaid = Object.values(repayments).reduce((acc, curr) => {
 		return acc + curr.interestPaid;
 	}, 0);
@@ -20,15 +22,18 @@ function handleDebtCalculation(userData, debt, prevDebtPaidOffMonth, lastMonthLe
 	};
 }
 
+// TODO: STOP MAKING CALCULATING THE REPAYMENT AMOUNTS THE RESPONSIBILITY OF THIS FUNCTION, DO IT IN handleDebtCalculation
 function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}, extraContributions, monthToAddExtraContributions, firstMonthBoost) {
 	if (debt > 0) {
-		const adjustedRepayment = month === parseFloat(monthToAddExtraContributions) ? (repay + (extraContributions * 100)) : repay;
+		console.log(month, firstMonthBoost);
+		const adjustedRepayment = month >= parseFloat(monthToAddExtraContributions) || !monthToAddExtraContributions
+			? (repay + extraContributions)
+			: repay;
 		const monthlyInterest = (((interest / 12) / 100) * debt) * 100;
-		if (month === monthToAddExtraContributions && !!firstMonthBoost) {
-			console.log(((debt + monthlyInterest) - (repay + (firstMonthBoost * 100))));
-		}
-		const newDebt = month === monthToAddExtraContributions && !!firstMonthBoost ? ((debt + monthlyInterest) - (repay + (firstMonthBoost * 100))) : ((debt + monthlyInterest) - adjustedRepayment);
-		return calculateRepayments(newDebt, adjustedRepayment, interest, month + 1, {
+		const newDebt = !!firstMonthBoost
+			? ((debt + monthlyInterest) - (adjustedRepayment + (firstMonthBoost * 100)))
+			: ((debt + monthlyInterest) - adjustedRepayment);
+		return calculateRepayments(newDebt, repay, interest, month + 1, {
 			...valueSoFar,
 			[month]: {
 				amountLeft: debt,

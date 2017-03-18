@@ -52,10 +52,11 @@ const pageView = new Vue({
 			userData.debts = userData.debts.map(debt => {
 				if (debt.id === debtId) {
 					if (valueToChange === 'amount') {
+						const debtAmount = event.target.value;
 						return {
 							...debt,
-							amount: event.target.value,
-							minPayment: event.target.value * 0.01
+							amount: debtAmount,
+							minPayment: debtAmount * 0.01 < 5 ? 5 : debtAmount * 0.01
 						}
 					} else {
 						return {

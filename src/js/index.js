@@ -4,6 +4,9 @@ import userDebts from './components/user-debts';
 import debtStory from './components/debt-story';
 import modal from './components/modal';
 import {calculateDebts} from './utils/debt';
+import VueMaterial from 'vue-material';
+
+Vue.use(VueMaterial);
 
 const userData = {
 	debts: [

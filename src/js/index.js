@@ -9,8 +9,23 @@ import VueMaterial from 'vue-material';
 Vue.use(VueMaterial);
 
 const userData = {
-	debts: [],
-	extraContributions: 0,
+	debts: [
+		{
+			id: '1',
+			name: 'Personal Loan',
+			amount: 10000,
+			minPayment: 524,
+			interest: 0
+		},
+		{
+			id: '2',
+			name: 'Personal Loan',
+			amount: 10000,
+			minPayment: 524,
+			interest: 0
+		}
+	],
+	extraContributions: 1000,
 };
 
 const viewState = {

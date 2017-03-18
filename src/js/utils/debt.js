@@ -25,7 +25,6 @@ function handleDebtCalculation(userData, debt, prevDebtPaidOffMonth, lastMonthLe
 // TODO: STOP MAKING CALCULATING THE REPAYMENT AMOUNTS THE RESPONSIBILITY OF THIS FUNCTION, DO IT IN handleDebtCalculation
 function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}, extraContributions, monthToAddExtraContributions, firstMonthBoost) {
 	if (debt > 0) {
-		console.log(month, firstMonthBoost);
 		const adjustedRepayment = month >= parseFloat(monthToAddExtraContributions) || !monthToAddExtraContributions
 			? (repay + extraContributions)
 			: repay;

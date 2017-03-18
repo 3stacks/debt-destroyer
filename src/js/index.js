@@ -14,14 +14,14 @@ const userData = {
 			id: '1',
 			name: 'Personal Loan',
 			amount: 10000,
-			minPayment: 524,
+			minPayment: 500,
 			interest: 0
 		},
 		{
 			id: '2',
 			name: 'Personal Loan',
 			amount: 10000,
-			minPayment: 524,
+			minPayment: 500,
 			interest: 0
 		}
 	],

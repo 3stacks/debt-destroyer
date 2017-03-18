@@ -91,8 +91,12 @@ const pageView = new Vue({
 				}
 			]
 		},
-		handleDeleteDebtButtonPressed() {
-
+		handleDeleteDebtButtonPressed(debtId) {
+			userData.debts = userData.debts.filter(debt => {
+				if (debtId !== debt.id) {
+					return debt;
+				}
+			})
 		},
 		handlePayOffHelpButtonPressed() {
 			return viewState.isPayOffHelpModalOpen = !viewState.isPayOffHelpModalOpen;

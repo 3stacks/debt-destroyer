@@ -1,22 +1,22 @@
 export default {
 	template: `
-		<div class="modal is-active">
-			<div class="modal-background" @click="handleCloseRequested"></div>
-			<div class="modal-card" tabindex="1" ref="modal">
-				<header class="modal-card-head">
-					<p class="modal-card-title">
+		<div class="modal__container is-active">
+			<div class="modal__background" @click="handleCloseRequested"></div>
+			<div class="modal" tabindex="1" ref="modal">
+				<header class="modal__header">
+					<p class="modal__title">
 						{{ title }}
 					</p>
-					<button class="delete" @click="handleCloseRequested">
-						&times;
-					</button>
+					<md-button class="md-icon-button" @click.native="handleCloseRequested">
+						<md-icon>close</md-icon>
+					</md-button>
 				</header>
 				
-				<section class="modal-card-body">
+				<section class="modal__body">
 					<slot name="body"></slot>
 				</section>
 				
-				<footer class="modal-card-foot">
+				<footer class="modal__footer">
 					<slot name="footer"></slot>
 				</footer>
 			</div>

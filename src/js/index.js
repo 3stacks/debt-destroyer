@@ -58,9 +58,17 @@ const pageView = new Vue({
 		handleDebtValueChanged(debtId, valueToChange, event) {
 			userData.debts = userData.debts.map(debt => {
 				if (debt.id === debtId) {
-					return {
-						...debt,
-						[valueToChange]: event.target.value
+					if (valueToChange === 'amount') {
+						return {
+							...debt,
+							amount: event.target.value,
+							minPayment: event.target.value * 0.01
+						}
+					} else {
+						return {
+							...debt,
+							[valueToChange]: event.target.value
+						}
 					}
 				} else {
 					return debt;

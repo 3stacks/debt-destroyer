@@ -9,16 +9,14 @@ function handleDebtCalculation(userData, debt, prevDebtPaidOffMonth, lastMonthLe
 	const adjustedRepayment = parseInt(debt.minPayment) * 100;
 	const parsedExtraContributions = isSet(userData.extraContributions) ? (userData.extraContributions * 100) : 0;
 	const repayments = calculateRepayments(adjustedDebt, adjustedRepayment, adjustedRate, 1, {}, parsedExtraContributions, prevDebtPaidOffMonth, lastMonthLeftOverMoney);
-	const interestPaid = Object.values(repayments).reduce((acc, curr) => {
-		return acc + curr.interestPaid;
-	}, 0);
 	return {
 		name: debt.name,
 		id: debt.id,
 		minPayment: debt.minPayment,
 		repayments,
-		interestPaid,
-		totalPaid: (debt.amount * 100) + interestPaid
+		interestPaid: Object.values(repayments).reduce((acc, curr) => {
+			return acc + curr.interestPaid;
+		}, 0)
 	};
 }
 

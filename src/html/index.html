@@ -36,39 +36,45 @@
 			</header>
 			<main>
 				<div class="max-width-container">
-					<p>
-						Select your debt pay-off method <button class="button" @click="handlePayOffHelpButtonPressed">?</button>
-					</p>
-					<modal-dialog v-if="viewState.isPayOffHelpModalOpen" title="Debt Pay Off Methodology" :handle-close-requested="handlePayOffHelpButtonPressed">
-						<div slot="body">
+					<div class="flex-grid">
+						<div class="user-selections">
 							<p>
-								Hello
+								Select your debt pay-off method <button class="button" @click="handlePayOffHelpButtonPressed">?</button>
 							</p>
+							<div>
+								<label>
+									Snowball
+									<input type="radio" name="debt-method" value="snowball" @change="handleDebtMethodChanged" checked>
+								</label>
 						</div>
-						<div slot="footer">
-							<md-button class="md-raised md-primary" @click.native="handlePayOffHelpButtonPressed">
-								Accept
-							</md-button>
+							<div>
+								<label>
+									Avalanche
+									<input type="radio" name="debt-method" value="avalanche" @change="handleDebtMethodChanged">
+								</label>
+							</div>
+							<modal-dialog v-if="viewState.isPayOffHelpModalOpen" title="Debt Pay Off Methodology" :handle-close-requested="handlePayOffHelpButtonPressed">
+								<div slot="body">
+									<p>
+										Hello
+									</p>
+								</div>
+								<div slot="footer">
+									<md-button class="md-raised md-primary" @click.native="handlePayOffHelpButtonPressed">
+										Accept
+									</md-button>
+								</div>
+							</modal-dialog>
 						</div>
-					</modal-dialog>
-					<div>
-						<label>
-							Snowball
-							<input type="radio" name="debt-method" value="snowball" @change="handleDebtMethodChanged" checked>
-						</label>
+						<div class="user-selections">
+							<md-input-container>
+								<label>
+									Extra Contributions
+								</label>
+								<md-input placeholder="How much extra can you afford per month?" type="number" @input.native="handleExtraContributionsChanged" v-bind:value="userData.extraContributions"></md-input>
+							</md-input-container>
+						</div>
 					</div>
-					<div>
-						<label>
-							Avalanche
-							<input type="radio" name="debt-method" value="avalanche" @change="handleDebtMethodChanged">
-						</label>
-					</div>
-					<md-input-container>
-						<label>
-							Extra Contributions
-						</label>
-						<md-input placeholder="How much extra can you afford per month?" type="number" @input.native="handleExtraContributionsChanged" v-bind:value="userData.extraContributions"></md-input>
-					</md-input-container>
 					<user-debts :debts="userData.debts" :edit-mode="viewState.editMode" :handle-delete-debt-button-pressed="handleDeleteDebtButtonPressed" :handle-value-changed="handleDebtValueChanged"></user-debts>
 					<add-debt-form v-if="viewState.addDebtMode"></add-debt-form>
 					<div id="chart_container"></div>

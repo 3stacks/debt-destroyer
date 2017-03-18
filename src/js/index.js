@@ -96,7 +96,9 @@ const pageView = new Vue({
 				if (debtId !== debt.id) {
 					return debt;
 				}
-			})
+			});
+			destroyCharts();
+			return calculateDebts({viewState, userData});
 		},
 		handlePayOffHelpButtonPressed() {
 			return viewState.isPayOffHelpModalOpen = !viewState.isPayOffHelpModalOpen;

@@ -12,31 +12,31 @@ const userData = {
 	debts: [
 		{
 			id: '1',
-			name: 'Credit Card 1',
-			amount: 5700,
+			name: 'Personal Loan',
+			amount: 8000,
 			interest: 0,
-			minPayment: 120
+			minPayment: 500
 		},
 		{
 			id: '2',
-			name: 'Credit Card 2',
-			amount: 2400,
-			interest: 12,
-			minPayment: 200
+			name: 'Personal Loan',
+			amount: 9000,
+			interest: 0,
+			minPayment: 500
 		},
 		{
 			id: '3',
 			name: 'Personal Loan',
-			amount: 9500,
-			interest: 16,
-			minPayment: 524
+			amount: 10000,
+			interest: 0,
+			minPayment: 500
 		}
 	],
-	extraContributions: 4055,
+	extraContributions: 1000,
 };
 
 const viewState = {
-	debtMethod: 'avalanche',
+	debtMethod: 'snowball',
 	editMode: true,
 	addDebtMode: false,
 	activeCharts: [],

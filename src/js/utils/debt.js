@@ -2,28 +2,32 @@ import moment from 'moment';
 import {sortArray, sortByRate, sortByAmount } from './functions';
 import {createChart} from './chart'
 
-function handleCreditCardDebtCalculation(userData, debt, prevDebtPaidOffMonth) {
+function handleDebtCalculation(userData, debt, prevDebtPaidOffMonth, lastMonthLeftOverMoney) {
 	const adjustedDebt = parseInt(debt.amount) * 100;
 	const rate = parseInt(debt.interest) / 100;
 	const adjustedRepayment = prevDebtPaidOffMonth ? parseInt(debt.minPayment) * 100 : ((parseInt(debt.minPayment) * 100) + (parseInt(userData.extraContributions) * 100));
-	const repayments = calculateRepayments(adjustedDebt, adjustedRepayment, rate, 1, {}, userData.extraContributions, prevDebtPaidOffMonth);
+	const repayments = calculateRepayments(adjustedDebt, adjustedRepayment, rate, 1, {}, userData.extraContributions, prevDebtPaidOffMonth, lastMonthLeftOverMoney);
 	const interestPaid = Object.values(repayments).reduce((acc, curr) => {
 		return acc + curr.interestPaid;
 	}, 0);
 	return {
 		name: debt.name,
 		id: debt.id,
+		minPayment: debt.minPayment,
 		repayments,
 		interestPaid,
 		totalPaid: (debt.amount * 100) + interestPaid
 	};
 }
 
-function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}, extraContributions, monthToAddExtraContributions) {
+function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}, extraContributions, monthToAddExtraContributions, firstMonthBoost) {
 	if (debt > 0) {
 		const adjustedRepayment = month === parseFloat(monthToAddExtraContributions) ? (repay + (extraContributions * 100)) : repay;
 		const monthlyInterest = (((interest / 12) / 100) * debt) * 100;
-		const newDebt = ((debt + monthlyInterest) - adjustedRepayment);
+		if (month === monthToAddExtraContributions && !!firstMonthBoost) {
+			console.log(((debt + monthlyInterest) - (repay + (firstMonthBoost * 100))));
+		}
+		const newDebt = month === monthToAddExtraContributions && !!firstMonthBoost ? ((debt + monthlyInterest) - (repay + (firstMonthBoost * 100))) : ((debt + monthlyInterest) - adjustedRepayment);
 		return calculateRepayments(newDebt, adjustedRepayment, interest, month + 1, {
 			...valueSoFar,
 			[month]: {
@@ -51,15 +55,18 @@ export function calculateDebts(appState) {
 		if (index === 0) {
 			return [
 				...acc,
-				handleCreditCardDebtCalculation(appState.userData, debt)
+				handleDebtCalculation(appState.userData, debt)
 			];
 		} else {
-			const previousDebtRepayments = acc[acc.length - 1].repayments;
+			const previousDebt = acc[acc.length - 1];
+			const previousDebtRepayments = previousDebt.repayments;
 			const monthsOfPreviousDebt = Object.keys(previousDebtRepayments);
 			const lastMonth = Math.max.apply(null, monthsOfPreviousDebt);
+			const previousDebtBasePayment = previousDebt.minPayment + appState.userData.extraContributions;
+			const moneyLeftFromLastMonth = previousDebtBasePayment - (previousDebtRepayments[lastMonth - 1].amountPaid / 100);
 			return [
 				...acc,
-				handleCreditCardDebtCalculation(appState.userData, debt, lastMonth)
+				handleDebtCalculation(appState.userData, debt, lastMonth, moneyLeftFromLastMonth)
 			];
 		}
 	}, []);
@@ -69,7 +76,6 @@ export function calculateDebts(appState) {
 	appState.userData.processedDebts = processedDebts;
 	processedDebts.forEach(processedDebt => {
 		const chartReference = appState.viewState.activeCharts.find(chart => chart.id === processedDebt.id);
-		console.log(chartReference);
 		if (!!chartReference) {
 			const chart = chartReference.chart;
 			const debtBreakdown = processedDebt.repayments;

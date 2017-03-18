@@ -1,8 +1,8 @@
 import Chart from 'chart.js';
 
-export function createChart(chartId, paymentGraph, labels) {
+export function createChart(chartDetails, paymentGraph, labels) {
 	const canvas = document.createElement('canvas');
-	const id = chartId;
+	const id = chartDetails.id;
 	canvas.id = id;
 	document.getElementById('chart_container').appendChild(canvas);
 	return new Chart(id, {
@@ -37,7 +37,7 @@ export function createChart(chartId, paymentGraph, labels) {
 		options: {
 			title: {
 				display: true,
-				text: chartId,
+				text: chartDetails.name,
 				position: 'top'
 			},
 			legend: {

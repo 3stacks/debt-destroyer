@@ -12,6 +12,7 @@ function handleCreditCardDebtCalculation(userData, debt, prevDebtPaidOffMonth) {
 	}, 0);
 	return {
 		name: debt.name,
+		id: debt.id,
 		repayments,
 		interestPaid,
 		totalPaid: (debt.amount * 100) + interestPaid
@@ -67,7 +68,8 @@ export function calculateDebts(appState) {
 	});
 	appState.userData.processedDebts = processedDebts;
 	processedDebts.forEach(processedDebt => {
-		const chartReference = appState.viewState.activeCharts.find(chart => chart.name === processedDebt.name);
+		const chartReference = appState.viewState.activeCharts.find(chart => chart.id === processedDebt.id);
+		console.log(chartReference);
 		if (!!chartReference) {
 			const chart = chartReference.chart;
 			const debtBreakdown = processedDebt.repayments;
@@ -85,8 +87,8 @@ export function calculateDebts(appState) {
 			appState.viewState.activeCharts = [
 				...appState.viewState.activeCharts,
 				{
-					name: processedDebt.name,
-					chart: createChart(processedDebt.name, processedDebt.repayments, labels)
+					id: processedDebt.id,
+					chart: createChart({id: processedDebt.id, name: processedDebt.name}, processedDebt.repayments, labels)
 				}
 			];
 		}

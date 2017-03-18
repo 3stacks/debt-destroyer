@@ -11,21 +11,21 @@ Vue.use(VueMaterial);
 const userData = {
 	debts: [
 		{
-			id: 1,
+			id: '1',
 			name: 'Credit Card 1',
 			amount: 5700,
 			interest: 0,
 			minPayment: 120
 		},
 		{
-			id: 2,
+			id: '2',
 			name: 'Credit Card 2',
 			amount: 2400,
 			interest: 12,
 			minPayment: 200
 		},
 		{
-			id: 3,
+			id: '3',
 			name: 'Personal Loan',
 			amount: 9500,
 			interest: 16,
@@ -46,7 +46,7 @@ const viewState = {
 function destroyCharts() {
 	viewState.activeCharts.forEach(chart => {
 		chart.chart.destroy();
-		const chartContainer = document.getElementById(chart.name);
+		const chartContainer = document.getElementById(chart.id);
 		chartContainer.parentNode.removeChild(chartContainer);
 	});
 	return viewState.activeCharts = [];
@@ -97,7 +97,12 @@ const pageView = new Vue({
 					return debt;
 				}
 			});
-			destroyCharts();
+			const chartToRemove = viewState.activeCharts.find(chart => {
+				return debtId === chart.id;
+			});
+			destroyElement(document.getElementById(debtId));
+			chartToRemove.chart.destroy();
+
 			return calculateDebts({viewState, userData});
 		},
 		handlePayOffHelpButtonPressed() {
@@ -117,3 +122,7 @@ const pageView = new Vue({
 });
 
 window.zz = pageView;
+
+function destroyElement(element) {
+	element.parentNode.removeChild(element);
+}

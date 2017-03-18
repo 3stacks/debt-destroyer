@@ -27,7 +27,7 @@ export default {
 						<md-input 
 							placeholder="Enter the name of your debt" 
 							type="text" 
-							@input.native="handleValueChanged(debt.id, 'name', $event)"
+							@change.native="handleValueChanged(debt.id, 'name', $event)"
 							:value="debt.name"
 						></md-input>
 					</md-input-container>
@@ -36,7 +36,7 @@ export default {
 						<md-input 
 							placeholder="Enter the amount left in the debt" 
 							type="number"
-							@input.native="handleValueChanged(debt.id, 'amount', $event)"
+							@change.native="handleValueChanged(debt.id, 'amount', $event)"
 							:value="debt.amount"
 						></md-input>
 					</md-input-container>
@@ -47,7 +47,7 @@ export default {
 						<md-input 
 							placeholder="Enter the APR of the debt" 
 							type="number"
-							@input.native="handleValueChanged(debt.id, 'interest', $event)"
+							@change.native="handleValueChanged(debt.id, 'interest', $event)"
 							:value="debt.interest"
 						></md-input>
 					</md-input-container>
@@ -58,7 +58,7 @@ export default {
 						<md-input 
 							placeholder="Enter your monthly repayment" 
 							type="number"
-							@input.native="handleValueChanged(debt.id, 'minPayment', $event)"
+							@change.native="handleValueChanged(debt.id, 'minPayment', $event)"
 							:value="debt.minPayment"
 						></md-input>
 					</md-input-container>

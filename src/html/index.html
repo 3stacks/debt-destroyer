@@ -43,9 +43,9 @@
 						</p>
 					</div>
 					<div slot="footer">
-						<a class="button is-success" @click="handlePayOffHelpButtonPressed">
+						<md-button class="md-raised md-primary" @click.native="handlePayOffHelpButtonPressed">
 							Accept
-						</a>
+						</md-button>
 					</div>
 				</modal-dialog>
 				<div>
@@ -64,7 +64,7 @@
 					<label>
 						Extra Contributions
 					</label>
-					<md-input placeholder="My nice placeholder" type="number" @input.native="handleExtraContributionsChanged" v-bind:value="userData.extraContributions"></md-input>
+					<md-input placeholder="How much extra can you afford per month?" type="number" @input.native="handleExtraContributionsChanged" v-bind:value="userData.extraContributions"></md-input>
 				</md-input-container>
 				<user-debts :debts="userData.debts" :edit-mode="viewState.editMode" :handle-delete-debt-button-pressed="handleDeleteDebtButtonPressed" :handle-value-changed="handleDebtValueChanged"></user-debts>
 				<add-debt-form v-if="viewState.addDebtMode"></add-debt-form>

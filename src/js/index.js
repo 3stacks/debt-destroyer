@@ -55,12 +55,12 @@ function destroyCharts() {
 const pageView = new Vue({
 	el: '#root',
 	methods: {
-		handleDebtValueChanged(debtId, valueToChange, newValue) {
+		handleDebtValueChanged(debtId, valueToChange, event) {
 			userData.debts = userData.debts.map(debt => {
 				if (debt.id === debtId) {
 					return {
 						...debt,
-						[valueToChange]: newValue
+						[valueToChange]: event.target.value
 					}
 				} else {
 					return debt;

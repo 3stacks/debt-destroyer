@@ -8,47 +8,60 @@ export default {
 					<md-card-header-text>
 						<div class="md-title">{{ debt.name }}</div>
 					</md-card-header-text>
-					<md-button class="md-icon-button" @click.native="handleDeleteDebtButtonPressed(debt.id)">
-						<md-icon>delete</md-icon>
-					</md-button>
+					<md-menu md-size="4" md-direction="bottom left">
+						<md-button class="md-icon-button" md-menu-trigger>
+							<md-icon>more_vert</md-icon>
+						</md-button>
+						
+						<md-menu-content>
+							<md-menu-item @click.native="handleDeleteDebtButtonPressed(debt.id)">
+								<span>Delete Debt</span>
+								<md-icon>delete</md-icon>
+							</md-menu-item>
+						</md-menu-content>
+					</md-menu>
 				</md-card-header>
 				<md-card-content>
-					<text-field-toggle 
-						label="Debt Name" 
-						type="text"
-						placeholder="Enter the name of your debt"
-						property="name"
-						:debt="debt"
-						:value="debt.name"
-						:handle-value-changed="handleValueChanged"
-					></text-field-toggle>
-					<text-field-toggle 
-						label="Debt Amount"
-						type="number"
-						placeholder="Enter the amount left in the debt"
-						property="amount"
-						:debt="debt"
-						:value="debt.amount"
-						:handle-value-changed="handleValueChanged"
-					></text-field-toggle>
-					<text-field-toggle 
-						label="Annual Percentage Rate"
-						type="number"
-						placeholder="Enter the APR of the debt"
-						property="interest"
-						:debt="debt"
-						:value="debt.interest"
-						:handle-value-changed="handleValueChanged"
-					></text-field-toggle>
-					<text-field-toggle 
-						label="Minimum Monthly Repayment" 
-						type="number"
-						placeholder="Enter your monthly repayment"
-						property="minPayment"
-						:debt="debt"
-						:value="debt.minPayment"
-						:handle-value-changed="handleValueChanged"
-					></text-field-toggle>
+					<md-input-container>
+						<label>Debt Name</label>
+						<md-input 
+							placeholder="Enter the name of your debt" 
+							type="text" 
+							@input.native="handleValueChanged(debt.id, 'name', $event)"
+							:value="debt.name"
+						></md-input>
+					</md-input-container>
+					<md-input-container>
+						<label>Debt Amount ($)</label>
+						<md-input 
+							placeholder="Enter the amount left in the debt" 
+							type="number"
+							@input.native="handleValueChanged(debt.id, 'amount', $event)"
+							:value="debt.amount"
+						></md-input>
+					</md-input-container>
+					<md-input-container>
+						<label>
+							Annual Percentage Rate (%)
+						</label>
+						<md-input 
+							placeholder="Enter the APR of the debt" 
+							type="number"
+							@input.native="handleValueChanged(debt.id, 'interest', $event)"
+							:value="debt.interest"
+						></md-input>
+					</md-input-container>
+					<md-input-container>
+						<label>
+							Minimum Monthly Repayment ($)
+						</label>
+						<md-input 
+							placeholder="Enter your monthly repayment" 
+							type="number"
+							@input.native="handleValueChanged(debt.id, 'minPayment', $event)"
+							:value="debt.minPayment"
+						></md-input>
+					</md-input-container>
 				</md-card-content>
 			</md-card>
 			<div class="user-debt"></div>

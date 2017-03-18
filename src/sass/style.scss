@@ -28,6 +28,7 @@
 		&:focus {
 			border-color: #00d1b2;
 		}
+		width: 60%;
 		border: 1px solid transparent;
 		-webkit-appearance: none;
 		outline: none;
@@ -57,4 +58,8 @@
 
 main {
 	padding: 30px;
+}
+
+.md-button.md-fab.md-fab-bottom-right.md-theme-default {
+	position: fixed;
 }

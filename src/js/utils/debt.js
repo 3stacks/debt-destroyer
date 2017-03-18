@@ -3,56 +3,10 @@ import {sortArray, sortByRate, sortByAmount } from './functions';
 import {createChart} from './chart';
 import isSet from 'is-it-set';
 
-function handleDebtCalculation(userData, debt, prevDebtPaidOffMonth, lastMonthLeftOverMoney) {
-	const adjustedDebt = parseInt(debt.amount) * 100;
-	const adjustedRate = parseInt(debt.interest) / 100;
-	const adjustedRepayment = parseInt(debt.minPayment) * 100;
-	const parsedExtraContributions = isSet(userData.extraContributions) ? (userData.extraContributions * 100) : 0;
-	const repayments = calculateRepayments(adjustedDebt, adjustedRepayment, adjustedRate, 1, {}, parsedExtraContributions, prevDebtPaidOffMonth, lastMonthLeftOverMoney);
-	return {
-		name: debt.name,
-		id: debt.id,
-		minPayment: debt.minPayment,
-		repayments,
-		interestPaid: Object.values(repayments).reduce((acc, curr) => {
-			return acc + curr.interestPaid;
-		}, 0)
-	};
-}
-
-// TODO: STOP MAKING CALCULATING THE REPAYMENT AMOUNTS THE RESPONSIBILITY OF THIS FUNCTION, DO IT IN handleDebtCalculation
-function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}, extraContributions, monthToAddExtraContributions, firstMonthBoost) {
-	if (debt > 0) {
-		const adjustedRepayment = month >= parseFloat(monthToAddExtraContributions) || !monthToAddExtraContributions
-			? (repay + extraContributions)
-			: repay;
-		const monthlyInterest = (((interest / 12) / 100) * debt) * 100;
-		const newDebt = !!firstMonthBoost
-			? ((debt + monthlyInterest) - (adjustedRepayment + (firstMonthBoost * 100)))
-			: ((debt + monthlyInterest) - adjustedRepayment);
-		return calculateRepayments(newDebt, repay, interest, month + 1, {
-			...valueSoFar,
-			[month]: {
-				amountLeft: debt,
-				// If the debt left is less than our regular repayment, just pay what's left
-				amountPaid: debt <= adjustedRepayment ? debt : adjustedRepayment,
-				interestPaid: monthlyInterest
-			}
-		}, extraContributions, monthToAddExtraContributions);
-	} else {
-		return {
-			...valueSoFar,
-			[month]: {
-				amountLeft: 0,
-				amountPaid: 0,
-				interestPaid: 0
-			}
-		};
-	}
-}
-
 export function calculateDebts(appState) {
-	const sortedDebts = appState.viewState.debtMethod === 'snowball' ? sortArray(appState.userData.debts, sortByAmount) : sortArray(appState.userData.debts, sortByRate).reverse();
+	const sortedDebts = appState.viewState.debtMethod === 'snowball'
+		? sortArray(appState.userData.debts, sortByAmount)
+		: sortArray(appState.userData.debts, sortByRate).reverse();
 	const processedDebts = sortedDebts.reduce((acc, debt, index) => {
 		if (index === 0) {
 			return [
@@ -62,13 +16,12 @@ export function calculateDebts(appState) {
 		} else {
 			const previousDebt = acc[acc.length - 1];
 			const previousDebtRepayments = previousDebt.repayments;
-			const monthsOfPreviousDebt = Object.keys(previousDebtRepayments);
-			const lastMonth = Math.max.apply(null, monthsOfPreviousDebt);
-			const previousDebtBasePayment = previousDebt.minPayment + appState.userData.extraContributions;
-			const moneyLeftFromLastMonth = previousDebtBasePayment - (previousDebtRepayments[lastMonth - 1].amountPaid / 100);
+			const lastMonthIndex = Math.max.apply(null, Object.keys(previousDebtRepayments));
+			const previousDebtBasePayment = parseInt(previousDebt.minPayment) + parseInt(appState.userData.extraContributions);
+			const moneyLeftFromLastMonth = previousDebtBasePayment - (previousDebtRepayments[lastMonthIndex - 1].amountPaid / 100);
 			return [
 				...acc,
-				handleDebtCalculation(appState.userData, debt, lastMonth, moneyLeftFromLastMonth)
+				handleDebtCalculation(appState.userData, debt, lastMonthIndex, moneyLeftFromLastMonth)
 			];
 		}
 	}, []);
@@ -101,4 +54,53 @@ export function calculateDebts(appState) {
 			];
 		}
 	});
+}
+
+function handleDebtCalculation(userData, debt, prevDebtPaidOffMonth, lastMonthLeftOverMoney) {
+	const adjustedDebt = parseInt(debt.amount) * 100;
+	const adjustedRate = parseInt(debt.interest) / 100;
+	const adjustedRepayment = parseInt(debt.minPayment) * 100;
+	const parsedExtraContributions = isSet(userData.extraContributions) ? (userData.extraContributions * 100) : 0;
+	const repayments = calculateRepayments(adjustedDebt, adjustedRepayment, adjustedRate, 1, {}, parsedExtraContributions, prevDebtPaidOffMonth, lastMonthLeftOverMoney);
+	return {
+		name: debt.name,
+		id: debt.id,
+		minPayment: debt.minPayment,
+		repayments,
+		interestPaid: Object.values(repayments).reduce((acc, curr) => {
+			return acc + curr.interestPaid;
+		}, 0)
+	};
+}
+
+// TODO: STOP MAKING CALCULATING THE REPAYMENT AMOUNTS THE RESPONSIBILITY OF THIS FUNCTION, DO IT IN handleDebtCalculation
+function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}, extraContributions, monthToAddExtraContributions, rolloverFromLastDebt) {
+	if (debt > 0) {
+		const adjustedRepayment = parseFloat(month) >= parseFloat(monthToAddExtraContributions) || !monthToAddExtraContributions
+			? (repay + extraContributions)
+			: repay;
+		const monthlyInterest = (((interest / 12) / 100) * debt) * 100;
+		const newDebt = !!rolloverFromLastDebt && month === (monthToAddExtraContributions - 1)
+			? ((debt + monthlyInterest) - (adjustedRepayment + (rolloverFromLastDebt * 100)))
+			: ((debt + monthlyInterest) - adjustedRepayment);
+		const parsedRollover = !!rolloverFromLastDebt && month === (monthToAddExtraContributions - 1) ? rolloverFromLastDebt * 100 : 0;
+		return calculateRepayments(newDebt, repay, interest, month + 1, {
+			...valueSoFar,
+			[month]: {
+				amountLeft: debt,
+				// If the debt left is less than our regular repayment, just pay what's left
+				amountPaid: debt <= adjustedRepayment + parsedRollover ? debt : adjustedRepayment + parsedRollover,
+				interestPaid: monthlyInterest
+			}
+		}, extraContributions, monthToAddExtraContributions, rolloverFromLastDebt);
+	} else {
+		return {
+			...valueSoFar,
+			[month]: {
+				amountLeft: 0,
+				amountPaid: 0,
+				interestPaid: 0
+			}
+		};
+	}
 }

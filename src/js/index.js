@@ -56,7 +56,7 @@ const debouncedHandleDebtValueChanged = debounce((debtId, valueToChange, event) 
 	calculateDebts({viewState, userData});
 }, 500);
 
-const debouncedHandleExtraContributionschanged = debounce(changeEvent => {
+const debouncedHandleExtraContributionsChanged = debounce(changeEvent => {
 	userData.extraContributions = changeEvent.target.value;
 	if (userData.debts.length !== 0) {
 		return calculateDebts({viewState, userData});
@@ -67,7 +67,7 @@ const pageView = new Vue({
 	el: '#root',
 	methods: {
 		handleDebtValueChanged: debouncedHandleDebtValueChanged,
-		handleExtraContributionsChanged: debouncedHandleExtraContributionschanged,
+		handleExtraContributionsChanged: debouncedHandleExtraContributionsChanged,
 		handleDebtMethodChanged(debtMethod) {
 			viewState.debtMethod = debtMethod;
 			if (userData.debts.length !== 0) {

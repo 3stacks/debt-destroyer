@@ -68,8 +68,8 @@ const pageView = new Vue({
 	methods: {
 		handleDebtValueChanged: debouncedHandleDebtValueChanged,
 		handleExtraContributionsChanged: debouncedHandleExtraContributionschanged,
-		handleDebtMethodChanged(changeEvent) {
-			viewState.debtMethod = changeEvent.target.value;
+		handleDebtMethodChanged(debtMethod) {
+			viewState.debtMethod = debtMethod;
 			if (userData.debts.length !== 0) {
 				destroyCharts();
 				return calculateDebts({viewState, userData});

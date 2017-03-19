@@ -30,39 +30,43 @@ function destroyCharts() {
 	return viewState.activeCharts = [];
 }
 
+const debouncedHandleDebtValueChanged = debounce((debtId, valueToChange, event) => {
+	const newDebts = userData.debts.map(debt => {
+		if (debt.id === debtId) {
+			if (valueToChange === 'amount') {
+				const debtAmount = event.target.value;
+				return {
+					...debt,
+					amount: debtAmount,
+					minPayment: debtAmount * 0.01 < 5 ? 5 : debtAmount * 0.01
+				}
+			} else {
+				return {
+					...debt,
+					[valueToChange]: event.target.value
+				}
+			}
+		} else {
+			return debt;
+		}
+	});
+	userData.debts = newDebts;
+	updateLocalUserData('debts', newDebts);
+	calculateDebts({viewState, userData});
+}, 500);
+
+const debouncedHandleExtraContributionschanged = debounce(changeEvent => {
+	userData.extraContributions = changeEvent.target.value;
+	if (userData.debts.length !== 0) {
+		return calculateDebts({viewState, userData});
+	}
+}, 500);
+
 const pageView = new Vue({
 	el: '#root',
 	methods: {
-		handleDebtValueChanged(debtId, valueToChange, event) {
-			const newDebts = userData.debts.map(debt => {
-				if (debt.id === debtId) {
-					if (valueToChange === 'amount') {
-						const debtAmount = event.target.value;
-						return {
-							...debt,
-							amount: debtAmount,
-							minPayment: debtAmount * 0.01 < 5 ? 5 : debtAmount * 0.01
-						}
-					} else {
-						return {
-							...debt,
-							[valueToChange]: event.target.value
-						}
-					}
-				} else {
-					return debt;
-				}
-			});
-			userData.debts = newDebts;
-			updateLocalUserData('debts', newDebts);
-			calculateDebts({viewState, userData});
-		},
-		handleExtraContributionsChanged(changeEvent) {
-			userData.extraContributions = changeEvent.target.value;
-			if (userData.debts.length !== 0) {
-				return calculateDebts({viewState, userData});
-			}
-		},
+		handleDebtValueChanged: debouncedHandleDebtValueChanged,
+		handleExtraContributionsChanged: debouncedHandleExtraContributionschanged,
 		handleDebtMethodChanged(changeEvent) {
 			viewState.debtMethod = changeEvent.target.value;
 			if (userData.debts.length !== 0) {

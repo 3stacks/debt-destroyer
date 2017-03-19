@@ -13,7 +13,7 @@
     "build-js": "webpack -p --config webpack.config.js --color --display-error-details --devtool=sourcemap",
     "build-styles": "node-sass ./src/sass --output ./dist",
     "build-images": "cp -a ./src/img ./dist",
-    "build-html": "cp -a ./src/html/ ./dist",
+    "build-html": "cp -a ./src/html/index.html ./dist",
     "start": "npm run build && npm run watch-js & npm run watch-styles & npm run watch-images & npm run watch-html",
     "watch-js": "webpack --config webpack.config.js --progress --color --display-error-details --watch --debug --output-pathinfo",
     "watch-styles": "node-sass ./src/sass --output ./dist --watch",

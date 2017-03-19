@@ -60,6 +60,7 @@ export function calculateDebts(appState) {
 		if (!!chartReference) {
 			const chart = chartReference.chart;
 			const debtBreakdown = processedDebt.repayments;
+			chart.options.title.text = processedDebt.name;
 			chart.data.labels = labels;
 			// Update Amount Paid dataset
 			chart.data.datasets[0].data = Object.values(debtBreakdown).map(function(item) {

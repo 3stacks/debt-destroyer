@@ -13,9 +13,10 @@
 		<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
 		<script>
 			window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-			ga('create', '', 'auto');
+			ga('create', 'UA-84326776-3', 'auto');
 			ga('send', 'pageview');
 		</script>
+		<script async src='https://www.google-analytics.com/analytics.js'></script>
 		<script src="vendor.js" defer></script>
 		<script src="bundle.js" defer></script>
     </head>
@@ -131,29 +132,40 @@
 					<modal-dialog v-if="viewState.isAboutModalOpen" title="About Debt Destroyer" :handle-close-requested="handleAboutButtonPressed">
 						<div slot="body">
 							<p>
-								Snowball method sorts debts by <em>lowest to highest balance</em>
+								Debt Destroyer was created by <a href="https://lukeboyle.com">Luke Boyle</a>. Many
+								people have a hard time seeing a light at the end of their debt tunnel. This app
+								gives accurate visualisations to show people that they can be debt free with their
+								current budget.
 							</p>
 							<p>
-								Avalanche (or Stack) method sorts debts by <em>highest to lowest interest rate</em>
+								To report an issue, visit the Github repo at
+								<a href="https://github.com/3stacks/debt-destroyer/issues/">https://github.com/3stacks/debt-destroyer</a>.
 							</p>
+							<h2>
+								Privacy
+							</h2>
 							<p>
-								Avalanche is technically the most cost-effective method because you end up
-								paying less interest overall. This isn't as much of an issue if all of your
-								debts have low interest rates or if you're going to be paying them off quickly
+								Debt Destroyer <em>does not</em> send or store any personal data. Data is written to
+								your browser's local storage. If you are using a shared computer and are worried about
+								your privacy, clear local storage in the menu after use or consider using an
+								Incognito/Private tab. I will never store/distribute information.
 							</p>
-							<p>
-								While Snowball isn't the most cost-effective method, the psychological benefits
-								of closing off accounts are well-documented and for most people, this is the
-								best way to keep motivated and focused on your goals (hence, the snowball effect).
-							</p>
-							<p>
-								Snowball was popularised by Dave Ramsey and the Harvard Business Review has
-								recently reported on the Snowball method as the best strategy for paying off card
-								debt. You can read that article here:
-								<a href="https://hbr.org/2016/12/research-the-best-strategy-for-paying-off-credit-card-debt">
-									https://hbr.org/2016/12/research-the-best-strategy-for-paying-off-credit-card-debt
-								</a>
-							</p>
+							<h2>
+								Roadmap
+							</h2>
+							<div style="text-align: left;">
+								<p>
+									Currently planned upcoming features:
+								</p>
+								<ul>
+									<li>
+										Sharing your debt state
+									</li>
+									<li>
+										Saving images of your graphs
+									</li>
+								</ul>
+							</div>
 						</div>
 						<div slot="footer">
 							<md-button class="md-raised md-primary" @click.native="handleAboutButtonPressed">

@@ -172,3 +172,33 @@ main {
 	}
 
 }
+
+.md-sidenav-content {
+	.md-toolbar.md-theme-default {
+		align-items: flex-start;
+		flex-flow: row nowrap;
+		justify-content: flex-end;
+	}
+	.md-list {
+		padding: 0 !important;
+		.md-list-item {
+			margin: 0 !important;
+		}
+	}
+	.md-list-item-container {
+		padding: 0 !important;
+	}
+}
+
+.sidenav-header {
+	&__container {
+		padding: 50px 0 20px;
+	}
+
+	&__logo {
+		margin-bottom: 20px;
+		img {
+			width: 150px;
+		}
+	}
+}

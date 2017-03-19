@@ -18,7 +18,8 @@ const viewState = {
 	addDebtMode: false,
 	activeCharts: [],
 	isPayOffHelpModalOpen: false,
-	isSideNavOpen: false
+	isSideNavOpen: false,
+	isAboutModalOpen: false
 };
 
 function destroyCharts() {
@@ -112,6 +113,10 @@ const pageView = new Vue({
 		},
 		handleMenuButtonPressed() {
 			return viewState.isSideNavOpen = !viewState.isSideNavOpen;
+		},
+		handleAboutButtonPressed() {
+			return viewState.isAboutModalOpen = !viewState.isAboutModalOpen;
+		},
 		}
 	},
 	data: {
@@ -131,3 +136,7 @@ window.zz = pageView;
 function destroyElement(element) {
 	element.parentNode.removeChild(element);
 }
+
+document.querySelector('.md-sidenav-backdrop').addEventListener('click', function() {
+	return viewState.isSideNavOpen = !viewState.isSideNavOpen;
+});

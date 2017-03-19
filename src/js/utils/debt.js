@@ -1,7 +1,25 @@
 import moment from 'moment';
-import {sortArray, sortByRate, sortByAmount } from './functions';
+import {sortArray, sortByRate, sortByAmount} from './functions';
 import {createChart} from './chart';
 import isSet from 'is-it-set';
+
+function calculateMonthlyInterest(interest, debt) {
+	return (((interest / 12) / 100) * debt) * 100
+}
+
+function isDebtValid(debt) {
+	if (debt.amount === 0) {
+		return false;
+	}
+	if (debt.minPayment === 0) {
+		return false;
+	}
+	if ((debt + calculateMonthlyInterest(debt.interest, debt.amount) - debt.minPayment) >= debt.amount) {
+		return false;
+	}
+
+	return true;
+}
 
 export function calculateDebts(appState) {
 	const sortedDebts = appState.viewState.debtMethod === 'snowball'
@@ -9,20 +27,28 @@ export function calculateDebts(appState) {
 		: sortArray(appState.userData.debts, sortByRate).reverse();
 	const processedDebts = sortedDebts.reduce((acc, debt, index) => {
 		if (index === 0) {
-			return [
-				...acc,
-				handleDebtCalculation(appState.userData, debt)
-			];
+			if (isDebtValid(debt)) {
+				return [
+					...acc,
+					handleDebtCalculation(appState.userData, debt)
+				];
+			} else {
+				return acc;
+			}
 		} else {
-			const previousDebt = acc[acc.length - 1];
-			const previousDebtRepayments = previousDebt.repayments;
-			const lastMonthIndex = Math.max.apply(null, Object.keys(previousDebtRepayments));
-			const previousDebtBasePayment = parseInt(previousDebt.minPayment) + parseInt(appState.userData.extraContributions);
-			const moneyLeftFromLastMonth = previousDebtBasePayment - (previousDebtRepayments[lastMonthIndex - 1].amountPaid / 100);
-			return [
-				...acc,
-				handleDebtCalculation(appState.userData, debt, lastMonthIndex, moneyLeftFromLastMonth)
-			];
+			if (isDebtValid(debt)) {
+				const previousDebt = acc[acc.length - 1];
+				const previousDebtRepayments = previousDebt.repayments;
+				const lastMonthIndex = Math.max.apply(null, Object.keys(previousDebtRepayments));
+				const previousDebtBasePayment = parseInt(previousDebt.minPayment) + parseInt(appState.userData.extraContributions);
+				const moneyLeftFromLastMonth = previousDebtBasePayment - (previousDebtRepayments[lastMonthIndex - 1].amountPaid / 100);
+				return [
+					...acc,
+					handleDebtCalculation(appState.userData, debt, lastMonthIndex, moneyLeftFromLastMonth)
+				];
+			} else {
+				return acc;
+			}
 		}
 	}, []);
 	const labels = Object.keys(processedDebts[processedDebts.length - 1].repayments).map(month => {
@@ -73,7 +99,6 @@ function handleDebtCalculation(userData, debt, prevDebtPaidOffMonth, lastMonthLe
 	};
 }
 
-// TODO: STOP MAKING CALCULATING THE REPAYMENT AMOUNTS THE RESPONSIBILITY OF THIS FUNCTION, DO IT IN handleDebtCalculation
 function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}, extraContributions, monthToAddExtraContributions, rolloverFromLastDebt) {
 	if (debt > 0) {
 		const adjustedRepayment = parseFloat(month) >= parseFloat(monthToAddExtraContributions) || !monthToAddExtraContributions

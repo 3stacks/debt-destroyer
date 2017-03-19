@@ -5,23 +5,13 @@ import debtStory from './components/debt-story';
 import modal from './components/modal';
 import {calculateDebts} from './utils/debt';
 import VueMaterial from 'vue-material';
-import {get, set} from '@lukeboyle/local-storage-manager';
 import {defaultUserData} from './utils/constants';
-import {updateLocalUserData} from './utils/local-storage';
+import {updateLocalUserData, getUserData} from './utils/local-storage';
+import debounce from 'lodash/debounce';
 
 Vue.use(VueMaterial);
 
 const userData = getUserData();
-
-function getUserData() {
-	const localStorageUserData = get('userData', 'debt-destroyer');
-	if (localStorageUserData) {
-		return localStorageUserData;
-	} else {
-		set('userData', defaultUserData, 'debt-destroyer');
-		return defaultUserData;
-	}
-}
 
 const viewState = {
 	debtMethod: 'snowball',

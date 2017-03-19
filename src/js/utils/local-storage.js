@@ -7,3 +7,13 @@ export function updateLocalUserData(keyToChange, dataToChange) {
 		[keyToChange]: dataToChange
 	}, 'debt-destroyer');
 }
+
+export function getUserData() {
+	const localStorageUserData = get('userData', 'debt-destroyer');
+	if (localStorageUserData) {
+		return localStorageUserData;
+	} else {
+		set('userData', defaultUserData, 'debt-destroyer');
+		return defaultUserData;
+	}
+}

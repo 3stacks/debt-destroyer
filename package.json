@@ -55,8 +55,10 @@
   },
   "homepage": "https://github.com/3stacks/deloitte#readme",
   "dependencies": {
+    "@lukeboyle/local-storage-manager": "^2.1.6",
     "chart.js": "^2.5.0",
     "is-it-set": "^1.0.3",
+    "lodash": "^4.17.4",
     "moment": "^2.17.1",
     "vue": "^2.2.3",
     "vue-material": "^0.7.1"

@@ -5,7 +5,7 @@ import debtStory from './components/debt-story';
 import modal from './components/modal';
 import {calculateDebts} from './utils/debt';
 import VueMaterial from 'vue-material';
-import {updateLocalUserData, getUserData} from './utils/local-storage';
+import {updateLocalUserData, getUserData, clearUserData} from './utils/local-storage';
 import debounce from 'lodash/debounce';
 
 Vue.use(VueMaterial);
@@ -117,6 +117,9 @@ const pageView = new Vue({
 		handleAboutButtonPressed() {
 			return viewState.isAboutModalOpen = !viewState.isAboutModalOpen;
 		},
+		clearLocalStorageData() {
+			userData.debts = [];
+			clearUserData();
 		}
 	},
 	data: {

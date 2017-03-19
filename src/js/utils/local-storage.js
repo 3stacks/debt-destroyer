@@ -18,3 +18,7 @@ export function getUserData() {
 		return defaultUserData;
 	}
 }
+
+export function clearUserData() {
+	return set('userData', defaultUserData, 'debt-destroyer');
+}

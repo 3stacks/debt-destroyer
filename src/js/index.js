@@ -5,7 +5,6 @@ import debtStory from './components/debt-story';
 import modal from './components/modal';
 import {calculateDebts} from './utils/debt';
 import VueMaterial from 'vue-material';
-import {defaultUserData} from './utils/constants';
 import {updateLocalUserData, getUserData} from './utils/local-storage';
 import debounce from 'lodash/debounce';
 

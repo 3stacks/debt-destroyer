@@ -1,3 +1,4 @@
+import {defaultUserData} from './constants';
 import {get, set} from '@lukeboyle/local-storage-manager';
 
 export function updateLocalUserData(keyToChange, dataToChange) {

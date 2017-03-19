@@ -17,7 +17,8 @@ const viewState = {
 	editMode: true,
 	addDebtMode: false,
 	activeCharts: [],
-	isPayOffHelpModalOpen: false
+	isPayOffHelpModalOpen: false,
+	isSideNavOpen: false
 };
 
 function destroyCharts() {
@@ -108,6 +109,9 @@ const pageView = new Vue({
 		},
 		handlePayOffHelpButtonPressed() {
 			return viewState.isPayOffHelpModalOpen = !viewState.isPayOffHelpModalOpen;
+		},
+		handleMenuButtonPressed() {
+			return viewState.isSideNavOpen = !viewState.isSideNavOpen;
 		}
 	},
 	data: {

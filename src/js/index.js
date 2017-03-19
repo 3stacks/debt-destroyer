@@ -5,28 +5,23 @@ import debtStory from './components/debt-story';
 import modal from './components/modal';
 import {calculateDebts} from './utils/debt';
 import VueMaterial from 'vue-material';
+import {get, set} from '@lukeboyle/local-storage-manager';
+import {defaultUserData} from './utils/constants';
+import {updateLocalUserData} from './utils/local-storage';
 
 Vue.use(VueMaterial);
 
-const userData = {
-	debts: [
-		{
-			id: '1',
-			name: 'Personal Loan',
-			amount: 10000,
-			minPayment: 500,
-			interest: 0
-		},
-		{
-			id: '2',
-			name: 'Personal Loan',
-			amount: 10000,
-			minPayment: 500,
-			interest: 0
-		}
-	],
-	extraContributions: 1000,
-};
+const userData = getUserData();
+
+function getUserData() {
+	const localStorageUserData = get('userData', 'debt-destroyer');
+	if (localStorageUserData) {
+		return localStorageUserData;
+	} else {
+		set('userData', defaultUserData, 'debt-destroyer');
+		return defaultUserData;
+	}
+}
 
 const viewState = {
 	debtMethod: 'snowball',
@@ -49,7 +44,7 @@ const pageView = new Vue({
 	el: '#root',
 	methods: {
 		handleDebtValueChanged(debtId, valueToChange, event) {
-			userData.debts = userData.debts.map(debt => {
+			const newDebts = userData.debts.map(debt => {
 				if (debt.id === debtId) {
 					if (valueToChange === 'amount') {
 						const debtAmount = event.target.value;
@@ -68,21 +63,25 @@ const pageView = new Vue({
 					return debt;
 				}
 			});
-			if (valueToChange !== 'name') {
-				calculateDebts({viewState, userData});
-			}
+			userData.debts = newDebts;
+			updateLocalUserData('debts', newDebts);
+			calculateDebts({viewState, userData});
 		},
 		handleExtraContributionsChanged(changeEvent) {
 			userData.extraContributions = changeEvent.target.value;
-			return calculateDebts({viewState, userData});
+			if (userData.debts.length !== 0) {
+				return calculateDebts({viewState, userData});
+			}
 		},
 		handleDebtMethodChanged(changeEvent) {
 			viewState.debtMethod = changeEvent.target.value;
-			destroyCharts();
-			return calculateDebts({viewState, userData});
+			if (userData.debts.length !== 0) {
+				destroyCharts();
+				return calculateDebts({viewState, userData});
+			}
 		},
 		handleNewDebtButtonPressed() {
-			userData.debts = [
+			const newDebts = [
 				...userData.debts,
 				{
 					id: `debt-${Math.random()}`,
@@ -91,21 +90,28 @@ const pageView = new Vue({
 					interest: 0,
 					minPayment: 0
 				}
-			]
+			];
+			userData.debts = newDebts;
+			updateLocalUserData('debts', newDebts);
 		},
 		handleDeleteDebtButtonPressed(debtId) {
-			userData.debts = userData.debts.filter(debt => {
+			const newDebts = userData.debts.filter(debt => {
 				if (debtId !== debt.id) {
 					return debt;
 				}
 			});
+			userData.debts = newDebts;
+			updateLocalUserData('debts', newDebts);
 			const chartToRemove = viewState.activeCharts.find(chart => {
 				return debtId === chart.id;
 			});
-			destroyElement(document.getElementById(debtId));
-			chartToRemove.chart.destroy();
-
-			return calculateDebts({viewState, userData});
+			if (chartToRemove) {
+				chartToRemove.chart.destroy();
+				destroyElement(document.getElementById(debtId));
+			}
+			if (userData.debts.length !== 0) {
+				return calculateDebts({viewState, userData});
+			}
 		},
 		handlePayOffHelpButtonPressed() {
 			return viewState.isPayOffHelpModalOpen = !viewState.isPayOffHelpModalOpen;

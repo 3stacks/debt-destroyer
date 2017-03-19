@@ -2,7 +2,7 @@ export default {
 	template: `
 		<div class="modal__container is-active">
 			<div class="modal__background" @click="handleCloseRequested"></div>
-			<div class="modal" tabindex="1" ref="modal">
+			<div class="modal" tabindex="0" ref="modal">
 				<header class="modal__header">
 					<p class="modal__title">
 						{{ title }}

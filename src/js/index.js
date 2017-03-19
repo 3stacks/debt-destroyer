@@ -126,6 +126,13 @@ const pageView = new Vue({
 		viewState,
 		userData
 	},
+	mounted() {
+		requestAnimationFrame(() => {
+			document.querySelectorAll('.cloak').forEach(element => {
+				return element.classList.remove('cloak');
+			})
+		})
+	},
 	components: {
 		'modal-dialog': modal,
 		'add-debt-form': addDebtForm,

@@ -32,14 +32,14 @@
 							Debt Destroyer
 						</h2>
 
-						<md-button class="md-icon-button">
+						<md-button class="md-icon-button" @click.native="handleAboutButtonPressed">
 							<md-icon>help</md-icon>
 						</md-button>
 					</md-toolbar>
 					<md-sidenav md-theme="default" class="md-left" :class="{'md-active': viewState.isSideNavOpen}">
 						<md-toolbar>
-							<div>
-								<div>
+							<div class="sidenav-header__container">
+								<div class="sidenav-header__logo">
 									<img src="img/android-icon-192x192.png" alt="">
 								</div>
 								<h2>
@@ -47,7 +47,7 @@
 								</h2>
 							</div>
 							<div>
-								<md-button @click.native="handleMenuButtonPressed">
+								<md-button class="md-icon-button" @click.native="handleMenuButtonPressed">
 									<md-icon>
 										close
 									</md-icon>
@@ -55,9 +55,13 @@
 							</div>
 						</md-toolbar>
 						<md-list>
-							<md-list-item>
+							<md-list-item class="md-button" @click.native="clearLocalStorageData">
+								<md-avatar class="md-avatar-icon">
+									<md-icon>delete</md-icon>
+								</md-avatar>
+
 								<div class="md-list-text-container">
-									<md-icon>delete</md-icon> Clear local storage
+									Clear Local Storage
 								</div>
 							</md-list-item>
 						</md-list>
@@ -72,50 +76,9 @@
 								Select your debt pay-off method <button class="button" @click="handlePayOffHelpButtonPressed">?</button>
 							</p>
 							<div>
-								<label>
-									Snowball
-									<input type="radio" name="debt-method" value="snowball" @change="handleDebtMethodChanged" checked>
-								</label>
-						</div>
-							<div>
-								<label>
-									Avalanche
-									<input type="radio" name="debt-method" value="avalanche" @change="handleDebtMethodChanged">
-								</label>
+								<md-radio name="debt-method" md-value="snowball" @change="handleDebtMethodChanged" v-model="viewState.debtMethod">Snowball</md-radio>
+								<md-radio name="debt-method" md-value="avalanche" @change="handleDebtMethodChanged" v-model="viewState.debtMethod">Avalanche</md-radio>
 							</div>
-							<modal-dialog v-if="viewState.isPayOffHelpModalOpen" title="Debt Pay Off Methodology" :handle-close-requested="handlePayOffHelpButtonPressed">
-								<div slot="body">
-									<p>
-										Snowball method sorts debts by <em>lowest to highest balance</em>
-									</p>
-									<p>
-										Avalanche (or Stack) method sorts debts by <em>highest to lowest interest rate</em>
-									</p>
-									<p>
-										Avalanche is technically the most cost-effective method because you end up
-										paying less interest overall. This isn't as much of an issue if all of your
-										debts have low interest rates or if you're going to be paying them off quickly
-									</p>
-									<p>
-										While Snowball isn't the most cost-effective method, the psychological benefits
-										of closing off accounts are well-documented and for most people, this is the
-										best way to keep motivated and focused on your goals (hence, the snowball effect).
-									</p>
-									<p>
-										Snowball was popularised by Dave Ramsey and the Harvard Business Review has
-										recently reported on the Snowball method as the best strategy for paying off card
-										debt. You can read that article here:
-										<a href="https://hbr.org/2016/12/research-the-best-strategy-for-paying-off-credit-card-debt">
-											https://hbr.org/2016/12/research-the-best-strategy-for-paying-off-credit-card-debt
-										</a>
-									</p>
-								</div>
-								<div slot="footer">
-									<md-button class="md-raised md-primary" @click.native="handlePayOffHelpButtonPressed">
-										Ok
-									</md-button>
-								</div>
-							</modal-dialog>
 						</div>
 						<div class="user-selections">
 							<md-input-container>
@@ -132,6 +95,72 @@
 					<md-button class="md-fab md-fab-bottom-right" @click.native="handleNewDebtButtonPressed">
 						<md-icon>add</md-icon>
 					</md-button>
+					<modal-dialog v-if="viewState.isPayOffHelpModalOpen" title="Debt Pay Off Methodology" :handle-close-requested="handlePayOffHelpButtonPressed">
+						<div slot="body">
+							<p>
+								Snowball method sorts debts by <em>lowest to highest balance</em>
+							</p>
+							<p>
+								Avalanche (or Stack) method sorts debts by <em>highest to lowest interest rate</em>
+							</p>
+							<p>
+								Avalanche is technically the most cost-effective method because you end up
+								paying less interest overall. This isn't as much of an issue if all of your
+								debts have low interest rates or if you're going to be paying them off quickly
+							</p>
+							<p>
+								While Snowball isn't the most cost-effective method, the psychological benefits
+								of closing off accounts are well-documented and for most people, this is the
+								best way to keep motivated and focused on your goals (hence, the snowball effect).
+							</p>
+							<p>
+								Snowball was popularised by Dave Ramsey and the Harvard Business Review has
+								recently noted that the Snowball method is the best strategy for paying off card
+								debt. You can read that article here:
+								<a href="https://hbr.org/2016/12/research-the-best-strategy-for-paying-off-credit-card-debt">
+									https://hbr.org/2016/12/research-the-best-strategy-for-paying-off-credit-card-debt
+								</a>
+							</p>
+						</div>
+						<div slot="footer">
+							<md-button class="md-raised md-primary" @click.native="handlePayOffHelpButtonPressed">
+								Ok
+							</md-button>
+						</div>
+					</modal-dialog>
+					<modal-dialog v-if="viewState.isAboutModalOpen" title="About Debt Destroyer" :handle-close-requested="handleAboutButtonPressed">
+						<div slot="body">
+							<p>
+								Snowball method sorts debts by <em>lowest to highest balance</em>
+							</p>
+							<p>
+								Avalanche (or Stack) method sorts debts by <em>highest to lowest interest rate</em>
+							</p>
+							<p>
+								Avalanche is technically the most cost-effective method because you end up
+								paying less interest overall. This isn't as much of an issue if all of your
+								debts have low interest rates or if you're going to be paying them off quickly
+							</p>
+							<p>
+								While Snowball isn't the most cost-effective method, the psychological benefits
+								of closing off accounts are well-documented and for most people, this is the
+								best way to keep motivated and focused on your goals (hence, the snowball effect).
+							</p>
+							<p>
+								Snowball was popularised by Dave Ramsey and the Harvard Business Review has
+								recently reported on the Snowball method as the best strategy for paying off card
+								debt. You can read that article here:
+								<a href="https://hbr.org/2016/12/research-the-best-strategy-for-paying-off-credit-card-debt">
+									https://hbr.org/2016/12/research-the-best-strategy-for-paying-off-credit-card-debt
+								</a>
+							</p>
+						</div>
+						<div slot="footer">
+							<md-button class="md-raised md-primary" @click.native="handleAboutButtonPressed">
+								Ok
+							</md-button>
+						</div>
+					</modal-dialog>
 				</div>
 			</main>
 		</div>

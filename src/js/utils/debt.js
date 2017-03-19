@@ -21,22 +21,30 @@ function isDebtValid(debt) {
 	return true;
 }
 
+function sanitiseDebts(debts) {
+	return debts.map(debt => {
+		return {
+			...debt,
+			amount: !debt.amount ? 0 : parseInt(debt.amount),
+			minPayment: !debt.minPayment ? 0 : parseInt(debt.minPayment),
+			interest: !debt.interest ? 0 : parseInt(debt.interest)
+		}
+	})
+}
+
 export function calculateDebts(appState) {
+	const sanitisedDebts = sanitiseDebts(appState.userData.debts);
 	const sortedDebts = appState.viewState.debtMethod === 'snowball'
-		? sortArray(appState.userData.debts, sortByAmount)
-		: sortArray(appState.userData.debts, sortByRate).reverse();
+		? sortArray(sanitisedDebts, sortByAmount)
+		: sortArray(sanitisedDebts, sortByRate).reverse();
 	const processedDebts = sortedDebts.reduce((acc, debt, index) => {
-		if (index === 0) {
-			if (isDebtValid(debt)) {
+		if (isDebtValid(debt)) {
+			if (index === 0) {
 				return [
 					...acc,
 					handleDebtCalculation(appState.userData, debt)
 				];
 			} else {
-				return acc;
-			}
-		} else {
-			if (isDebtValid(debt)) {
 				const previousDebt = acc[acc.length - 1];
 				const previousDebtRepayments = previousDebt.repayments;
 				const lastMonthIndex = Math.max.apply(null, Object.keys(previousDebtRepayments));
@@ -46,9 +54,9 @@ export function calculateDebts(appState) {
 					...acc,
 					handleDebtCalculation(appState.userData, debt, lastMonthIndex, moneyLeftFromLastMonth)
 				];
-			} else {
-				return acc;
 			}
+		} else {
+			return acc;
 		}
 	}, []);
 	const labels = Object.keys(processedDebts[processedDebts.length - 1].repayments).map(month => {

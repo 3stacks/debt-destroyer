@@ -34,18 +34,9 @@ function destroyCharts() {
 const debouncedHandleDebtValueChanged = debounce((debtId, valueToChange, event) => {
 	const newDebts = userData.debts.map(debt => {
 		if (debt.id === debtId) {
-			if (valueToChange === 'amount') {
-				const debtAmount = event.target.value;
-				return {
-					...debt,
-					amount: debtAmount,
-					minPayment: debtAmount * 0.01 < 5 ? 5 : debtAmount * 0.01
-				}
-			} else {
-				return {
-					...debt,
-					[valueToChange]: event.target.value
-				}
+			return {
+				...debt,
+				[valueToChange]: event.target.value
 			}
 		} else {
 			return debt;
@@ -131,7 +122,10 @@ const pageView = new Vue({
 			document.querySelectorAll('.cloak').forEach(element => {
 				return element.classList.remove('cloak');
 			})
-		})
+		});
+		if (userData.debts.length !== 0) {
+			calculateDebts({viewState, userData});
+		}
 	},
 	components: {
 		'modal-dialog': modal,

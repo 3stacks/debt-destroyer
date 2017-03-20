@@ -18,7 +18,7 @@ function isDebtValid(debt) {
 	if (debt.minPayment === 0) {
 		return false;
 	}
-	if ((debt + calculateMonthlyInterest(debt.interest, debt.amount) - debt.minPayment) >= debt.amount) {
+	if (calculateMonthlyInterest(debt.interest, debt.amount >= debt.minPayment)) {
 		return false;
 	}
 

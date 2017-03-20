@@ -3,8 +3,12 @@ import {sortArray, sortByRate, sortByAmount} from './functions';
 import {createChart} from './chart';
 import isSet from 'is-it-set';
 
+function calculateMonthlyInterestRate(interest) {
+	return (interest / 12) / 100;
+}
+
 function calculateMonthlyInterest(interest, debt) {
-	return (((interest / 12) / 100) * debt) * 100
+	return ((calculateMonthlyInterestRate(interest) * debt) * 100);
 }
 
 function isDebtValid(debt) {

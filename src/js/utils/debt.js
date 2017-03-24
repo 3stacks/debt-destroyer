@@ -120,7 +120,7 @@ function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}, 
 		const adjustedRepayment = parseFloat(month) >= parseFloat(monthToAddExtraContributions) || !monthToAddExtraContributions
 			? (repay + extraContributions)
 			: repay;
-		const monthlyInterest = (((interest / 12) / 100) * debt) * 100;
+		const monthlyInterest = calculateMonthlyInterest(interest, debt);
 		const newDebt = !!rolloverFromLastDebt && month === (monthToAddExtraContributions - 1)
 			? ((debt + monthlyInterest) - (adjustedRepayment + (rolloverFromLastDebt * 100)))
 			: ((debt + monthlyInterest) - adjustedRepayment);

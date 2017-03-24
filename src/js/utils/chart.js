@@ -13,7 +13,7 @@ export function createChart(chartDetails, paymentGraph, labels) {
 				{
 					label: 'Amount Paid',
 					type: 'line',
-					yAxisId: 'amount_paid',
+					// yAxisId: 'amount_paid',
 					borderColor: '#e74c3c',
 					backgroundColor: '#e74c3c',
 					fill: false,
@@ -45,12 +45,12 @@ export function createChart(chartDetails, paymentGraph, labels) {
 						stacked: false,
 						position: 'left',
 						id: 'amount_left'
-					},
-					{
-						stacked: false,
-						position: 'right',
-						id: 'amount_paid'
 					}
+					// , {
+					// 	stacked: false,
+					// 	position: 'right',
+					// 	id: 'amount_paid'
+					// }
 				]
 			}
 		}

@@ -31,6 +31,13 @@ export function createChart(chartDetails, paymentGraph, labels) {
 			borderWidth: 1
 		},
 		options: {
+			tooltips: {
+				callbacks: {
+					label: function(tooltipItems, data) {
+						return data.datasets[tooltipItems.datasetIndex].label +': $' + tooltipItems.yLabel;
+					}
+				}
+			},
 			title: {
 				display: true,
 				text: chartDetails.name,

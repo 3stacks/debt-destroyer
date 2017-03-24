@@ -9,3 +9,7 @@ export function sortByRate(firstDebt, secondDebt) {
 export function sortByAmount(firstDebt, secondDebt) {
 	return firstDebt.amount - secondDebt.amount;
 }
+
+export function destroyElement(element) {
+	element.parentNode.removeChild(element);
+}

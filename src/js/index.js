@@ -6,6 +6,7 @@ import modal from './components/modal';
 import {calculateDebts} from './utils/debt';
 import VueMaterial from 'vue-material';
 import {updateLocalUserData, getUserData, clearUserData} from './utils/local-storage';
+import {destroyElement} from './utils/functions';
 import debounce from 'lodash/debounce';
 
 Vue.use(VueMaterial);
@@ -141,9 +142,6 @@ const pageView = new Vue({
 
 window.zz = pageView;
 
-function destroyElement(element) {
-	element.parentNode.removeChild(element);
-}
 
 document.querySelector('.md-sidenav-backdrop').addEventListener('click', function() {
 	return viewState.isSideNavOpen = !viewState.isSideNavOpen;

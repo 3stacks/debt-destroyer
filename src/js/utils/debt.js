@@ -4,7 +4,12 @@ import {createChart} from './chart';
 import isSet from 'is-it-set';
 
 function calculateMonthlyInterestRate(interest) {
-	return (interest / 12) / 100;
+	return ((interest / 12) / 100);
+}
+
+function calculateMinimumMonthlyRepayment(interest, debtAmount) {
+	const monthlyInterest = calculateMonthlyInterestRate(interest);
+	return ((monthlyInterest/(1 + monthlyInterest)) * debtAmount);
 }
 
 function calculateMonthlyInterest(interest, debt) {
@@ -18,7 +23,7 @@ function isDebtValid(debt) {
 	if (debt.minPayment === 0) {
 		return false;
 	}
-	if (calculateMonthlyInterest(debt.interest, debt.amount >= debt.minPayment)) {
+	if (calculateMinimumMonthlyRepayment(debt.interest, debt.amount) >= debt.minPayment) {
 		return false;
 	}
 

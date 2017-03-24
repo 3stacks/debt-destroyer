@@ -48,7 +48,9 @@ const debouncedHandleDebtValueChanged = debounce((debtId, valueToChange, event) 
 }, 500);
 
 const debouncedHandleExtraContributionsChanged = debounce(changeEvent => {
-	userData.extraContributions = changeEvent.target.value;
+	const extraContributionsAmount = changeEvent.target.value;
+	userData.extraContributions = extraContributionsAmount;
+	updateLocalUserData('extraContributions', extraContributionsAmount);
 	if (userData.debts.length !== 0) {
 		return calculateDebts({viewState, userData});
 	}

@@ -131,6 +131,8 @@ const pageView = new Vue({
 		if (userData.debts.length !== 0) {
 			calculateDebts({viewState, userData});
 		}
+		// Add listener for closing sidenav on blur
+		document.querySelector('.md-sidenav-backdrop').addEventListener('click', () => viewState.isSideNavOpen = !viewState.isSideNavOpen);
 	},
 	components: {
 		'modal-dialog': modal,
@@ -141,8 +143,3 @@ const pageView = new Vue({
 });
 
 window.zz = pageView;
-
-
-document.querySelector('.md-sidenav-backdrop').addEventListener('click', function() {
-	return viewState.isSideNavOpen = !viewState.isSideNavOpen;
-});

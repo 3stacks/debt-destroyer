@@ -110,6 +110,8 @@ const pageView = new Vue({
 		},
 		clearLocalStorageData() {
 			userData.debts = [];
+			viewState.extraContributions = null;
+			destroyCharts();
 			clearUserData();
 		}
 	},

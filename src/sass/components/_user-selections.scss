@@ -1,0 +1,10 @@
+@import "../helpers/mixins";
+
+.user-selections {
+	@include put-in-rows(1, 0px);
+	margin-bottom: 30px;
+
+	@include bp-min(421px) {
+		@include put-in-rows(2, 20px);
+	}
+}

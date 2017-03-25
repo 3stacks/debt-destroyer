@@ -33,6 +33,10 @@ figure {
 	margin: 0;
 }
 
+main {
+	padding: 30px 0;
+}
+
 body {
 	margin: 0;
 	background-color: $background-color;
@@ -41,4 +45,34 @@ body {
 	text-align: center;
 	font-size: 1.6rem;
 	font-weight: 400;
+}
+
+.md-button.md-fab.md-fab-bottom-right.md-theme-default {
+	position: fixed;
+}
+
+.md-sidenav-content {
+	.md-toolbar.md-theme-default {
+		align-items: flex-start;
+		flex-flow: row nowrap;
+		justify-content: flex-end;
+	}
+	.md-list {
+		padding: 0 !important;
+		.md-list-item {
+			margin: 0 !important;
+		}
+	}
+	.md-list-item-container {
+		padding: 0 !important;
+	}
+}
+
+.md-toolbar.md-theme-default {
+	.md-title {
+		font-size: 16px;
+		@include bp-min(321px) {
+			font-size: 20px;
+		}
+	}
 }

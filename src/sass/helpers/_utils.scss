@@ -6,3 +6,20 @@
 	margin: 0 auto;
 	padding: 0 20px;
 }
+
+.flex-label {
+	justify-content: space-between;
+	align-items: center;
+	flex-direction: column;
+}
+
+.flex-grid {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.cloak {
+	opacity: 0 !important;
+}

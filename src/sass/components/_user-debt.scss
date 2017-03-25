@@ -1,0 +1,14 @@
+@import "../helpers/mixins";
+
+.user-debt {
+	@include put-in-rows(1, 0px);
+	margin-bottom: 30px;
+
+	@include bp-min(421px) {
+		@include put-in-rows(2, 20px);
+	}
+
+	@include bp-min(768px) {
+		@include put-in-rows(3, 30px);
+	}
+}

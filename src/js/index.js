@@ -1,11 +1,12 @@
 import Vue from 'vue';
+import VueMaterial from 'vue-material';
 import addDebtForm from './components/add-debt-form';
 import userDebts from './components/user-debts';
 import debtStory from './components/debt-story';
 import modal from './components/modal';
 import {calculateDebts} from './utils/debt';
-import VueMaterial from 'vue-material';
 import {updateLocalUserData, getUserData, clearUserData} from './utils/local-storage';
+import {destroyCharts} from './utils/chart';
 import {destroyElement} from './utils/functions';
 import debounce from 'lodash/debounce';
 
@@ -22,15 +23,6 @@ const viewState = {
 	isSideNavOpen: false,
 	isAboutModalOpen: false
 };
-
-function destroyCharts() {
-	viewState.activeCharts.forEach(chart => {
-		chart.chart.destroy();
-		const chartContainer = document.getElementById(chart.id);
-		chartContainer.parentNode.removeChild(chartContainer);
-	});
-	return viewState.activeCharts = [];
-}
 
 const debouncedHandleDebtValueChanged = debounce((debtId, valueToChange, event) => {
 	const newDebts = userData.debts.map(debt => {

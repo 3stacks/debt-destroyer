@@ -17,10 +17,10 @@ function calculateMonthlyInterest(interest, debt) {
 }
 
 function isDebtValid(debt) {
-	if (debt.amount === 0) {
+	if (debt.amount <= 0) {
 		return false;
 	}
-	if (debt.minPayment === 0) {
+	if (debt.minPayment <= 0) {
 		return false;
 	}
 	if (calculateMinimumMonthlyRepayment(debt.interest, debt.amount) >= debt.minPayment) {

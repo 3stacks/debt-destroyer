@@ -136,4 +136,6 @@ const pageView = new Vue({
 	}
 });
 
-window.zz = pageView;
+if (process.env.NODE_ENV !== 'production') {
+	window.zz = pageView;
+}

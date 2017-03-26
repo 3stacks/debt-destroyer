@@ -57,7 +57,7 @@ const pageView = new Vue({
 		handleDebtMethodChanged(debtMethod) {
 			viewState.debtMethod = debtMethod;
 			if (userData.debts.length !== 0) {
-				destroyCharts();
+				destroyCharts(viewState);
 				return calculateDebts({viewState, userData});
 			}
 		},
@@ -106,7 +106,7 @@ const pageView = new Vue({
 		clearLocalStorageData() {
 			userData.debts = [];
 			viewState.extraContributions = null;
-			destroyCharts();
+			destroyCharts(viewState);
 			clearUserData();
 		}
 	},

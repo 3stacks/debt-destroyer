@@ -64,8 +64,10 @@ const pageView = new Vue({
 		handleNewDebtButtonPressed() {
 			const newDebts = [
 				...userData.debts,
+				// The ID is random enough for this use case, we're not worried about a clash, however, for the next
+				// version a GUID will be added for IDs to make this more robust
 				{
-					id: `debt-${Math.random()}`,
+					id: `debt-${Math.random().toString().slice(2)}`,
 					name: 'New debt',
 					amount: 0,
 					interest: 0,

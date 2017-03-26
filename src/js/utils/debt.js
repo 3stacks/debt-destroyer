@@ -56,7 +56,7 @@ export function calculateDebts(appState) {
 			} else {
 				const previousDebt = acc[acc.length - 1];
 				const previousDebtRepayments = previousDebt.repayments;
-				const lastMonthIndex = Math.max.apply(null, Object.keys(previousDebtRepayments));
+				const lastMonthIndex = Math.max(...Object.keys(previousDebtRepayments));
 				const previousDebtBasePayment = parseInt(previousDebt.minPayment) + parseInt(appState.userData.extraContributions);
 				const moneyLeftFromLastMonth = previousDebtBasePayment - (previousDebtRepayments[lastMonthIndex - 1].amountPaid / 100);
 				return [

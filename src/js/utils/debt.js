@@ -9,7 +9,7 @@ function calculateMonthlyInterestRate(interest) {
 
 function calculateMinimumMonthlyRepayment(interest, debtAmount) {
 	const monthlyInterest = calculateMonthlyInterestRate(interest);
-	return ((monthlyInterest/(1 + monthlyInterest)) * debtAmount);
+	return ((monthlyInterest * debtAmount) + (debtAmount * 0.01));
 }
 
 function calculateMonthlyInterest(interest, debt) {

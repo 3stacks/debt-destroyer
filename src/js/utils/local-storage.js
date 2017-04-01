@@ -1,24 +1,27 @@
 import {defaultUserData} from './constants';
-import {get, set} from '@lukeboyle/local-storage-manager';
+import locationManager from './location-manager';
 
 export function updateLocalUserData(keyToChange, dataToChange) {
-	const localUserData = get('userData', 'debt-destroyer');
-	return set('userData', {
-		...localUserData,
-		[keyToChange]: dataToChange
-	}, 'debt-destroyer');
+	if (keyToChange === 'userData') {
+		locationManager.hash('userData', dataToChange);
+	} else {
+		locationManager.hash('userData', JSON.stringify({
+			...getUserData(),
+			[keyToChange]: dataToChange
+		}));
+	}
 }
 
 export function getUserData() {
-	const localStorageUserData = get('userData', 'debt-destroyer');
-	if (localStorageUserData) {
-		return localStorageUserData;
+	const userData = locationManager.hash('userData');
+	if (userData) {
+		return JSON.parse(userData);
 	} else {
-		set('userData', defaultUserData, 'debt-destroyer');
+		updateLocalUserData('userData', defaultUserData);
 		return defaultUserData;
 	}
 }
 
 export function clearUserData() {
-	return set('userData', defaultUserData, 'debt-destroyer');
+	locationManager.hash('userData', '');
 }

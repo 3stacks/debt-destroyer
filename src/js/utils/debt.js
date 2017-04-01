@@ -97,7 +97,6 @@ export function calculateDebts(appState) {
 		const labels = Object.keys(processedDebts[processedDebts.length - 1].repayments).map(month => {
 			return moment().add(month, 'months').format('MMM, YYYY');
 		});
-		appState.userData.processedDebts = processedDebts;
 		processedDebts.forEach(processedDebt => {
 			const chartReference = appState.viewState.activeCharts.find(chart => chart.id === processedDebt.id);
 			if (!!chartReference) {

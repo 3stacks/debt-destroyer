@@ -124,15 +124,14 @@ const pageView = new Vue({
 		requestAnimationFrame(() => {
 			document.querySelectorAll('.cloak').forEach(element => {
 				return element.classList.remove('cloak');
-			})
+			});
+
+			if (userData.debts.length !== 0) {
+				calculateDebts({viewState, userData});
+			}
 		});
 		// Add listener for closing sidenav on blur
 		document.querySelector('.md-sidenav-backdrop').addEventListener('click', () => viewState.isSideNavOpen = !viewState.isSideNavOpen);
-	},
-	updated() {
-		if (userData.debts.length !== 0) {
-			calculateDebts({viewState, userData});
-		}
 	},
 	components: {
 		'modal-dialog': modal,

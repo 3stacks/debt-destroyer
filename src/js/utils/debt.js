@@ -17,17 +17,34 @@ function calculateMonthlyInterest(interest, debt) {
 }
 
 function isDebtValid(debt) {
+	const minMonthlyRepayment = calculateMinimumMonthlyRepayment(debt.interest, debt.amount);
 	if (debt.amount <= 0) {
-		return false;
+		return {
+			error: true,
+			target: 'amount',
+			message: 'The debt amount must be greater than 0.'
+		};
 	}
 	if (debt.minPayment <= 0) {
-		return false;
+		return {
+			error: true,
+			target: 'minPayment',
+			message: 'The debt amount must be greater than 0.'
+		};
 	}
-	if (calculateMinimumMonthlyRepayment(debt.interest, debt.amount) >= debt.minPayment) {
-		return false;
+	if (minMonthlyRepayment >= debt.minPayment) {
+		return {
+			error: true,
+			target: 'minPayment',
+			message: `The monthly payment is less than the recommended minimum payment of $${Math.ceil(minMonthlyRepayment)}`
+		};
 	}
 
-	return true;
+	return {
+		error: false,
+		target: null,
+		message: null
+	};
 }
 
 function sanitiseDebts(debts) {
@@ -47,7 +64,8 @@ export function calculateDebts(appState) {
 		? sortArray(sanitisedDebts, sortByAmount)
 		: sortArray(sanitisedDebts, sortByRate).reverse();
 	const processedDebts = sortedDebts.reduce((acc, debt, index) => {
-		if (isDebtValid(debt)) {
+		const validatedDebt = isDebtValid(debt);
+		if (!validatedDebt.error) {
 			if (index === 0) {
 				return [
 					...acc,
@@ -65,10 +83,17 @@ export function calculateDebts(appState) {
 				];
 			}
 		} else {
-			return acc;
+			return [
+				...acc,
+				{
+					...debt,
+					error: validatedDebt
+				}
+			];
 		}
 	}, []);
 	if (processedDebts.length !== 0) {
+		appState.userData.debts = processedDebts;
 		const labels = Object.keys(processedDebts[processedDebts.length - 1].repayments).map(month => {
 			return moment().add(month, 'months').format('MMM, YYYY');
 		});
@@ -99,6 +124,7 @@ export function calculateDebts(appState) {
 }
 
 function handleDebtCalculation(userData, debt, prevDebtPaidOffMonth, lastMonthLeftOverMoney) {
+	const {name, id, amount, interest, minPayment} = debt;
 	const adjustedDebt = parseInt(debt.amount) * 100;
 	const adjustedRate = parseInt(debt.interest) / 100;
 	const adjustedRepayment = parseInt(debt.minPayment) * 100;
@@ -108,12 +134,18 @@ function handleDebtCalculation(userData, debt, prevDebtPaidOffMonth, lastMonthLe
 		return acc + curr.interestPaid;
 	}, 0);
 	return {
-		name: debt.name,
-		id: debt.id,
-		minPayment: debt.minPayment,
+		name,
+		id,
+		amount,
+		interest,
+		minPayment,
 		repayments,
 		interestPaid,
-		totalPaid: (interestPaid + (debt.amount * 100))
+		totalPaid: (interestPaid + (debt.amount * 100)),
+		error: {
+			target: null,
+			message: null
+		}
 	};
 }
 

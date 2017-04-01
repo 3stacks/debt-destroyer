@@ -9,3 +9,14 @@
 @import "components/site-header";
 @import "components/sidenav-header";
 @import "components/modal";
+
+.md-error {
+	text-align: left;
+}
+
+.fade-enter-active, .fade-leave-active {
+	transition: opacity 0.5s
+}
+.fade-enter, .fade-leave-to {
+	opacity: 0
+}

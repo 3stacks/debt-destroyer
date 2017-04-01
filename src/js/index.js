@@ -71,7 +71,11 @@ const pageView = new Vue({
 					name: 'New debt',
 					amount: 0,
 					interest: 0,
-					minPayment: 0
+					minPayment: 0,
+					error: {
+						target: null,
+						message: null
+					}
 				}
 			];
 			userData.debts = newDebts;
@@ -122,11 +126,13 @@ const pageView = new Vue({
 				return element.classList.remove('cloak');
 			})
 		});
+		// Add listener for closing sidenav on blur
+		document.querySelector('.md-sidenav-backdrop').addEventListener('click', () => viewState.isSideNavOpen = !viewState.isSideNavOpen);
+	},
+	updated() {
 		if (userData.debts.length !== 0) {
 			calculateDebts({viewState, userData});
 		}
-		// Add listener for closing sidenav on blur
-		document.querySelector('.md-sidenav-backdrop').addEventListener('click', () => viewState.isSideNavOpen = !viewState.isSideNavOpen);
 	},
 	components: {
 		'modal-dialog': modal,

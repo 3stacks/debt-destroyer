@@ -1,9 +1,11 @@
 const webpack = require('webpack');
 const pkg     = require('./package.json');
+const Path = require('path');
+
 module.exports = {
 
 	entry: {
-		'app': './src/js/index.js',
+		'app': Path.resolve('./src/js/index.js'),
 		'vendor': Object.keys(pkg.dependencies)
 	},
 	plugins: [
@@ -14,7 +16,7 @@ module.exports = {
 		})
 	],
 	output: {
-		path: './dist',
+		path: Path.resolve('./dist'),
 		filename: 'bundle.js'
 	},
 	resolve: {

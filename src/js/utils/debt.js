@@ -29,7 +29,7 @@ function isDebtValid(debt) {
 		return {
 			error: true,
 			target: 'minPayment',
-			message: 'The debt amount must be greater than 0.'
+			message: 'The minimum payment must be greater than 0.'
 		};
 	}
 	if (minMonthlyRepayment >= debt.minPayment) {
@@ -59,6 +59,7 @@ function sanitiseDebts(debts) {
 }
 
 export function calculateDebts(appState) {
+	appState.userData.paidOffDebts = [];
 	const sanitisedDebts = sanitiseDebts(appState.userData.debts);
 	const sortedDebts = appState.viewState.debtMethod === 'snowball'
 		? sortArray(sanitisedDebts, sortByAmount)
@@ -98,7 +99,7 @@ export function calculateDebts(appState) {
 				return processedDebt.id === debt.id;
 			});
 		});
-		const labels = getChartLabelsFromDebt(processedDebts[processedDebts.length - 1]);
+		const labels = getChartLabelsFromDebts(appState.userData.debts);
 		processedDebts.forEach(processedDebt => {
 			if (!processedDebt.error.error) {
 				const chartReference = appState.viewState.activeCharts.find(chart => chart.id === processedDebt.id);
@@ -126,14 +127,24 @@ export function calculateDebts(appState) {
 	}
 }
 
-function getChartLabelsFromDebt(debt) {
-	if (!!debt.repayments) {
-		return Object.keys(debt.repayments).map(month => {
-			return moment().add(month, 'months').format('MMM, YYYY');
-		});
-	} else {
-		return undefined;
-	}
+function getLargestNumberFromArray(array) {
+	return Math.max(...array);
+}
+
+function getChartLabelsFromDebts(debts) {
+	const largestDebt = debts.reduce((acc, curr) => {
+		if (acc === undefined) {
+			return curr;
+		}
+		if (getLargestNumberFromArray(Object.keys(curr.repayments)) > getLargestNumberFromArray(Object.keys(acc.repayments))) {
+			return curr;
+		}
+		return acc;
+	}, undefined);
+
+	return Object.keys(largestDebt.repayments).map(month => {
+		return moment().add(month, 'months').format('MMM, YYYY');
+	});
 }
 
 function handleDebtCalculation(userData, debt, prevDebtPaidOffMonth, lastMonthLeftOverMoney) {
@@ -142,10 +153,20 @@ function handleDebtCalculation(userData, debt, prevDebtPaidOffMonth, lastMonthLe
 	const adjustedRate = parseInt(debt.interest) / 100;
 	const adjustedRepayment = parseInt(debt.minPayment) * 100;
 	const parsedExtraContributions = isSet(userData.extraContributions) ? (userData.extraContributions * 100) : 0;
-	const repayments = calculateRepayments(adjustedDebt, adjustedRepayment, adjustedRate, 1, {}, parsedExtraContributions, prevDebtPaidOffMonth, lastMonthLeftOverMoney);
+	const repayments = calculateRepayments(userData, adjustedDebt, adjustedRepayment, adjustedRate, 1, {}, parsedExtraContributions, prevDebtPaidOffMonth, lastMonthLeftOverMoney);
+	const lastMonthOfRepayments = Math.max(...Object.keys(repayments));
 	const interestPaid = Object.values(repayments).reduce((acc, curr) => {
 		return acc + curr.interestPaid;
 	}, 0);
+	userData.paidOffDebts = [
+		...userData.paidOffDebts,
+		{
+			name,
+			id,
+			minPayment,
+			paidOffMonth: lastMonthOfRepayments,
+		}
+	];
 	return {
 		name,
 		id,
@@ -162,22 +183,35 @@ function handleDebtCalculation(userData, debt, prevDebtPaidOffMonth, lastMonthLe
 	};
 }
 
-function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}, extraContributions, monthToAddExtraContributions, rolloverFromLastDebt) {
+function getMinPaymentsFromPreviousDebts(userData, month) {
+	return userData.paidOffDebts.reduce((acc, curr) => {
+		if (month >= curr.paidOffMonth) {
+			return acc + (curr.minPayment * 100);
+		} else {
+			return acc;
+		}
+	}, 0);
+}
+
+function calculateRepayments(userData, debt, repay, interest, month = 1, valueSoFar = {}, extraContributions, monthToAddExtraContributions, rolloverFromLastDebt) {
 	if (debt > 0) {
 		const adjustedRepayment = parseFloat(month) >= parseFloat(monthToAddExtraContributions) || !monthToAddExtraContributions
 			? (repay + extraContributions)
 			: repay;
 		const monthlyInterest = calculateMonthlyInterest(interest, debt);
-		const newDebt = !!rolloverFromLastDebt && month === (monthToAddExtraContributions - 1)
-			? ((debt + monthlyInterest) - (adjustedRepayment + (rolloverFromLastDebt * 100)))
-			: ((debt + monthlyInterest) - adjustedRepayment);
+		// This amount may be zero
+		const minPaymentsFromPreviousDebts = getMinPaymentsFromPreviousDebts(userData, month);
+		// this is our 'new debt' amount except it doesn't account for the minPayments from other debts
+		const debtWithExtraContributions = !!rolloverFromLastDebt && month === (monthToAddExtraContributions - 1)
+			? ((debt + monthlyInterest) - (adjustedRepayment + (rolloverFromLastDebt * 100) + minPaymentsFromPreviousDebts))
+			: ((debt + monthlyInterest) - (adjustedRepayment + minPaymentsFromPreviousDebts));
 		const parsedRollover = !!rolloverFromLastDebt && month === (monthToAddExtraContributions - 1) ? rolloverFromLastDebt * 100 : 0;
-		return calculateRepayments(newDebt, repay, interest, month + 1, {
+		return calculateRepayments(userData, debtWithExtraContributions, repay, interest, month + 1, {
 			...valueSoFar,
 			[month]: {
 				amountLeft: debt,
 				// If the debt left is less than our regular repayment, just pay what's left
-				amountPaid: debt <= adjustedRepayment + parsedRollover ? debt : adjustedRepayment + parsedRollover,
+				amountPaid: debt <= (adjustedRepayment + parsedRollover) ? debt : (adjustedRepayment + parsedRollover + minPaymentsFromPreviousDebts),
 				interestPaid: monthlyInterest
 			}
 		}, extraContributions, monthToAddExtraContributions, rolloverFromLastDebt);

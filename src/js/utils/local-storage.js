@@ -3,7 +3,7 @@ import locationManager from './location-manager';
 
 export function updateLocalUserData(keyToChange, dataToChange) {
 	if (keyToChange === 'userData') {
-		locationManager.hash('userData', dataToChange);
+		locationManager.hash('userData', JSON.stringify(dataToChange));
 	} else {
 		locationManager.hash('userData', JSON.stringify({
 			...getUserData(),

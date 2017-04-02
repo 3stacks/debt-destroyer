@@ -10,7 +10,8 @@ export const defaultUserData = {
 				error: false,
 				target: null,
 				message: null
-			}
+			},
+			paidOffDebts: []
 		}
 	],
 	extraContributions: null,

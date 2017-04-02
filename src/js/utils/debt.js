@@ -93,32 +93,46 @@ export function calculateDebts(appState) {
 		}
 	}, []);
 	if (processedDebts.length !== 0) {
-		appState.userData.debts = processedDebts;
-		const labels = Object.keys(processedDebts[processedDebts.length - 1].repayments).map(month => {
-			return moment().add(month, 'months').format('MMM, YYYY');
+		appState.userData.debts = appState.userData.debts.map(debt => {
+			return processedDebts.find(processedDebt => {
+				return processedDebt.id === debt.id;
+			});
 		});
+		const labels = getChartLabelsFromDebt(processedDebts[processedDebts.length - 1]);
 		processedDebts.forEach(processedDebt => {
-			const chartReference = appState.viewState.activeCharts.find(chart => chart.id === processedDebt.id);
-			if (!!chartReference) {
-				const chart = chartReference.chart;
-				const debtBreakdown = processedDebt.repayments;
-				chart.options.title.text = processedDebt.name;
-				chart.data.labels = labels;
-				// Update Amount Paid dataset
-				chart.data.datasets[0].data = Object.values(debtBreakdown).map(item => parseInt(item.amountPaid) / 100);
-				// Update Amount Left dataset
-				chart.data.datasets[1].data = Object.values(debtBreakdown).map(item => parseInt(item.amountLeft) / 100);
-				chart.update();
-			} else {
-				appState.viewState.activeCharts = [
-					...appState.viewState.activeCharts,
-					{
-						id: processedDebt.id,
-						chart: createChart({id: processedDebt.id, name: processedDebt.name}, processedDebt.repayments, labels)
-					}
-				];
+			if (!processedDebt.error.error) {
+				const chartReference = appState.viewState.activeCharts.find(chart => chart.id === processedDebt.id);
+				if (!!chartReference) {
+					const chart = chartReference.chart;
+					const debtBreakdown = processedDebt.repayments;
+					chart.options.title.text = processedDebt.name;
+					chart.data.labels = labels;
+					// Update Amount Paid dataset
+					chart.data.datasets[0].data = Object.values(debtBreakdown).map(item => parseInt(item.amountPaid) / 100);
+					// Update Amount Left dataset
+					chart.data.datasets[1].data = Object.values(debtBreakdown).map(item => parseInt(item.amountLeft) / 100);
+					chart.update();
+				} else {
+					appState.viewState.activeCharts = [
+						...appState.viewState.activeCharts,
+						{
+							id: processedDebt.id,
+							chart: createChart({id: processedDebt.id, name: processedDebt.name}, processedDebt.repayments, labels)
+						}
+					];
+				}
 			}
 		});
+	}
+}
+
+function getChartLabelsFromDebt(debt) {
+	if (!!debt.repayments) {
+		return Object.keys(debt.repayments).map(month => {
+			return moment().add(month, 'months').format('MMM, YYYY');
+		});
+	} else {
+		return undefined;
 	}
 }
 
@@ -176,5 +190,16 @@ function calculateRepayments(debt, repay, interest, month = 1, valueSoFar = {}, 
 				interestPaid: 0
 			}
 		};
+	}
+}
+
+function getDefaultLabels(monthsToAdd, valueSoFar = [], index = 0) {
+	if (index <= (monthsToAdd - 1)) {
+		return getDefaultLabels(monthsToAdd, [
+			...valueSoFar,
+			moment().add(index, 'months').format('MMM, YYYY')
+		], index + 1)
+	} else {
+		return valueSoFar;
 	}
 }

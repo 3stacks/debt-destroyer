@@ -4,10 +4,10 @@ import addDebtForm from './components/add-debt-form';
 import userDebts from './components/user-debts';
 import debtStory from './components/debt-story';
 import modal from './components/modal';
-import {calculateDebts} from './utils/debt';
-import {updateLocalUserData, getUserData, clearUserData} from './utils/local-storage';
-import {destroyCharts} from './utils/chart';
-import {destroyElement} from './utils/functions';
+import { calculateDebts } from './utils/debt';
+import { updateLocalUserData, getUserData, clearUserData } from './utils/local-storage';
+import { destroyCharts } from './utils/chart';
+import { destroyElement } from './utils/functions';
 import debounce from 'lodash/debounce';
 
 Vue.use(VueMaterial);
@@ -54,7 +54,7 @@ const pageView = new Vue({
 	methods: {
 		handleDebtValueChanged: debouncedHandleDebtValueChanged,
 		handleExtraContributionsChanged: debouncedHandleExtraContributionsChanged,
-		handleDebtMethodChanged(debtMethod) {
+		handleDebtMethodChanged(viewState, debtMethod) {
 			viewState.debtMethod = debtMethod;
 			if (userData.debts.length !== 0) {
 				destroyCharts(viewState);

@@ -3,6 +3,13 @@ import { destroyElement } from 'utils/functions';
 import { destroyCharts } from 'utils/chart';
 import { calculateDebts} from 'utils/debt';
 
+/**
+ * Changes the debt payoff method i.e. snowball/avalanche and then calculates debts.
+ * @param userData {Object}
+ * @param viewState {Object}
+ * @param debtMethod
+ * @returns {*}
+ */
 export function handleDebtMethodChanged(userData, viewState, debtMethod) {
 	viewState.debtMethod = debtMethod;
 	if (userData.debts.length !== 0) {
@@ -70,3 +77,28 @@ function clearLocalStorageData(viewState, userData) {
 	destroyCharts(viewState);
 	clearUserData();
 }
+
+export const debouncedHandleDebtValueChanged = debounce((debtId, valueToChange, event) => {
+	const newDebts = userData.debts.map(debt => {
+		if (debt.id === debtId) {
+			return {
+				...debt,
+				[valueToChange]: event.target.value
+			}
+		} else {
+			return debt;
+		}
+	});
+	userData.debts = newDebts;
+	updateLocalUserData('debts', newDebts);
+	calculateDebts({viewState, userData});
+}, 500);
+
+export const debouncedHandleExtraContributionsChanged = debounce(changeEvent => {
+	const extraContributionsAmount = changeEvent.target.value;
+	userData.extraContributions = extraContributionsAmount;
+	updateLocalUserData('extraContributions', extraContributionsAmount);
+	if (userData.debts.length !== 0) {
+		return calculateDebts({viewState, userData});
+	}
+}, 500);

@@ -9,6 +9,7 @@ import { updateLocalUserData, getUserData, clearUserData } from './utils/local-s
 import { destroyCharts } from './utils/chart';
 import { destroyElement } from './utils/functions';
 import debounce from 'lodash/debounce';
+import { sortArray, sortByRate, sortByAmount } from './utils/functions';
 
 Vue.use(VueMaterial);
 
@@ -24,6 +25,10 @@ const viewState = {
 	isAboutModalOpen: false
 };
 
+function getDebtOrder(debtMethod, userData) {
+	return debtMethod === 'snowball' ? sortArray(userData.debts, sortByAmount) : sortArray(userData.debts, sortByRate).reverse();
+}
+
 const debouncedHandleDebtValueChanged = debounce((debtId, valueToChange, event) => {
 	const newDebts = userData.debts.map(debt => {
 		if (debt.id === debtId) {
@@ -37,7 +42,15 @@ const debouncedHandleDebtValueChanged = debounce((debtId, valueToChange, event) 
 	});
 	userData.debts = newDebts;
 	updateLocalUserData('debts', newDebts);
-	calculateDebts({viewState, userData});
+
+	const sortedDebts = getDebtOrder(viewState.debtMethod, userData);
+
+	if (sortedDebts === userData.debts) {
+		calculateDebts({viewState, userData});
+	} else {
+		destroyCharts(viewState);
+		calculateDebts({viewState, userData});
+	}
 }, 500);
 
 const debouncedHandleExtraContributionsChanged = debounce(changeEvent => {
@@ -54,7 +67,7 @@ const pageView = new Vue({
 	methods: {
 		handleDebtValueChanged: debouncedHandleDebtValueChanged,
 		handleExtraContributionsChanged: debouncedHandleExtraContributionsChanged,
-		handleDebtMethodChanged(viewState, debtMethod) {
+		handleDebtMethodChanged(debtMethod) {
 			viewState.debtMethod = debtMethod;
 			if (userData.debts.length !== 0) {
 				destroyCharts(viewState);

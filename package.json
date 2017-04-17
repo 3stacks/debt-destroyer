@@ -41,14 +41,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://3stacks@github.com/3stacks/deloitte.git"
+    "url": "git+https://3stacks@github.com/3stacks/debt-destroyer.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/3stacks/deloitte/issues"
+    "url": "https://github.com/3stacks/debt-destroyer/issues"
   },
-  "homepage": "https://github.com/3stacks/deloitte#readme",
+  "homepage": "https://github.com/3stacks/debt-destroyer#readme",
   "dependencies": {
     "@lukeboyle/local-storage-manager": "^2.1.6",
     "chart.js": "^2.5.0",

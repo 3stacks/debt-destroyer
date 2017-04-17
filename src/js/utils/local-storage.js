@@ -3,21 +3,24 @@ import locationManager from './location-manager';
 
 export function updateLocalUserData(keyToChange, dataToChange) {
 	if (keyToChange === 'userData') {
-		locationManager.hash('userData', JSON.stringify(dataToChange));
+		const data = JSON.stringify(dataToChange);
+		locationManager.hash('userData', btoa(data));
 	} else {
-		locationManager.hash('userData', JSON.stringify({
+		const data = JSON.stringify({
 			...getUserData(),
 			[keyToChange]: dataToChange
-		}));
+		});
+		locationManager.hash('userData', btoa(data));
 	}
 }
 
 export function getUserData() {
-	const userData = locationManager.hash('userData');
-	if (userData) {
+	const encodedUserData = locationManager.hash('userData');
+	if (encodedUserData) {
+		const userData = atob(encodedUserData);
 		return JSON.parse(userData);
 	} else {
-		updateLocalUserData('userData', defaultUserData);
+		updateLocalUserData('userData', btoa(defaultUserData));
 		return defaultUserData;
 	}
 }

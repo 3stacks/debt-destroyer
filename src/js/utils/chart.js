@@ -23,8 +23,8 @@ export function createChart(chartDetails, paymentGraph, labels) {
 					label: 'Amount Paid',
 					type: 'line',
 					// yAxisId: 'amount_paid',
-					borderColor: '#e74c3c',
-					backgroundColor: '#e74c3c',
+					borderColor: '#e91e63',
+					backgroundColor: '#e91e63',
 					fill: false,
 					data: Object.values(paymentGraph).map(item => parseInt(item.amountPaid) / 100)
 				},
@@ -32,8 +32,8 @@ export function createChart(chartDetails, paymentGraph, labels) {
 					label: 'Amount Remaining',
 					type: 'bar',
 					yAxisId: 'amount_left',
-					backgroundColor: '#3498db',
-					borderColor: '#3498db',
+					backgroundColor: '#3f51b5',
+					borderColor: '#3f51b5',
 					data: Object.values(paymentGraph).map(item => parseInt(item.amountLeft) / 100)
 				}
 			],

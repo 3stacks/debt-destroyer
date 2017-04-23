@@ -1,4 +1,5 @@
 import Chart from 'chart.js';
+Chart.defaults.global.defaultFontFamily = "'Roboto', 'Helvetica', 'Arial', sans-serif";
 
 export function destroyCharts(viewState) {
 	viewState.activeCharts.forEach(chart => {

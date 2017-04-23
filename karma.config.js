@@ -10,16 +10,15 @@ module.exports = function(config) {
 		},
 		webpack: {
 			entry: {
-				// Wildcard mapping doesn't work for webpack entries
 				filename: 'test/unit/**/*'
 			},
 			resolve: {
-				extensions: ['.js', '.jsx']
+				extensions: ['.js']
 			},
 			module: {
 				loaders: [
 					{
-						test: /\.(js|jsx)$/,
+						test: /\.(js)$/,
 						exclude: /node_modules/,
 						loader: 'babel-loader',
 						query: {

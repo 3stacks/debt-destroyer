@@ -1,21 +1,5 @@
-import Chart from 'chart.js';
-Chart.defaults.global.defaultFontFamily = "'Roboto', 'Helvetica', 'Arial', sans-serif";
-
-export function destroyCharts(viewState) {
-	viewState.activeCharts.forEach(chart => {
-		chart.chart.destroy();
-		const chartContainer = document.getElementById(chart.id);
-		chartContainer.parentNode.removeChild(chartContainer);
-	});
-	return viewState.activeCharts = [];
-}
-
 export function createChart(chartDetails, paymentGraph, labels) {
-	const canvas = document.createElement('canvas');
-	const id = chartDetails.id;
-	canvas.id = id;
-	document.getElementById('chart_container').appendChild(canvas);
-	return new Chart(id, {
+	return {
 		type: 'bar',
 		data: {
 			labels: labels,
@@ -71,5 +55,5 @@ export function createChart(chartDetails, paymentGraph, labels) {
 				]
 			}
 		}
-	});
+	};
 }

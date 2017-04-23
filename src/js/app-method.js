@@ -1,6 +1,5 @@
 import {updateLocalUserData, clearUserData} from 'utils/local-storage';
 import { destroyElement } from 'utils/functions';
-import { destroyCharts } from 'utils/chart';
 import { calculateDebts} from 'utils/debt';
 
 /**

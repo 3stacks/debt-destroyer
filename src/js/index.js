@@ -4,9 +4,9 @@ import addDebtForm from './components/add-debt-form';
 import userDebts from './components/user-debts';
 import debtStory from './components/debt-story';
 import modal from './components/modal';
+import chart from './components/chart';
 import { calculateDebts } from './utils/debt';
 import { updateLocalUserData, getUserData, clearUserData } from './utils/local-storage';
-import { destroyCharts } from './utils/chart';
 import { destroyElement } from './utils/functions';
 import debounce from 'lodash/debounce';
 import { sortArray, sortByRate, sortByAmount } from './utils/functions';
@@ -43,14 +43,7 @@ const debouncedHandleDebtValueChanged = debounce((debtId, valueToChange, event) 
 	userData.debts = newDebts;
 	updateLocalUserData('debts', newDebts);
 
-	const sortedDebts = getDebtOrder(viewState.debtMethod, userData);
-
-	if (sortedDebts === userData.debts) {
-		calculateDebts({viewState, userData});
-	} else {
-		destroyCharts(viewState);
-		calculateDebts({viewState, userData});
-	}
+	calculateDebts({viewState, userData});
 }, 500);
 
 const debouncedHandleExtraContributionsChanged = debounce(changeEvent => {
@@ -70,7 +63,6 @@ const pageView = new Vue({
 		handleDebtMethodChanged(debtMethod) {
 			viewState.debtMethod = debtMethod;
 			if (userData.debts.length !== 0) {
-				destroyCharts(viewState);
 				return calculateDebts({viewState, userData});
 			}
 		},
@@ -125,7 +117,6 @@ const pageView = new Vue({
 		clearLocalStorageData() {
 			userData.debts = [];
 			viewState.extraContributions = null;
-			destroyCharts(viewState);
 			clearUserData();
 		}
 	},
@@ -147,6 +138,7 @@ const pageView = new Vue({
 		document.querySelector('.md-sidenav-backdrop').addEventListener('click', () => viewState.isSideNavOpen = !viewState.isSideNavOpen);
 	},
 	components: {
+		chart,
 		'modal-dialog': modal,
 		'add-debt-form': addDebtForm,
 		'user-debts': userDebts,

@@ -112,7 +112,6 @@ export function calculateDebts(appState) {
 					chart.data.datasets[0].data = Object.values(debtBreakdown).map(item => parseInt(item.amountPaid) / 100);
 					// Update Amount Left dataset
 					chart.data.datasets[1].data = Object.values(debtBreakdown).map(item => parseInt(item.amountLeft) / 100);
-					chart.update();
 				} else {
 					appState.viewState.activeCharts = [
 						...appState.viewState.activeCharts,
@@ -124,6 +123,7 @@ export function calculateDebts(appState) {
 				}
 			}
 		});
+
 	}
 }
 

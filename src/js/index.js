@@ -140,8 +140,7 @@ const pageView = new Vue({
 		chart,
 		'modal-dialog': modal,
 		'add-debt-form': addDebtForm,
-		'user-debts': userDebts,
-		'debt-story': debtStory
+		'user-debts': userDebts
 	}
 });
 

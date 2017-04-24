@@ -2,7 +2,6 @@ import Vue from 'vue';
 import VueMaterial from 'vue-material';
 import addDebtForm from './components/add-debt-form';
 import userDebts from './components/user-debts';
-import debtStory from './components/debt-story';
 import modal from './components/modal';
 import chart from './components/chart';
 import { calculateDebts } from './utils/debt';

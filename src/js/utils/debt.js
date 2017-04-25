@@ -109,11 +109,11 @@ export function calculateDebts(appState) {
 		// Create chart references for each processedDebt
 		processedDebts.forEach(processedDebt => {
 			if (!processedDebt.error.error) {
-				const charts = appState.viewState.activeCharts;
+				const charts = appState.userData.activeCharts;
 				const currentDebtChart = charts.find(chart => processedDebt.id === chart.id);
 
 				if (currentDebtChart) {
-					appState.viewState.activeCharts = charts.map(chart => {
+					appState.userData.activeCharts = charts.map(chart => {
 						if (chart.id === processedDebt.id) {
 							return {
 								...chart,
@@ -131,7 +131,7 @@ export function calculateDebts(appState) {
 						}
 					})
 				} else {
-					appState.viewState.activeCharts.push({
+					appState.userData.activeCharts.push({
 						id: processedDebt.id,
 						name: processedDebt.name,
 						chart: {

@@ -16,8 +16,6 @@ const userData = getUserData();
 
 const viewState = {
 	debtMethod: 'snowball',
-	editMode: true,
-	addDebtMode: false,
 	activeCharts: [],
 	isPayOffHelpModalOpen: false,
 	isSideNavOpen: false,
@@ -93,13 +91,6 @@ const pageView = new Vue({
 			});
 			userData.debts = newDebts;
 			updateLocalUserData('debts', newDebts);
-			const chartToRemove = viewState.activeCharts.find(chart => {
-				return debtId === chart.id;
-			});
-			if (chartToRemove) {
-				chartToRemove.chart.destroy();
-				destroyElement(document.getElementById(debtId));
-			}
 			if (userData.debts.length !== 0) {
 				return calculateDebts({viewState, userData});
 			}
@@ -125,17 +116,16 @@ const pageView = new Vue({
 	},
 	computed: {
 		sortedCharts: function() {
-			if (viewState.activeCharts.length === 0) {
+			if (userData.activeCharts.length === 0) {
 				return [];
 			} else {
 				return userData.debts.map(debt => {
-					return viewState.activeCharts.find(chart => chart.id === debt.id);
+					return userData.activeCharts.find(chart => chart.id === debt.id);
 				})
 			}
 		}
 	},
 	mounted() {
-		console.log(this.sortedCharts);
 		requestAnimationFrame(() => {
 			document.querySelectorAll('.cloak').forEach(element => {
 				return element.classList.remove('cloak');

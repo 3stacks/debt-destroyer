@@ -15,4 +15,5 @@ export const defaultUserData = {
 		}
 	],
 	extraContributions: null,
+	activeCharts: []
 };

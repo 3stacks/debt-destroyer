@@ -95,7 +95,7 @@
 					<user-debts :debts="userData.debts" :edit-mode="viewState.editMode" :handle-delete-debt-button-pressed="handleDeleteDebtButtonPressed" :handle-value-changed="handleDebtValueChanged"></user-debts>
 					<add-debt-form v-if="viewState.addDebtMode"></add-debt-form>
 					<div id="chart_container">
-						<chart v-for="chart in viewState.activeCharts" :chart-id="chart.id" :chart-type="chart.chart.type" :chart-data="chart.chart.data" :chart-options="chart.chart.options" key="chart.id"></chart>
+						<chart v-for="chart in viewState.activeCharts" :chart-id="chart.id" :chart-data="chart" key="chart.id"></chart>
 					</div>
 					<md-button class="md-fab md-fab-bottom-right" @click.native="handleNewDebtButtonPressed">
 						<md-icon>add</md-icon>

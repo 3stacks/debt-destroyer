@@ -1,27 +1,32 @@
 export default {
 	template: `
-		<canvas :id="chartId" ref="canvas" data-chart-data="realData.length"></canvas>
+		<canvas :id="chartId" ref="canvas"></canvas>
 	`,
 	beforeDestroy() {
 		this._chartReference.destroy();
 	},
 	mounted() {
+		console.log(this.$data);
+
 		new Chart(this.$refs.canvas, {
-			type: this.$props.chartType,
-			data: this.$data.realData,
+			type: this.$data.chartType,
+			data: this.$data.rawChartData,
 			options: this.$props.chartOptions
 		});
 	},
 	beforeUpdate() {
 		console.log('hello');
-		// this._chartReference.update();
+		this._chartReference.update();
 	},
 	updated() {
 		console.log('hello');
 	},
 	data() {
+		console.log(this.$props);
 		return {
-			realData: this.$props.chartData
+			chartType: this.$props.chartData.chart.type,
+			rawChartData: this.$props.chartData.chart.data,
+			chartOptions: this.$props.chartData.chart.options
 		}
 	},
 	props: {
@@ -29,22 +34,9 @@ export default {
 			type: String,
 			required: true
 		},
-		chartType: {
-			type: String,
-			required: true
-		},
 		chartData: {
 			type: Object,
 			required: true
-		},
-		chartOptions: {
-			type: Object,
-			required: true
 		}
-	},
-	watch: {
-			realData: (newValue) => {
-				console.log(Object.keys(newValue));
-			}
 	}
 }

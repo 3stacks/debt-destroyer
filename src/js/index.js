@@ -119,10 +119,24 @@ const pageView = new Vue({
 			if (userData.activeCharts.length === 0) {
 				return [];
 			} else {
-				return userData.debts.map(debt => {
-					return userData.activeCharts.find(chart => chart.id === debt.id);
-				})
+				return userData.processedDebts.reduce((acc, curr) => {
+					if (curr.repayments) {
+						const theChart = userData.activeCharts.find(chart => chart.id === curr.id);
+						return [
+							...acc,
+							theChart
+						]
+					} else {
+						return acc;
+					}
+				}, []);
 			}
+		}
+	},
+	watch: {
+		sortedCharts: function(newValue) {
+			console.log(newValue);
+			Vue.set(pageView, 'sortedCharts', newValue);
 		}
 	},
 	mounted() {

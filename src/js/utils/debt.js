@@ -97,13 +97,8 @@ export function calculateDebts(appState) {
 			];
 		}
 	}, []);
+	appState.userData.processedDebts = processedDebts;
 	if (processedDebts.length !== 0) {
-		// Setting the userData debts to the current set of processed debts
-		appState.userData.debts = appState.userData.debts.map(debt => {
-			return processedDebts.find(processedDebt => {
-				return processedDebt.id === debt.id;
-			});
-		});
 		// Generate labels and set the viewState labels to that
 		appState.viewState.chartLabels = getChartLabelsFromDebts(appState.userData.debts);
 		// Create chart references for each processedDebt

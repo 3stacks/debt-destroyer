@@ -58,6 +58,10 @@ function sanitiseDebts(debts) {
 	})
 }
 
+function getDataArrayFromRepayments(whichData, repayments) {
+	return Object.values(repayments).map(item => parseInt(item[whichData]) / 100)
+}
+
 export function calculateDebts(appState) {
 	appState.userData.paidOffDebts = [];
 	const sanitisedDebts = sanitiseDebts(appState.userData.debts);
@@ -94,36 +98,52 @@ export function calculateDebts(appState) {
 		}
 	}, []);
 	if (processedDebts.length !== 0) {
+		// Setting the userData debts to the current set of processed debts
 		appState.userData.debts = appState.userData.debts.map(debt => {
 			return processedDebts.find(processedDebt => {
 				return processedDebt.id === debt.id;
 			});
 		});
-		const labels = getChartLabelsFromDebts(appState.userData.debts);
+		// Generate labels and set the viewState labels to that
+		appState.viewState.chartLabels = getChartLabelsFromDebts(appState.userData.debts);
+		// Create chart references for each processedDebt
 		processedDebts.forEach(processedDebt => {
 			if (!processedDebt.error.error) {
-				const chartReference = appState.viewState.activeCharts.find(chart => chart.id === processedDebt.id);
-				if (!!chartReference) {
-					const chart = chartReference.chart;
-					const debtBreakdown = processedDebt.repayments;
-					chart.options.title.text = processedDebt.name;
-					chart.data.labels = labels;
-					// Update Amount Paid dataset
-					chart.data.datasets[0].data = Object.values(debtBreakdown).map(item => parseInt(item.amountPaid) / 100);
-					// Update Amount Left dataset
-					chart.data.datasets[1].data = Object.values(debtBreakdown).map(item => parseInt(item.amountLeft) / 100);
-				} else {
-					appState.viewState.activeCharts = [
-						...appState.viewState.activeCharts,
-						{
-							id: processedDebt.id,
-							chart: createChart({id: processedDebt.id, name: processedDebt.name}, processedDebt.repayments, labels)
+				const charts = appState.viewState.activeCharts;
+				const currentDebtChart = charts.find(chart => processedDebt.id === chart.id);
+
+				if (currentDebtChart) {
+					appState.viewState.activeCharts = charts.map(chart => {
+						if (chart.id === processedDebt.id) {
+							return {
+								...chart,
+								id: processedDebt.id,
+								name: processedDebt.name,
+								chart: {
+									data: {
+										amountPaid: getDataArrayFromRepayments('amountPaid', processedDebt.repayments),
+										amountRemaining: getDataArrayFromRepayments('amountLeft', processedDebt.repayments)
+									}
+								}
+							}
+						} else {
+							return chart;
 						}
-					];
+					})
+				} else {
+					appState.viewState.activeCharts.push({
+						id: processedDebt.id,
+						name: processedDebt.name,
+						chart: {
+							data: {
+								amountPaid: getDataArrayFromRepayments('amountPaid', processedDebt.repayments),
+								amountRemaining: getDataArrayFromRepayments('amountLeft', processedDebt.repayments)
+							}
+						}
+					})
 				}
 			}
 		});
-
 	}
 }
 

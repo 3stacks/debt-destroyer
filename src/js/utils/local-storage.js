@@ -17,10 +17,9 @@ export function updateLocalUserData(keyToChange, dataToChange) {
 export function getUserData() {
 	const encodedUserData = locationManager.hash('userData');
 	if (encodedUserData) {
-		const userData = atob(encodedUserData);
-		return JSON.parse(userData);
+		return JSON.parse(atob(encodedUserData));
 	} else {
-		updateLocalUserData('userData', btoa(defaultUserData));
+		updateLocalUserData('userData', btoa(JSON.stringify(defaultUserData)));
 		return defaultUserData;
 	}
 }

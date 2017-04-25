@@ -21,7 +21,8 @@ const viewState = {
 	activeCharts: [],
 	isPayOffHelpModalOpen: false,
 	isSideNavOpen: false,
-	isAboutModalOpen: false
+	isAboutModalOpen: false,
+	chartLabels: []
 };
 
 function getDebtOrder(debtMethod, userData) {
@@ -41,7 +42,6 @@ const debouncedHandleDebtValueChanged = debounce((debtId, valueToChange, event) 
 	});
 	userData.debts = newDebts;
 	updateLocalUserData('debts', newDebts);
-
 	calculateDebts({viewState, userData});
 }, 500);
 
@@ -123,7 +123,19 @@ const pageView = new Vue({
 		viewState,
 		userData
 	},
+	computed: {
+		sortedCharts: function() {
+			if (viewState.activeCharts.length === 0) {
+				return [];
+			} else {
+				return userData.debts.map(debt => {
+					return viewState.activeCharts.find(chart => chart.id === debt.id);
+				})
+			}
+		}
+	},
 	mounted() {
+		console.log(this.sortedCharts);
 		requestAnimationFrame(() => {
 			document.querySelectorAll('.cloak').forEach(element => {
 				return element.classList.remove('cloak');

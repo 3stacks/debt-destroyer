@@ -1,20 +1,28 @@
 export default {
 	template: `
-		<canvas :id="chartId" ref="canvas"></canvas>
+		<canvas :id="chartId" ref="canvas" data-chart-data="realData.length"></canvas>
 	`,
 	beforeDestroy() {
 		this._chartReference.destroy();
 	},
 	mounted() {
-		console.log(this.$props);
 		new Chart(this.$refs.canvas, {
 			type: this.$props.chartType,
-			data: this.$props.chartData,
+			data: this.$data.realData,
 			options: this.$props.chartOptions
 		});
 	},
 	beforeUpdate() {
-		this._chartReference.update();
+		console.log('hello');
+		// this._chartReference.update();
+	},
+	updated() {
+		console.log('hello');
+	},
+	data() {
+		return {
+			realData: this.$props.chartData
+		}
 	},
 	props: {
 		chartId: {
@@ -35,8 +43,8 @@ export default {
 		}
 	},
 	watch: {
-		chartData: (newValue) => {
-			console.log(Object.keys(newValue));
-		}
+			realData: (newValue) => {
+				console.log(Object.keys(newValue));
+			}
 	}
 }

@@ -1,9 +1,10 @@
+import { COLORS } from '../utils/constants';
+
 export default {
 	template: `
 		<canvas :id="chartId" ref="canvas" data-chart-data="realData.length"></canvas>
 	`,
 	beforeDestroy() {
-		console.log('destroy');
 		this._chartReference.destroy();
 	},
 	mounted() {
@@ -15,8 +16,8 @@ export default {
 					{
 						label: 'Amount Paid',
 						type: 'line',
-						borderColor: '#e91e63',
-						backgroundColor: '#e91e63',
+						borderColor: COLORS.RED.hex,
+						backgroundColor: COLORS.RED.hex,
 						fill: false,
 						data: this.chartData.amountPaid
 					},
@@ -24,8 +25,8 @@ export default {
 						label: 'Amount Remaining',
 						type: 'bar',
 						yAxisId: 'amount_left',
-						backgroundColor: '#3f51b5',
-						borderColor: '#3f51b5',
+						backgroundColor: COLORS.BLUE.hex,
+						borderColor: COLORS.BLUE.hex,
 						data: this.chartData.amountRemaining
 					}
 				]
@@ -71,6 +72,7 @@ export default {
 			this._chartReference.data.labels = this.$props.chartLabels;
 			this._chartReference.data.datasets[0].data = newValue.amountPaid;
 			this._chartReference.data.datasets[1].data = newValue.amountRemaining;
+			this._chartReference.options.title.text = this.$props.chartTitle;
 			this._chartReference.update();
 		}
 	},

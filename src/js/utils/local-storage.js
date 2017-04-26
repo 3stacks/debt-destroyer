@@ -17,7 +17,6 @@ export function updateLocalUserData(keyToChange, dataToChange) {
 export function getUserData() {
 	const encodedUserData = locationManager.hash('userData');
 	if (!!encodedUserData) {
-		console.log(JSON.parse(Base64.decode(encodedUserData)));
 		return JSON.parse(Base64.decode(encodedUserData));
 	} else {
 		updateLocalUserData('userData', defaultUserData);

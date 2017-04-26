@@ -1,6 +1,5 @@
 import moment from 'moment';
 import {sortArray, sortByRate, sortByAmount} from './functions';
-import {createChart} from './chart';
 import isSet from 'is-it-set';
 
 function calculateMonthlyInterestRate(interest) {

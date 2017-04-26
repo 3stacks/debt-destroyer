@@ -6,11 +6,17 @@ import modal from './components/modal';
 import chart from './components/chart';
 import { calculateDebts } from './utils/debt';
 import { updateLocalUserData, getUserData, clearUserData } from './utils/local-storage';
-import { destroyElement } from './utils/functions';
+import { themeColors } from './utils/constants';
 import debounce from 'lodash/debounce';
-import { sortArray, sortByRate, sortByAmount } from './utils/functions';
+import { sortArray, sortByRate, sortByAmount, writeCssVar } from './utils/functions';
 
 Vue.use(VueMaterial);
+
+Vue.material.registerTheme('default', themeColors);
+
+Object.entries(themeColors).forEach(([color, value]) => {
+	writeCssVar(document.querySelector('html'), color, value.hex);
+});
 
 const userData = getUserData();
 
@@ -22,10 +28,6 @@ const viewState = {
 	isAboutModalOpen: false,
 	chartLabels: []
 };
-
-function getDebtOrder(debtMethod, userData) {
-	return debtMethod === 'snowball' ? sortArray(userData.debts, sortByAmount) : sortArray(userData.debts, sortByRate).reverse();
-}
 
 const debouncedHandleDebtValueChanged = debounce((debtId, valueToChange, event) => {
 	const newDebts = userData.debts.map(debt => {
@@ -135,7 +137,6 @@ const pageView = new Vue({
 	},
 	watch: {
 		sortedCharts: function(newValue) {
-			console.log(newValue);
 			Vue.set(pageView, 'sortedCharts', newValue);
 		}
 	},

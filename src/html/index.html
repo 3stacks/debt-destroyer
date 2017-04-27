@@ -58,7 +58,7 @@
 							</md-input-container>
 						</div>
 					</div>
-					<user-debts :debts="userData.debts" :edit-mode="viewState.editMode" :handle-delete-debt-button-pressed="handleDeleteDebtButtonPressed" :handle-value-changed="handleDebtValueChanged"></user-debts>
+					<user-debts :debts="debtsSortedByDate" :edit-mode="viewState.editMode" :handle-delete-debt-button-pressed="handleDeleteDebtButtonPressed" :handle-value-changed="handleDebtValueChanged"></user-debts>
 					<add-debt-form v-if="viewState.addDebtMode"></add-debt-form>
 					<div id="chart_container">
 						<chart v-for="chart in sortedCharts" :chart-id="chart.id" :chart-title="chart.name" :chart-labels="viewState.chartLabels" :amount-paid-data="chart.chart.data.amountPaid" :amount-remaining-data="chart.chart.data.amountRemaining" key="chart.id"></chart>

@@ -20,7 +20,7 @@ Object.entries(themeColors).map(([color, value]) => {
 	syncVar(rootElement, color, value.hex);
 });
 
-const userData = getUserData();
+export const userData = getUserData();
 
 const viewState = {
 	debtMethod: 'snowball',
@@ -117,11 +117,16 @@ const pageView = new Vue({
 		userData
 	},
 	computed: {
+		debtsSortedByDate: function() {
+			return userData.debts.sort((a, b) => {
+				return a.dateAdded - b.dateAdded;
+			})
+		},
 		sortedCharts: function() {
 			if (userData.activeCharts.length === 0) {
 				return [];
 			} else {
-				return userData.processedDebts.reduce((acc, curr) => {
+				return userData.debts.reduce((acc, curr) => {
 					if (curr.repayments) {
 						const theChart = userData.activeCharts.find(chart => chart.id === curr.id);
 						return [
@@ -138,6 +143,10 @@ const pageView = new Vue({
 	watch: {
 		sortedCharts: function(newValue) {
 			Vue.set(pageView, 'sortedCharts', newValue);
+		},
+		debtsSortedByDate: function(newValue) {
+			console.log(newValue);
+			Vue.set(pageView, 'debtsSortedByDate', newValue);
 		}
 	},
 	mounted() {

@@ -8,14 +8,16 @@ import { calculateDebts } from './utils/debt';
 import { updateLocalUserData, getUserData, clearUserData } from './utils/local-storage';
 import { themeColors } from './utils/constants';
 import debounce from 'lodash/debounce';
-import { sortArray, sortByRate, sortByAmount, writeCssVar } from './utils/functions';
+import syncVar from '@lukeboyle/sync-vars';
 
 Vue.use(VueMaterial);
 
 Vue.material.registerTheme('default', themeColors);
 
-Object.entries(themeColors).forEach(([color, value]) => {
-	writeCssVar(document.querySelector('html'), color, value.hex);
+const rootElement = document.querySelector('html');
+
+Object.entries(themeColors).map(([color, value]) => {
+	syncVar(rootElement, color, value.hex);
 });
 
 const userData = getUserData();

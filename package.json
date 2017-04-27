@@ -64,6 +64,7 @@
   },
   "homepage": "https://github.com/3stacks/debt-destroyer#readme",
   "dependencies": {
+    "@lukeboyle/sync-vars": "^1.0.1",
     "chart.js": "^2.5.0",
     "is-it-set": "^1.0.3",
     "js-base64": "^2.1.9",

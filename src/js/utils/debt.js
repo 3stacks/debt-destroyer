@@ -87,12 +87,14 @@ export function calculateDebts(appState) {
 		if (!error.error) {
 			acc.push(calculateDebt(debt, index === 0));
 		} else {
-			console.log(error);
+			acc.push({
+				...debt,
+				error
+			})
 		}
 		return acc;
 	}, []);
 
-	console.log(processedDebts);
 	appState.userData.debts = processedDebts;
 
 	if (processedDebts.length !== 0) {
@@ -178,6 +180,7 @@ function handleDebtCalculation(debt, prevDebtPaidOffMonth, lastMonthLeftOverMone
 	}, 0);
 
 	userData.paidOffDebts.push({
+		...debt,
 		name,
 		id,
 		minPayment,
@@ -186,6 +189,7 @@ function handleDebtCalculation(debt, prevDebtPaidOffMonth, lastMonthLeftOverMone
 	});
 
 	return {
+		...debt,
 		name,
 		id,
 		amount,

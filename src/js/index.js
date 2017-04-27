@@ -145,7 +145,6 @@ const pageView = new Vue({
 			Vue.set(pageView, 'sortedCharts', newValue);
 		},
 		debtsSortedByDate: function(newValue) {
-			console.log(newValue);
 			Vue.set(pageView, 'debtsSortedByDate', newValue);
 		}
 	},

@@ -27,10 +27,6 @@
 			<header class="site-header cloak">
 				<div class="max-width-container">
 					<md-toolbar>
-						<md-button class="md-icon-button" @click.native="handleMenuButtonPressed">
-							<md-icon>menu</md-icon>
-						</md-button>
-
 						<h2 class="md-title" style="flex: 1">
 							Debt Destroyer
 						</h2>
@@ -39,36 +35,6 @@
 							<md-icon>help</md-icon>
 						</md-button>
 					</md-toolbar>
-					<md-sidenav md-theme="default" class="md-left" :class="{'md-active': viewState.isSideNavOpen}">
-						<md-toolbar>
-							<div class="sidenav-header__container">
-								<div class="sidenav-header__logo">
-									<img src="img/android-icon-192x192.png" alt="">
-								</div>
-								<h2>
-									Debt Destroyer
-								</h2>
-							</div>
-							<div>
-								<md-button class="md-icon-button" @click.native="handleMenuButtonPressed">
-									<md-icon>
-										close
-									</md-icon>
-								</md-button>
-							</div>
-						</md-toolbar>
-						<md-list>
-							<md-list-item class="md-button" @click.native="clearLocalStorageData">
-								<md-avatar class="md-avatar-icon">
-									<md-icon>delete</md-icon>
-								</md-avatar>
-
-								<div class="md-list-text-container">
-									Clear Local Storage
-								</div>
-							</md-list-item>
-						</md-list>
-					</md-sidenav>
 				</div>
 			</header>
 			<main class="cloak">

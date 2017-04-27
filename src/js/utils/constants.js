@@ -3,6 +3,7 @@ export const defaultUserData = {
 		{
 			id: 'debt-1',
 			name: 'Sample Debt',
+			dateAdded: Date.now(),
 			amount: 10000,
 			minPayment: 524,
 			interest: 16,

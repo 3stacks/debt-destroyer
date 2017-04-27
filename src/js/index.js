@@ -74,6 +74,7 @@ const pageView = new Vue({
 				// version a GUID will be added for IDs to make this more robust
 				{
 					id: `debt-${Math.random().toString().slice(2)}`,
+					dateAdded: Date.now(),
 					name: 'New debt',
 					amount: 0,
 					interest: 0,

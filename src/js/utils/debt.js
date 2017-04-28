@@ -96,12 +96,11 @@ export function calculateDebts(appState) {
 	}, []);
 
 	appState.userData.debts = processedDebts;
-
-	if (processedDebts.length !== 0) {
+	if (appState.userData.paidOffDebts.length !== 0) {
 		// Generate labels and set the viewState labels to that
 		appState.viewState.chartLabels = getChartLabelsFromDebts(appState.userData.debts);
 		// Create chart references for each processedDebt
-		processedDebts.forEach(processedDebt => {
+		appState.userData.paidOffDebts.forEach(processedDebt => {
 			if (!processedDebt.error.error) {
 				const charts = appState.userData.activeCharts;
 				const currentDebtChart = charts.find(chart => processedDebt.id === chart.id);

@@ -6,27 +6,30 @@ import modal from './components/modal';
 import chart from './components/chart';
 import { calculateDebts } from './utils/debt';
 import { updateLocalUserData, getUserData, clearUserData } from './utils/local-storage';
-import { destroyElement } from './utils/functions';
+import { themeColors } from './utils/constants';
 import debounce from 'lodash/debounce';
-import { sortArray, sortByRate, sortByAmount } from './utils/functions';
+import syncVar from '@lukeboyle/sync-vars';
 
 Vue.use(VueMaterial);
 
-const userData = getUserData();
+Vue.material.registerTheme('default', themeColors);
+
+const rootElement = document.querySelector('html');
+
+Object.entries(themeColors).map(([color, value]) => {
+	syncVar(rootElement, color, value.hex);
+});
+
+export const userData = getUserData();
 
 const viewState = {
 	debtMethod: 'snowball',
-	editMode: true,
-	addDebtMode: false,
 	activeCharts: [],
 	isPayOffHelpModalOpen: false,
 	isSideNavOpen: false,
-	isAboutModalOpen: false
+	isAboutModalOpen: false,
+	chartLabels: []
 };
-
-function getDebtOrder(debtMethod, userData) {
-	return debtMethod === 'snowball' ? sortArray(userData.debts, sortByAmount) : sortArray(userData.debts, sortByRate).reverse();
-}
 
 const debouncedHandleDebtValueChanged = debounce((debtId, valueToChange, event) => {
 	const newDebts = userData.debts.map(debt => {
@@ -41,7 +44,6 @@ const debouncedHandleDebtValueChanged = debounce((debtId, valueToChange, event) 
 	});
 	userData.debts = newDebts;
 	updateLocalUserData('debts', newDebts);
-
 	calculateDebts({viewState, userData});
 }, 500);
 
@@ -72,6 +74,7 @@ const pageView = new Vue({
 				// version a GUID will be added for IDs to make this more robust
 				{
 					id: `debt-${Math.random().toString().slice(2)}`,
+					dateAdded: Date.now(),
 					name: 'New debt',
 					amount: 0,
 					interest: 0,
@@ -93,22 +96,12 @@ const pageView = new Vue({
 			});
 			userData.debts = newDebts;
 			updateLocalUserData('debts', newDebts);
-			const chartToRemove = viewState.activeCharts.find(chart => {
-				return debtId === chart.id;
-			});
-			if (chartToRemove) {
-				chartToRemove.chart.destroy();
-				destroyElement(document.getElementById(debtId));
-			}
 			if (userData.debts.length !== 0) {
 				return calculateDebts({viewState, userData});
 			}
 		},
 		handlePayOffHelpButtonPressed() {
 			return viewState.isPayOffHelpModalOpen = !viewState.isPayOffHelpModalOpen;
-		},
-		handleMenuButtonPressed() {
-			return viewState.isSideNavOpen = !viewState.isSideNavOpen;
 		},
 		handleAboutButtonPressed() {
 			return viewState.isAboutModalOpen = !viewState.isAboutModalOpen;
@@ -123,18 +116,48 @@ const pageView = new Vue({
 		viewState,
 		userData
 	},
+	computed: {
+		debtsSortedByDate: function() {
+			return userData.debts.sort((a, b) => {
+				return a.dateAdded - b.dateAdded;
+			})
+		},
+		sortedCharts: function() {
+			if (userData.activeCharts.length === 0) {
+				return [];
+			} else {
+				return userData.debts.reduce((acc, curr) => {
+					if (curr.repayments) {
+						const theChart = userData.activeCharts.find(chart => chart.id === curr.id);
+						return [
+							...acc,
+							theChart
+						]
+					} else {
+						return acc;
+					}
+				}, []);
+			}
+		}
+	},
+	watch: {
+		sortedCharts: function(newValue) {
+			Vue.set(pageView, 'sortedCharts', newValue);
+		},
+		debtsSortedByDate: function(newValue) {
+			Vue.set(pageView, 'debtsSortedByDate', newValue);
+		}
+	},
 	mounted() {
 		requestAnimationFrame(() => {
 			document.querySelectorAll('.cloak').forEach(element => {
-				return element.classList.remove('cloak');
+				element.classList.remove('cloak');
 			});
 
 			if (userData.debts.length !== 0) {
 				calculateDebts({viewState, userData});
 			}
 		});
-		// Add listener for closing sidenav on blur
-		document.querySelector('.md-sidenav-backdrop').addEventListener('click', () => viewState.isSideNavOpen = !viewState.isSideNavOpen);
 	},
 	components: {
 		chart,

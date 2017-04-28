@@ -1,7 +1,7 @@
 import moment from 'moment';
 import {sortArray, sortByRate, sortByAmount} from './functions';
-import {createChart} from './chart';
 import isSet from 'is-it-set';
+import {userData} from '../index';
 
 function calculateMonthlyInterestRate(interest) {
 	return ((interest / 12) / 100);
@@ -25,6 +25,7 @@ function isDebtValid(debt) {
 			message: 'The debt amount must be greater than 0.'
 		};
 	}
+
 	if (debt.minPayment <= 0) {
 		return {
 			error: true,
@@ -32,6 +33,7 @@ function isDebtValid(debt) {
 			message: 'The minimum payment must be greater than 0.'
 		};
 	}
+
 	if (minMonthlyRepayment >= debt.minPayment) {
 		return {
 			error: true,
@@ -58,72 +60,84 @@ function sanitiseDebts(debts) {
 	})
 }
 
+function getDataArrayFromRepayments(whichData, repayments) {
+	return Object.values(repayments).map(item => parseInt(item[whichData]) / 100)
+}
+
+export function calculateDebt(debt, isFirstDebt) {
+	if (isFirstDebt) {
+		return handleDebtCalculation(debt);
+	} else {
+		const previousDebt = userData.paidOffDebts[userData.paidOffDebts.length - 1];
+		const previousDebtBasePayment = parseInt(previousDebt.minPayment) + parseInt(userData.extraContributions);
+		const moneyLeftFromLastMonth = previousDebtBasePayment - (Object.values(previousDebt.repayments)[previousDebt.paidOffMonth - 1].amountPaid / 100);
+		return handleDebtCalculation(debt, previousDebt.paidOffMonth, moneyLeftFromLastMonth);
+	}
+}
+
 export function calculateDebts(appState) {
 	appState.userData.paidOffDebts = [];
 	const sanitisedDebts = sanitiseDebts(appState.userData.debts);
 	const sortedDebts = appState.viewState.debtMethod === 'snowball'
 		? sortArray(sanitisedDebts, sortByAmount)
 		: sortArray(sanitisedDebts, sortByRate).reverse();
+
 	const processedDebts = sortedDebts.reduce((acc, debt, index) => {
-		const validatedDebt = isDebtValid(debt);
-		if (!validatedDebt.error) {
-			if (index === 0) {
-				return [
-					...acc,
-					handleDebtCalculation(appState.userData, debt)
-				];
-			} else {
-				const previousDebt = acc[acc.length - 1];
-				const previousDebtRepayments = previousDebt.repayments;
-				const lastMonthIndex = Math.max(...Object.keys(previousDebtRepayments));
-				const previousDebtBasePayment = parseInt(previousDebt.minPayment) + parseInt(appState.userData.extraContributions);
-				const moneyLeftFromLastMonth = previousDebtBasePayment - (previousDebtRepayments[lastMonthIndex - 1].amountPaid / 100);
-				return [
-					...acc,
-					handleDebtCalculation(appState.userData, debt, lastMonthIndex, moneyLeftFromLastMonth)
-				];
-			}
+		const error = isDebtValid(debt);
+		if (!error.error) {
+			acc.push(calculateDebt(debt, index === 0));
 		} else {
-			return [
-				...acc,
-				{
-					...debt,
-					error: validatedDebt
-				}
-			];
+			acc.push({
+				...debt,
+				error
+			})
 		}
+		return acc;
 	}, []);
+
+	appState.userData.debts = processedDebts;
+
 	if (processedDebts.length !== 0) {
-		appState.userData.debts = appState.userData.debts.map(debt => {
-			return processedDebts.find(processedDebt => {
-				return processedDebt.id === debt.id;
-			});
-		});
-		const labels = getChartLabelsFromDebts(appState.userData.debts);
+		// Generate labels and set the viewState labels to that
+		appState.viewState.chartLabels = getChartLabelsFromDebts(appState.userData.debts);
+		// Create chart references for each processedDebt
 		processedDebts.forEach(processedDebt => {
 			if (!processedDebt.error.error) {
-				const chartReference = appState.viewState.activeCharts.find(chart => chart.id === processedDebt.id);
-				if (!!chartReference) {
-					const chart = chartReference.chart;
-					const debtBreakdown = processedDebt.repayments;
-					chart.options.title.text = processedDebt.name;
-					chart.data.labels = labels;
-					// Update Amount Paid dataset
-					chart.data.datasets[0].data = Object.values(debtBreakdown).map(item => parseInt(item.amountPaid) / 100);
-					// Update Amount Left dataset
-					chart.data.datasets[1].data = Object.values(debtBreakdown).map(item => parseInt(item.amountLeft) / 100);
-				} else {
-					appState.viewState.activeCharts = [
-						...appState.viewState.activeCharts,
-						{
-							id: processedDebt.id,
-							chart: createChart({id: processedDebt.id, name: processedDebt.name}, processedDebt.repayments, labels)
+				const charts = appState.userData.activeCharts;
+				const currentDebtChart = charts.find(chart => processedDebt.id === chart.id);
+
+				if (currentDebtChart) {
+					appState.userData.activeCharts = charts.map(chart => {
+						if (chart.id === processedDebt.id) {
+							return {
+								...chart,
+								id: processedDebt.id,
+								name: processedDebt.name,
+								chart: {
+									data: {
+										amountPaid: getDataArrayFromRepayments('amountPaid', processedDebt.repayments),
+										amountRemaining: getDataArrayFromRepayments('amountLeft', processedDebt.repayments)
+									}
+								}
+							}
+						} else {
+							return chart;
 						}
-					];
+					})
+				} else {
+					appState.userData.activeCharts.push({
+						id: processedDebt.id,
+						name: processedDebt.name,
+						chart: {
+							data: {
+								amountPaid: getDataArrayFromRepayments('amountPaid', processedDebt.repayments),
+								amountRemaining: getDataArrayFromRepayments('amountLeft', processedDebt.repayments)
+							}
+						}
+					})
 				}
 			}
 		});
-
 	}
 }
 
@@ -136,6 +150,11 @@ function getChartLabelsFromDebts(debts) {
 		if (acc === undefined) {
 			return curr;
 		}
+
+		if (!curr.repayments) {
+			return acc;
+		}
+
 		if (getLargestNumberFromArray(Object.keys(curr.repayments)) > getLargestNumberFromArray(Object.keys(acc.repayments))) {
 			return curr;
 		}
@@ -147,7 +166,7 @@ function getChartLabelsFromDebts(debts) {
 	});
 }
 
-function handleDebtCalculation(userData, debt, prevDebtPaidOffMonth, lastMonthLeftOverMoney) {
+function handleDebtCalculation(debt, prevDebtPaidOffMonth, lastMonthLeftOverMoney) {
 	const {name, id, amount, interest, minPayment} = debt;
 	const adjustedDebt = parseInt(debt.amount) * 100;
 	const adjustedRate = parseInt(debt.interest) / 100;
@@ -155,19 +174,22 @@ function handleDebtCalculation(userData, debt, prevDebtPaidOffMonth, lastMonthLe
 	const parsedExtraContributions = isSet(userData.extraContributions) ? (userData.extraContributions * 100) : 0;
 	const repayments = calculateRepayments(userData, adjustedDebt, adjustedRepayment, adjustedRate, 1, {}, parsedExtraContributions, prevDebtPaidOffMonth, lastMonthLeftOverMoney);
 	const lastMonthOfRepayments = Math.max(...Object.keys(repayments));
+
 	const interestPaid = Object.values(repayments).reduce((acc, curr) => {
 		return acc + curr.interestPaid;
 	}, 0);
-	userData.paidOffDebts = [
-		...userData.paidOffDebts,
-		{
-			name,
-			id,
-			minPayment,
-			paidOffMonth: lastMonthOfRepayments,
-		}
-	];
+
+	userData.paidOffDebts.push({
+		...debt,
+		name,
+		id,
+		minPayment,
+		repayments,
+		paidOffMonth: lastMonthOfRepayments,
+	});
+
 	return {
+		...debt,
 		name,
 		id,
 		amount,

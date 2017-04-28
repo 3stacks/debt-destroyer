@@ -1,32 +1,79 @@
+import { COLORS } from '../utils/constants';
+
 export default {
 	template: `
-		<canvas :id="chartId" ref="canvas"></canvas>
+		<canvas :id="chartId" ref="canvas" data-chart-data="realData.length"></canvas>
 	`,
 	beforeDestroy() {
 		this._chartReference.destroy();
 	},
 	mounted() {
-		console.log(this.$data);
-
-		new Chart(this.$refs.canvas, {
-			type: this.$data.chartType,
-			data: this.$data.rawChartData,
-			options: this.$props.chartOptions
+		this._chartReference = new Chart(this.$refs.canvas, {
+			type: 'bar',
+			data: {
+				labels: this.$props.chartLabels,
+				datasets: [
+					{
+						label: 'Amount Paid',
+						type: 'line',
+						borderColor: COLORS.RED.hex,
+						backgroundColor: COLORS.RED.hex,
+						fill: false,
+						data: this.chartData.amountPaid
+					},
+					{
+						label: 'Amount Remaining',
+						type: 'bar',
+						yAxisId: 'amount_left',
+						backgroundColor: COLORS.BLUE.hex,
+						borderColor: COLORS.BLUE.hex,
+						data: this.chartData.amountRemaining
+					}
+				]
+			},
+			options: {
+				tooltips: {
+					callbacks: {
+						label: function(tooltipItems, data) {
+							return data.datasets[tooltipItems.datasetIndex].label +': $' + tooltipItems.yLabel;
+						}
+					}
+				},
+				title: {
+					display: true,
+					text: this.$props.chartTitle,
+					position: 'top'
+				},
+				legend: {
+					position: 'bottom'
+				},
+				scales: {
+					yAxes: [
+						{
+							stacked: false,
+							position: 'left',
+							id: 'amount_left'
+						}
+					]
+				}
+			}
 		});
 	},
-	beforeUpdate() {
-		console.log('hello');
-		this._chartReference.update();
+	computed: {
+		chartData: function() {
+			return {
+				amountPaid: this.$props.amountPaidData,
+				amountRemaining: this.$props.amountRemainingData
+			}
+		}
 	},
-	updated() {
-		console.log('hello');
-	},
-	data() {
-		console.log(this.$props);
-		return {
-			chartType: this.$props.chartData.chart.type,
-			rawChartData: this.$props.chartData.chart.data,
-			chartOptions: this.$props.chartData.chart.options
+	watch: {
+		chartData: function(newValue) {
+			this._chartReference.data.labels = this.$props.chartLabels;
+			this._chartReference.data.datasets[0].data = newValue.amountPaid;
+			this._chartReference.data.datasets[1].data = newValue.amountRemaining;
+			this._chartReference.options.title.text = this.$props.chartTitle;
+			this._chartReference.update();
 		}
 	},
 	props: {
@@ -34,8 +81,20 @@ export default {
 			type: String,
 			required: true
 		},
-		chartData: {
-			type: Object,
+		chartTitle: {
+			type: String,
+			required: true
+		},
+		chartLabels: {
+			type: Array,
+			required: true
+		},
+		amountPaidData: {
+			type: Array,
+			required: true
+		},
+		amountRemainingData: {
+			type: Array,
 			required: true
 		}
 	}

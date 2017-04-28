@@ -46,13 +46,6 @@ export function handleDeleteDebtButtonPressed(debtId, viewState, userData) {
 	});
 	userData.debts = newDebts;
 	updateLocalUserData('debts', newDebts);
-	const chartToRemove = viewState.activeCharts.find(chart => {
-		return debtId === chart.id;
-	});
-	if (chartToRemove) {
-		chartToRemove.chart.destroy();
-		destroyElement(document.getElementById(debtId));
-	}
 	if (userData.debts.length !== 0) {
 		return calculateDebts({viewState, userData});
 	}

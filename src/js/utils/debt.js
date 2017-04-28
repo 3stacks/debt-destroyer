@@ -2,6 +2,7 @@ import moment from 'moment';
 import {sortArray, sortByRate, sortByAmount} from './functions';
 import isSet from 'is-it-set';
 import {userData} from '../index';
+import {DEFAULT_ERRORS} from '../utils/constants';
 
 function calculateMonthlyInterestRate(interest) {
 	return ((interest / 12) / 100);
@@ -16,37 +17,48 @@ function calculateMonthlyInterest(interest, debt) {
 	return ((calculateMonthlyInterestRate(interest) * debt) * 100);
 }
 
-function isDebtValid(debt) {
+function getDebtError(debt) {
 	const minMonthlyRepayment = calculateMinimumMonthlyRepayment(debt.interest, debt.amount);
+	const errors = {};
 	if (debt.amount <= 0) {
-		return {
+		errors.hasErrors = true;
+		errors.amount = {
 			error: true,
-			target: 'amount',
 			message: 'The debt amount must be greater than 0.'
 		};
-	}
-
-	if (debt.minPayment <= 0) {
-		return {
-			error: true,
-			target: 'minPayment',
-			message: 'The minimum payment must be greater than 0.'
+	} else {
+		errors.amount = {
+			error: false,
+			message: null
 		};
 	}
 
-	if (minMonthlyRepayment >= debt.minPayment) {
-		return {
+	if (debt.interest < 0) {
+		errors.hasErrors = true;
+		errors.interest = {
 			error: true,
-			target: 'minPayment',
+			message: 'The interest rate must not be negative.'
+		};
+	} else {
+		errors.interest = {
+			error: false,
+			message: null
+		};
+	}
+
+	if (debt.minPayment <= minMonthlyRepayment) {
+		errors.hasErrors = true;
+		errors.minPayment = {
+			error: true,
+			message: `The monthly payment is less than the recommended minimum payment of $${Math.ceil(minMonthlyRepayment)}`
+		};
+	} else {
+		errors.minPayment = {
+			error: true,
 			message: `The monthly payment is less than the recommended minimum payment of $${Math.ceil(minMonthlyRepayment)}`
 		};
 	}
-
-	return {
-		error: false,
-		target: null,
-		message: null
-	};
+	return errors;
 }
 
 function sanitiseDebts(debts) {
@@ -81,27 +93,29 @@ export function calculateDebts(appState) {
 	const sortedDebts = appState.viewState.debtMethod === 'snowball'
 		? sortArray(sanitisedDebts, sortByAmount)
 		: sortArray(sanitisedDebts, sortByRate).reverse();
-
-	const processedDebts = sortedDebts.reduce((acc, debt, index) => {
-		const error = isDebtValid(debt);
-		if (!error.error) {
+	appState.userData.debts = sortedDebts.reduce((acc, debt, index) => {
+		const errors = getDebtError(debt);
+		console.log(debt);
+		if (!errors.hasErrors) {
 			acc.push(calculateDebt(debt, index === 0));
 		} else {
 			acc.push({
 				...debt,
-				error
+				errors: {
+					...debt.errors,
+					...errors
+				}
 			})
 		}
 		return acc;
 	}, []);
 
-	appState.userData.debts = processedDebts;
 	if (appState.userData.paidOffDebts.length !== 0) {
 		// Generate labels and set the viewState labels to that
 		appState.viewState.chartLabels = getChartLabelsFromDebts(appState.userData.debts);
 		// Create chart references for each processedDebt
 		appState.userData.paidOffDebts.forEach(processedDebt => {
-			if (!processedDebt.error.error) {
+			if (!processedDebt.errors.hasErrors) {
 				const charts = appState.userData.activeCharts;
 				const currentDebtChart = charts.find(chart => processedDebt.id === chart.id);
 
@@ -197,10 +211,7 @@ function handleDebtCalculation(debt, prevDebtPaidOffMonth, lastMonthLeftOverMone
 		repayments,
 		interestPaid,
 		totalPaid: (interestPaid + (debt.amount * 100)),
-		error: {
-			target: null,
-			message: null
-		}
+		errors: DEFAULT_ERRORS
 	};
 }
 

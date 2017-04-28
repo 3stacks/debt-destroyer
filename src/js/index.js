@@ -6,7 +6,7 @@ import modal from './components/modal';
 import chart from './components/chart';
 import { calculateDebts } from './utils/debt';
 import { updateLocalUserData, getUserData, clearUserData } from './utils/local-storage';
-import { themeColors } from './utils/constants';
+import { themeColors, DEFAULT_ERRORS } from './utils/constants';
 import debounce from 'lodash/debounce';
 import syncVar from '@lukeboyle/sync-vars';
 
@@ -79,10 +79,7 @@ const pageView = new Vue({
 					amount: 0,
 					interest: 0,
 					minPayment: 0,
-					error: {
-						target: null,
-						message: null
-					}
+					errors: DEFAULT_ERRORS
 				}
 			];
 			userData.debts = newDebts;

@@ -22,7 +22,7 @@ export default {
 						</md-menu>
 					</md-card-header>
 					<md-card-content>
-						<md-input-container>
+						<md-input-container :class="{'md-input-invalid': debt.errors.name.error}">
 							<label>Debt Name</label>
 							<md-input 
 								placeholder="Enter the name of your debt" 
@@ -30,9 +30,9 @@ export default {
 								@input.native="handleValueChanged(debt.id, 'name', $event)"
 								:value="debt.name"
 							></md-input>
-							<span v-if="debt.error.target === 'name'" class="md-error">{{debt.error.message}}</span>
+							<span v-if="debt.errors.name.error" class="md-error">{{debt.errors.name.message}}</span>
 						</md-input-container>
-						<md-input-container :class="{'md-input-invalid': debt.error.target === 'amount'}">
+						<md-input-container :class="{'md-input-invalid': debt.errors.amount.error}">
 							<label>Debt Amount ($)</label>
 							<md-input 
 								placeholder="Enter the amount left in the debt" 
@@ -40,9 +40,9 @@ export default {
 								@input.native="handleValueChanged(debt.id, 'amount', $event)"
 								:value="debt.amount"
 							></md-input>
-							<span v-if="debt.error.target === 'amount'" class="md-error">{{debt.error.message}}</span>
+							<span v-if="debt.errors.amount.error" class="md-error">{{debt.errors.amount.message}}</span>
 						</md-input-container>
-						<md-input-container :class="{'md-input-invalid': debt.error.target === 'interest'}">
+						<md-input-container :class="{'md-input-invalid': debt.errors.interest.error}">
 							<label>
 								Annual Percentage Rate (%)
 							</label>
@@ -52,9 +52,9 @@ export default {
 								@input.native="handleValueChanged(debt.id, 'interest', $event)"
 								:value="debt.interest"
 							></md-input>
-							<span v-if="debt.error.target === 'interest'" class="md-error">{{debt.error.message}}</span>
+							<span v-if="debt.errors.interest.error" class="md-error">{{debt.errors.interest.message}}</span>
 						</md-input-container>
-						<md-input-container :class="{'md-input-invalid': debt.error.target === 'minPayment'}">
+						<md-input-container :class="{'md-input-invalid': debt.errors.minPayment.error}">
 							<label>
 								Minimum Monthly Repayment ($)
 							</label>
@@ -64,7 +64,7 @@ export default {
 								@input.native="handleValueChanged(debt.id, 'minPayment', $event)"
 								:value="debt.minPayment"
 							></md-input>
-							<span v-if="debt.error.target === 'minPayment'" class="md-error">{{debt.error.message}}</span>
+							<span v-if="debt.errors.minPayment.error" class="md-error">{{debt.errors.minPayment.message}}</span>
 						</md-input-container>
 					</md-card-content>
 				</md-card>
@@ -81,5 +81,8 @@ export default {
 		handleDeleteDebtButtonPressed: Function,
 		editMode: Boolean,
 		debts: Array
+	},
+	mounted() {
+		console.log(this.$props);
 	}
 }

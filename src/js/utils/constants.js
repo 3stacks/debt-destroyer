@@ -1,3 +1,23 @@
+export const DEFAULT_ERRORS = {
+	hasErrors: false,
+	name: {
+		error: false,
+		message: null
+	},
+	amount: {
+		error: false,
+		message: null
+	},
+	interest: {
+		error: false,
+		message: null
+	},
+	minPayment: {
+		error: false,
+		message: null
+	}
+};
+
 export const defaultUserData = {
 	debts: [
 		{
@@ -7,11 +27,7 @@ export const defaultUserData = {
 			amount: 10000,
 			minPayment: 524,
 			interest: 16,
-			error: {
-				error: false,
-				target: null,
-				message: null
-			},
+			errors: DEFAULT_ERRORS,
 			paidOffDebts: []
 		}
 	],

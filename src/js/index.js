@@ -24,7 +24,6 @@ export const userData = getUserData();
 
 const viewState = {
 	debtMethod: 'snowball',
-	activeCharts: [],
 	isPayOffHelpModalOpen: false,
 	isSideNavOpen: false,
 	isAboutModalOpen: false,

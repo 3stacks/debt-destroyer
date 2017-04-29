@@ -27,12 +27,12 @@ export const defaultUserData = {
 			amount: 10000,
 			minPayment: 524,
 			interest: 16,
-			errors: DEFAULT_ERRORS,
-			paidOffDebts: []
+			errors: DEFAULT_ERRORS
 		}
 	],
 	extraContributions: null,
-	activeCharts: []
+	activeCharts: [],
+	paidOffDebts: []
 };
 
 export const COLORS = {

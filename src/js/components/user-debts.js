@@ -81,8 +81,5 @@ export default {
 		handleDeleteDebtButtonPressed: Function,
 		editMode: Boolean,
 		debts: Array
-	},
-	mounted() {
-		console.log(this.$props);
 	}
 }

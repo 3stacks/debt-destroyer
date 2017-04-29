@@ -58,6 +58,13 @@ function getDebtError(debt) {
 			message: null
 		};
 	}
+
+	// TODO: figure out if we need an error check for name
+	errors.name = {
+		error: false,
+		message: null
+	};
+
 	return errors;
 }
 

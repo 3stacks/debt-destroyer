@@ -54,8 +54,8 @@ function getDebtError(debt) {
 		};
 	} else {
 		errors.minPayment = {
-			error: true,
-			message: `The monthly payment is less than the recommended minimum payment of $${Math.ceil(minMonthlyRepayment)}`
+			error: false,
+			message: null
 		};
 	}
 	return errors;
@@ -95,17 +95,13 @@ export function calculateDebts(appState) {
 		: sortArray(sanitisedDebts, sortByRate).reverse();
 	appState.userData.debts = sortedDebts.reduce((acc, debt, index) => {
 		const errors = getDebtError(debt);
-		console.log(debt);
-		if (!errors.hasErrors) {
-			acc.push(calculateDebt(debt, index === 0));
-		} else {
+		if (errors.hasErrors) {
 			acc.push({
 				...debt,
-				errors: {
-					...debt.errors,
-					...errors
-				}
-			})
+				errors: errors
+			});
+		} else {
+			acc.push(calculateDebt(debt, index === 0));
 		}
 		return acc;
 	}, []);
@@ -114,22 +110,23 @@ export function calculateDebts(appState) {
 		// Generate labels and set the viewState labels to that
 		appState.viewState.chartLabels = getChartLabelsFromDebts(appState.userData.debts);
 		// Create chart references for each processedDebt
-		appState.userData.paidOffDebts.forEach(processedDebt => {
-			if (!processedDebt.errors.hasErrors) {
-				const charts = appState.userData.activeCharts;
-				const currentDebtChart = charts.find(chart => processedDebt.id === chart.id);
+		appState.userData.activeCharts = appState.userData.paidOffDebts.reduce((acc, curr) => {
+			if (curr.errors.hasErrors) {
+				return acc;
+			} else {
+				const currentDebtChart = acc.find(chart => curr.id === chart.id);
 
 				if (currentDebtChart) {
-					appState.userData.activeCharts = charts.map(chart => {
-						if (chart.id === processedDebt.id) {
+					return acc.map(chart => {
+						if (chart.id === curr.id) {
 							return {
 								...chart,
-								id: processedDebt.id,
-								name: processedDebt.name,
+								id: curr.id,
+								name: curr.name,
 								chart: {
 									data: {
-										amountPaid: getDataArrayFromRepayments('amountPaid', processedDebt.repayments),
-										amountRemaining: getDataArrayFromRepayments('amountLeft', processedDebt.repayments)
+										amountPaid: getDataArrayFromRepayments('amountPaid', curr.repayments),
+										amountRemaining: getDataArrayFromRepayments('amountLeft', curr.repayments)
 									}
 								}
 							}
@@ -138,17 +135,24 @@ export function calculateDebts(appState) {
 						}
 					})
 				} else {
-					appState.userData.activeCharts.push({
-						id: processedDebt.id,
-						name: processedDebt.name,
+					acc.push({
+						id: curr.id,
+						name: curr.name,
 						chart: {
 							data: {
-								amountPaid: getDataArrayFromRepayments('amountPaid', processedDebt.repayments),
-								amountRemaining: getDataArrayFromRepayments('amountLeft', processedDebt.repayments)
+								amountPaid: getDataArrayFromRepayments('amountPaid', curr.repayments),
+								amountRemaining: getDataArrayFromRepayments('amountLeft', curr.repayments)
 							}
 						}
-					})
+					});
+					return acc;
 				}
+			}
+		}, appState.userData.activeCharts);
+
+		appState.userData.paidOffDebts.forEach(processedDebt => {
+			if (!processedDebt.errors.hasErrors) {
+
 			}
 		});
 	}

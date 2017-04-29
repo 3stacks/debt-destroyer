@@ -124,7 +124,7 @@ const pageView = new Vue({
 				return [];
 			} else {
 				return userData.paidOffDebts.reduce((acc, curr) => {
-					if (curr.repayments) {
+					if (curr.repayments && !curr.errors.hasErrors) {
 						const theChart = userData.activeCharts.find(chart => chart.id === curr.id);
 						return [
 							...acc,

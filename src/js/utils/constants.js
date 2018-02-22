@@ -59,3 +59,8 @@ export const themeColors = {
 	warn: COLORS.RED,
 	background: COLORS.WHITE
 };
+
+export const DEBT_PAYOFF_METHOD = {
+	SNOWBALL: 'snowball',
+	AVALANCHE: 'avalanche'
+};

@@ -7,7 +7,7 @@ import modal from './components/modal';
 import chart from './components/chart';
 import { calculateDebts } from './utils/debt';
 import { updateLocalUserData, getUserData, clearUserData } from './utils/local-storage';
-import { themeColors, DEFAULT_ERRORS } from './utils/constants';
+import { themeColors, DEFAULT_ERRORS, DEBT_PAYOFF_METHOD } from './utils/constants';
 import debounce from 'lodash/debounce';
 import syncVar from '@lukeboyle/sync-vars';
 
@@ -24,7 +24,7 @@ Object.entries(themeColors).map(([color, value]) => {
 export const userData = getUserData();
 
 const viewState = {
-	debtMethod: 'snowball',
+	debtMethod: DEBT_PAYOFF_METHOD.SNOWBALL,
 	activeCharts: [],
 	isPayOffHelpModalOpen: false,
 	isSideNavOpen: false,
@@ -71,8 +71,6 @@ const pageView = new Vue({
 		handleNewDebtButtonPressed() {
 			const newDebts = [
 				...userData.debts,
-				// The ID is random enough for this use case, we're not worried about a clash, however, for the next
-				// version a GUID will be added for IDs to make this more robust
 				{
 					id: `debt-${nanoid()}`,
 					dateAdded: Date.now(),

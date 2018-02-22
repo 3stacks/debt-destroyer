@@ -2,6 +2,7 @@ import Vue from 'vue';
 import VueMaterial from 'vue-material';
 import addDebtForm from './components/add-debt-form';
 import userDebts from './components/user-debts';
+import nanoid from 'nanoid';
 import modal from './components/modal';
 import chart from './components/chart';
 import { calculateDebts } from './utils/debt';
@@ -73,7 +74,7 @@ const pageView = new Vue({
 				// The ID is random enough for this use case, we're not worried about a clash, however, for the next
 				// version a GUID will be added for IDs to make this more robust
 				{
-					id: `debt-${Math.random().toString().slice(2)}`,
+					id: `debt-${nanoid()}`,
 					dateAdded: Date.now(),
 					name: 'New debt',
 					amount: 0,

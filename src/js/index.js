@@ -87,11 +87,7 @@ const pageView = new Vue({
 			updateLocalUserData('debts', newDebts);
 		},
 		handleDeleteDebtButtonPressed(debtId) {
-			const newDebts = userData.debts.filter(debt => {
-				if (debtId !== debt.id) {
-					return debt;
-				}
-			});
+			const newDebts = userData.debts.filter(debt => debtId !== debt.id);
 			userData.debts = newDebts;
 			updateLocalUserData('debts', newDebts);
 			if (userData.debts.length !== 0) {

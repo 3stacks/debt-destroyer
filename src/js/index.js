@@ -2,13 +2,16 @@ import Vue from 'vue';
 import VueMaterial from 'vue-material';
 import addDebtForm from './components/add-debt-form';
 import userDebts from './components/user-debts';
+import nanoid from 'nanoid';
 import modal from './components/modal';
 import chart from './components/chart';
 import { calculateDebts } from './utils/debt';
 import { updateLocalUserData, getUserData, clearUserData } from './utils/local-storage';
-import { themeColors, DEFAULT_ERRORS } from './utils/constants';
+import { themeColors, DEFAULT_ERRORS, DEBT_PAYOFF_METHOD } from './utils/constants';
 import debounce from 'lodash/debounce';
 import syncVar from '@lukeboyle/sync-vars';
+import {Base64} from "js-base64";
+import locationManager from "./utils/location-manager";
 
 Vue.use(VueMaterial);
 
@@ -23,12 +26,27 @@ Object.entries(themeColors).map(([color, value]) => {
 export const userData = getUserData();
 
 const viewState = {
-	debtMethod: 'snowball',
+	debtMethod: DEBT_PAYOFF_METHOD.SNOWBALL,
+	activeCharts: [],
 	isPayOffHelpModalOpen: false,
 	isSideNavOpen: false,
 	isAboutModalOpen: false,
+	isShareModalOpen: false,
 	chartLabels: []
 };
+
+function copyTextToClipboard(text) {
+	const textArea = !!window.copyTextArea ? window.copyTextArea : document.createElement('textarea');
+	textArea.value = text;
+	document.body.appendChild(textArea);
+	textArea.focus();
+	textArea.select();
+
+	document.execCommand('copy');
+
+	document.body.removeChild(textArea);
+	window.copyTextArea = textArea;
+}
 
 const debouncedHandleDebtValueChanged = debounce((debtId, valueToChange, event) => {
 	const newDebts = userData.debts.map(debt => {
@@ -69,10 +87,8 @@ const pageView = new Vue({
 		handleNewDebtButtonPressed() {
 			const newDebts = [
 				...userData.debts,
-				// The ID is random enough for this use case, we're not worried about a clash, however, for the next
-				// version a GUID will be added for IDs to make this more robust
 				{
-					id: `debt-${Math.random().toString().slice(2)}`,
+					id: `debt-${nanoid()}`,
 					dateAdded: Date.now(),
 					name: 'New debt',
 					amount: 0,
@@ -85,11 +101,7 @@ const pageView = new Vue({
 			updateLocalUserData('debts', newDebts);
 		},
 		handleDeleteDebtButtonPressed(debtId) {
-			const newDebts = userData.debts.filter(debt => {
-				if (debtId !== debt.id) {
-					return debt;
-				}
-			});
+			const newDebts = userData.debts.filter(debt => debtId !== debt.id);
 			userData.debts = newDebts;
 			updateLocalUserData('debts', newDebts);
 			if (userData.debts.length !== 0) {
@@ -102,10 +114,21 @@ const pageView = new Vue({
 		handleAboutButtonPressed() {
 			return viewState.isAboutModalOpen = !viewState.isAboutModalOpen;
 		},
+		handleShareButtonPressed() {
+			return viewState.isShareModalOpen = !viewState.isShareModalOpen;
+		},
 		clearLocalStorageData() {
 			userData.debts = [];
 			viewState.extraContributions = null;
 			clearUserData();
+		},
+		handleIframeShareButtonPressed() {
+			const data = JSON.stringify({
+				...getUserData(),
+				embedMode: true
+			});
+
+			copyTextToClipboard(`<iframe src="${window.location.origin}${window.location.pathname}/#userData=${Base64.encode(data)}"></iframe>`);
 		}
 	},
 	data: {
@@ -153,6 +176,8 @@ const pageView = new Vue({
 			if (userData.debts.length !== 0) {
 				calculateDebts({viewState, userData});
 			}
+
+			viewState.embedMode = userData.embedMode || false
 		});
 	},
 	components: {

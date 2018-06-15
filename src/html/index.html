@@ -24,7 +24,7 @@
     </head>
     <body>
 		<div id="root">
-			<header class="site-header cloak">
+			<header class="site-header cloak" v-if="!viewState.embedMode">
 				<div class="max-width-container">
 					<md-toolbar>
 						<h2 class="md-title" style="flex: 1">
@@ -67,7 +67,11 @@
 					<div id="chart_container">
 						<chart v-for="chart in sortedCharts" :chart-id="chart.id" :chart-title="chart.name" :chart-labels="viewState.chartLabels" :amount-paid-data="chart.chart.data.amountPaid" :amount-remaining-data="chart.chart.data.amountRemaining" key="chart.id"></chart>
 					</div>
-					<md-button class="md-fab md-fab-bottom-right" @click.native="handleNewDebtButtonPressed">
+					<md-button
+						class="md-fab md-fab-bottom-right"
+						@click.native="handleNewDebtButtonPressed"
+						v-if="!viewState.embedMode"
+					>
 						<md-icon>add</md-icon>
 					</md-button>
 					<modal-dialog v-if="viewState.isPayOffHelpModalOpen" title="Debt Pay Off Methodology" :handle-close-requested="handlePayOffHelpButtonPressed">

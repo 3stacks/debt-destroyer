@@ -10,6 +10,8 @@ import { updateLocalUserData, getUserData, clearUserData } from './utils/local-s
 import { themeColors, DEFAULT_ERRORS, DEBT_PAYOFF_METHOD } from './utils/constants';
 import debounce from 'lodash/debounce';
 import syncVar from '@lukeboyle/sync-vars';
+import {Base64} from "js-base64";
+import locationManager from "./utils/location-manager";
 
 Vue.use(VueMaterial);
 
@@ -29,8 +31,22 @@ const viewState = {
 	isPayOffHelpModalOpen: false,
 	isSideNavOpen: false,
 	isAboutModalOpen: false,
+	isShareModalOpen: false,
 	chartLabels: []
 };
+
+function copyTextToClipboard(text) {
+	const textArea = !!window.copyTextArea ? window.copyTextArea : document.createElement('textarea');
+	textArea.value = text;
+	document.body.appendChild(textArea);
+	textArea.focus();
+	textArea.select();
+
+	document.execCommand('copy');
+
+	document.body.removeChild(textArea);
+	window.copyTextArea = textArea;
+}
 
 const debouncedHandleDebtValueChanged = debounce((debtId, valueToChange, event) => {
 	const newDebts = userData.debts.map(debt => {
@@ -98,10 +114,21 @@ const pageView = new Vue({
 		handleAboutButtonPressed() {
 			return viewState.isAboutModalOpen = !viewState.isAboutModalOpen;
 		},
+		handleShareButtonPressed() {
+			return viewState.isShareModalOpen = !viewState.isShareModalOpen;
+		},
 		clearLocalStorageData() {
 			userData.debts = [];
 			viewState.extraContributions = null;
 			clearUserData();
+		},
+		handleIframeShareButtonPressed() {
+			const data = JSON.stringify({
+				...getUserData(),
+				embedMode: true
+			});
+
+			copyTextToClipboard(`<iframe src="${window.location.origin}${window.location.pathname}/#userData=${Base64.encode(data)}"></iframe>`);
 		}
 	},
 	data: {
@@ -149,6 +176,8 @@ const pageView = new Vue({
 			if (userData.debts.length !== 0) {
 				calculateDebts({viewState, userData});
 			}
+
+			viewState.embedMode = userData.embedMode || false
 		});
 	},
 	components: {

@@ -101,7 +101,7 @@ export default class App extends Component {
 								if (debtIndex === index) {
 									return {
 										...debt,
-										chartData: data
+										chartData: data.find(datum => datum.id === debt.name)
 									}
 								}
 

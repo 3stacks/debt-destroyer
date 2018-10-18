@@ -3,6 +3,7 @@ import Paper from '@material-ui/core/Paper';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Typography from '@material-ui/core/Typography';
+import Chart from 'chart.js';
 import styled from 'styled-components';
 import debounce from 'lodash/debounce';
 
@@ -22,6 +23,8 @@ export default class Debt extends React.Component {
 		repayment: ''
 	};
 
+	canvas = null;
+
 	handleFormUpdated = debounce(() => {
 		this.props.handleFormChanged(
 			this.props.debtIndex,
@@ -38,7 +41,59 @@ export default class Debt extends React.Component {
 	};
 
 	componentDidUpdate(prevProps, prevState) {
-
+		if (this.props.chartData) {
+			console.log(this.props.chartData);
+			new Chart(this.canvas, {
+				type: 'bar',
+				data: {
+					labels: Object.keys(this.props.chartData.repayments),
+					datasets: [
+						{
+							label: 'Amount Paid',
+							type: 'line',
+							borderColor: '#ee000',
+							backgroundColor: '#ee000',
+							fill: false,
+							data: Object.values(this.props.chartData.repayments).map(repayment => repayment.amountPaid)
+						},
+						{
+							label: 'Amount Remaining',
+							type: 'bar',
+							yAxisId: 'amount_left',
+							backgroundColor: '#ee000',
+							borderColor: '#f0f',
+							data: Object.values(this.props.chartData.repayments).map(repayment => repayment.amountLeft)
+						}
+					]
+				},
+				options: {
+					tooltips: {
+						callbacks: {
+							label: function(tooltipItems, data) {
+								return data.datasets[tooltipItems.datasetIndex].label +': $' + tooltipItems.yLabel;
+							}
+						}
+					},
+					title: {
+						display: true,
+						text: this.state.name,
+						position: 'top'
+					},
+					legend: {
+						position: 'bottom'
+					},
+					scales: {
+						yAxes: [
+							{
+								stacked: false,
+								position: 'left',
+								id: 'amount_left'
+							}
+						]
+					}
+				}
+			});
+		}
 	}
 
 	render() {
@@ -95,11 +150,14 @@ export default class Debt extends React.Component {
 						/>
 					</InputWrapper>
 				</Paper>
-				{this.props.chartData && (
-					<div>
-						<canvas id={this.state.name} width="400" height="400" />
-					</div>
-				)}
+				<div>
+					<canvas
+						ref={el => this.canvas = el}
+						id={this.state.name}
+						width="400"
+						height="400"
+					/>
+				</div>
 			</Wrapper>
 		);
 	}

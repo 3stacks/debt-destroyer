@@ -3,8 +3,8 @@ import Paper from '@material-ui/core/Paper';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Typography from '@material-ui/core/Typography';
-import partial from 'lodash/partial';
 import styled from 'styled-components';
+import debounce from 'lodash/debounce';
 
 const InputWrapper = styled.div`
 	margin-bottom: 20px;
@@ -14,15 +14,6 @@ const Wrapper = styled.div`
 	margin-bottom: 24px;
 `;
 
-function parseDebt(debt) {
-	return {
-		id: debt.name,
-		amount: parseInt(debt.amount, 10),
-		interest: parseInt(debt.rate, 10),
-		minPayment: parseInt(debt.repayment, 10)
-	};
-}
-
 export default class Debt extends React.Component {
 	state = {
 		name: `Debt ${this.props.debtIndex + 1}`,
@@ -31,18 +22,34 @@ export default class Debt extends React.Component {
 		repayment: ''
 	};
 
+	handleFormUpdated = debounce(() => {
+		this.props.handleFormChanged(
+			this.props.debtIndex,
+			this.state
+		);
+	}, 300);
+
 	handleChange = name => event => {
 		const newValue = event.target.value;
 
 		this.setState({
 			[name]: newValue
-		}, partial(this.props.handleFormChanged, this.props.debtIndex, parseDebt(this.state)));
+		}, this.handleFormUpdated);
 	};
+
+	componentDidUpdate(prevProps, prevState) {
+
+	}
 
 	render() {
 		return (
 			<Wrapper>
-				<Paper className="debt-input-wrapper">
+				<Paper
+					className="debt-input-wrapper"
+					style={{
+						marginRight: 20
+					}}
+				>
 					<Typography variant="h6" component="p">
 						{this.state.name}
 					</Typography>
@@ -88,6 +95,11 @@ export default class Debt extends React.Component {
 						/>
 					</InputWrapper>
 				</Paper>
+				{this.props.chartData && (
+					<div>
+						<canvas id={this.state.name} width="400" height="400" />
+					</div>
+				)}
 			</Wrapper>
 		);
 	}

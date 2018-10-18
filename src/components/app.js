@@ -25,7 +25,16 @@ const Accoutrements = styled.div`
 	}
 `;
 
-class App extends Component {
+function parseDebt(debt) {
+	return {
+		id: debt.name,
+		amount: parseInt(debt.amount, 10),
+		interest: parseInt(debt.rate, 10),
+		minPayment: parseInt(debt.repayment, 10)
+	};
+}
+
+export default class App extends Component {
 	state = {
 		isAboutDialogOpen: false,
 		debts: [],
@@ -71,15 +80,35 @@ class App extends Component {
 			};
 		}, () => {
 			if (values.name && values.amount && values.repayment && values.rate) {
-				axios.post(
+				axios(
 					process.env.REACT_APP_API_URL,
 					{
-						extraContributions: parseInt(this.state.extraContributions, 10),
-						debtMethod: this.state.debtPayoffMethod,
-						debts: this.state.debts
+						method: 'POST',
+						headers: {
+							Authorization: process.env.REACT_APP_API_KEY
+						},
+						data: {
+							extraContributions: parseInt(this.state.extraContributions, 10),
+							debtMethod: this.state.debtPayoffMethod,
+							debts: this.state.debts.map(parseDebt)
+						}
 					}
-				).then(response => {
-					console.log(response);
+				).then(({data}) => {
+					this.setState(state => {
+						return {
+							...state,
+							debts: state.debts.map((debt, index) => {
+								if (debtIndex === index) {
+									return {
+										...debt,
+										chartData: data
+									}
+								}
+
+								return debt;
+							})
+						};
+					});
 				});
 			}
 		});
@@ -154,6 +183,7 @@ class App extends Component {
 					{this.state.debts.map((debt, index) => {
 						return (
 							<Debt
+								chartData={debt.chartData}
 								debtIndex={index}
 								handleFormChanged={this.handleDebtFormChanged}
 							/>
@@ -177,5 +207,3 @@ class App extends Component {
 		);
 	}
 }
-
-export default App;

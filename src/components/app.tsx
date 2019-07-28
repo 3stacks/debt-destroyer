@@ -13,7 +13,7 @@ import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
-import axios from 'axios';
+import Fab from '@material-ui/core/Fab';
 import styled from 'styled-components';
 import Debt from './debt';
 
@@ -25,16 +25,25 @@ const Accoutrements = styled.div`
 	}
 `;
 
-function parseDebt(debt) {
-	return {
-		id: debt.name,
-		amount: parseInt(debt.amount, 10),
-		interest: parseInt(debt.rate, 10),
-		minPayment: parseInt(debt.repayment, 10)
-	};
+interface IProps {
+
 }
 
-export default class App extends Component {
+interface IDebt {
+	name: string,
+	amount: string,
+	rate: string,
+	repayment: string,
+}
+
+interface IState {
+	isAboutDialogOpen: boolean,
+	debts: Array<IDebt>,
+	extraContributions: string,
+	debtPayoffMethod: string
+}
+
+export default class App extends Component<IProps, IState> {
 	state = {
 		isAboutDialogOpen: false,
 		debts: [],
@@ -60,17 +69,22 @@ export default class App extends Component {
 				...state,
 				debts: [
 					...state.debts,
-					{}
+					{
+						name: '',
+						amount: '',
+						rate: '',
+						repayment: ''
+					}
 				]
 			}
 		});
 	};
 
-	handleDebtFormChanged = (debtIndex, values) => {
+	handleDebtFormChanged = (debtIndex : number, values : any) => {
 		this.setState(state => {
 			return {
 				...state,
-				debts: state.debts.map((debt, index) => {
+				debts: state.debts.map((debt : IDebt, index : number) => {
 					if (index === debtIndex) {
 						return values;
 					}
@@ -78,48 +92,15 @@ export default class App extends Component {
 					return debt;
 				})
 			};
-		}, () => {
-			if (values.name && values.amount && values.repayment && values.rate) {
-				axios(
-					process.env.REACT_APP_API_URL,
-					{
-						method: 'POST',
-						headers: {
-							Authorization: process.env.REACT_APP_API_KEY
-						},
-						data: {
-							extraContributions: parseInt(this.state.extraContributions, 10),
-							debtMethod: this.state.debtPayoffMethod,
-							debts: this.state.debts.map(parseDebt)
-						}
-					}
-				).then(({data}) => {
-					this.setState(state => {
-						return {
-							...state,
-							debts: state.debts.map((debt, index) => {
-								if (debtIndex === index) {
-									return {
-										...debt,
-										chartData: data.find(datum => datum.id === debt.name)
-									}
-								}
-
-								return debt;
-							})
-						};
-					});
-				});
-			}
 		});
 	};
 
-	handleChange = name => event => {
+	handleChange = (name : string) => (event : React.ChangeEvent<HTMLInputElement>) => {
 		const newValue = event.target.value;
 
 		this.setState({
 			[name]: newValue
-		});
+		} as any);
 	};
 
 	render() {
@@ -153,7 +134,7 @@ export default class App extends Component {
 							<RadioGroup
 								name="debt_payoff_method"
 								value={this.state.debtPayoffMethod}
-								onChange={this.handleChange}
+								onChange={this.handleChange as any}
 							>
 								<FormControlLabel
 									value="snowball"
@@ -183,22 +164,21 @@ export default class App extends Component {
 					{this.state.debts.map((debt, index) => {
 						return (
 							<Debt
-								chartData={debt.chartData}
+								{...debt}
 								debtIndex={index}
 								handleFormChanged={this.handleDebtFormChanged}
 							/>
 						);
 					})}
 				</div>
-				<Button
-					variant="fab"
+				<Fab
 					color="primary"
 					aria-label="Add"
 					style={{position: 'fixed', bottom: 10, right: 10}}
 					onClick={this.handleAddDebtButtonPressed}
 				>
 					<AddIcon />
-				</Button>
+				</Fab>
 				<AboutDialog
 					isOpen={this.state.isAboutDialogOpen}
 					onCloseRequested={this.handleAboutDialogCloseRequested}

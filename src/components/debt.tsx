@@ -3,9 +3,9 @@ import Paper from '@material-ui/core/Paper';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Typography from '@material-ui/core/Typography';
-import Chart from 'chart.js';
 import styled from 'styled-components';
 import debounce from 'lodash/debounce';
+import {ComposedChart, Tooltip, XAxis, YAxis, Bar, Line, Legend} from 'recharts';
 
 const InputWrapper = styled.div`
 	margin-bottom: 20px;
@@ -13,17 +13,53 @@ const InputWrapper = styled.div`
 
 const Wrapper = styled.div`
 	margin-bottom: 24px;
+	display: grid;
+	grid-gap: 24px;
+	grid-template-columns: 200px auto;
 `;
 
-export default class Debt extends React.Component {
+interface IProps {
+	debtIndex: number,
+	handleFormChanged: (debtIndex : number, newState : IState) => void
+}
+
+interface IState {
+	name: string,
+	amount: string,
+	rate: string,
+	repayment: string,
+	data: any
+}
+
+export default class Debt extends React.Component<IProps, IState> {
 	state = {
 		name: `Debt ${this.props.debtIndex + 1}`,
 		amount: '',
 		rate: '',
-		repayment: ''
+		repayment: '',
+		data: [
+			{
+				"month": "Aug",
+				"repayment": 4000,
+				"balance": 2400,
+			},
+			{
+				"month": "Aug",
+				"repayment": 3000,
+				"balance": 1398,
+			},
+			{
+				"month": "Aug",
+				"repayment": 2000,
+				"balance": 9800,
+			},
+			{
+				"month": "Aug",
+				"repayment": 2780,
+				"balance": 3908,
+			}
+		]
 	};
-
-	canvas = null;
 
 	handleFormUpdated = debounce(() => {
 		this.props.handleFormChanged(
@@ -32,79 +68,18 @@ export default class Debt extends React.Component {
 		);
 	}, 300);
 
-	handleChange = name => event => {
+	handleChange = (name : string) => (event: React.ChangeEvent<any>) => {
 		const newValue = event.target.value;
 
 		this.setState({
 			[name]: newValue
-		}, this.handleFormUpdated);
+		} as any, this.handleFormUpdated);
 	};
-
-	componentDidUpdate(prevProps, prevState) {
-		if (this.props.chartData) {
-			console.log(this.props.chartData);
-			new Chart(this.canvas, {
-				type: 'bar',
-				data: {
-					labels: Object.keys(this.props.chartData.repayments),
-					datasets: [
-						{
-							label: 'Amount Paid',
-							type: 'line',
-							borderColor: '#ee000',
-							backgroundColor: '#ee000',
-							fill: false,
-							data: Object.values(this.props.chartData.repayments).map(repayment => repayment.amountPaid)
-						},
-						{
-							label: 'Amount Remaining',
-							type: 'bar',
-							yAxisId: 'amount_left',
-							backgroundColor: '#ee000',
-							borderColor: '#f0f',
-							data: Object.values(this.props.chartData.repayments).map(repayment => repayment.amountLeft)
-						}
-					]
-				},
-				options: {
-					tooltips: {
-						callbacks: {
-							label: function(tooltipItems, data) {
-								return data.datasets[tooltipItems.datasetIndex].label +': $' + tooltipItems.yLabel;
-							}
-						}
-					},
-					title: {
-						display: true,
-						text: this.state.name,
-						position: 'top'
-					},
-					legend: {
-						position: 'bottom'
-					},
-					scales: {
-						yAxes: [
-							{
-								stacked: false,
-								position: 'left',
-								id: 'amount_left'
-							}
-						]
-					}
-				}
-			});
-		}
-	}
 
 	render() {
 		return (
 			<Wrapper>
-				<Paper
-					className="debt-input-wrapper"
-					style={{
-						marginRight: 20
-					}}
-				>
+				<Paper className="debt-input-wrapper">
 					<Typography variant="h6" component="p">
 						{this.state.name}
 					</Typography>
@@ -112,7 +87,7 @@ export default class Debt extends React.Component {
 						<TextField
 							label="Name"
 							InputProps={{
-								startAdornment: <InputAdornment />
+								startAdornment: <InputAdornment position="start" />
 							}}
 							onChange={this.handleChange('name')}
 							value={this.state.name}
@@ -132,7 +107,7 @@ export default class Debt extends React.Component {
 						<TextField
 							label="Rate"
 							InputProps={{
-								startAdornment: <InputAdornment />,
+								startAdornment: <InputAdornment position="start"/>,
 								endAdornment: <InputAdornment position="start">%</InputAdornment>
 							}}
 							onChange={this.handleChange('rate')}
@@ -141,7 +116,7 @@ export default class Debt extends React.Component {
 					</InputWrapper>
 					<InputWrapper>
 						<TextField
-							label="Minimum monthly repayment"
+							label="Monthly repayment"
 							InputProps={{
 								startAdornment: <InputAdornment position="end">$</InputAdornment>
 							}}
@@ -150,14 +125,14 @@ export default class Debt extends React.Component {
 						/>
 					</InputWrapper>
 				</Paper>
-				<div>
-					<canvas
-						ref={el => this.canvas = el}
-						id={this.state.name}
-						width="400"
-						height="400"
-					/>
-				</div>
+				<ComposedChart width={730} height={250} data={this.state.data}>
+					<XAxis dataKey="month" />
+					<YAxis />
+					<Tooltip />
+					<Legend />
+					<Bar dataKey="balance" barSize={20} fill="#413ea0" />
+					<Line type="monotone" dataKey="repayment" stroke="#ff7300" />
+				</ComposedChart>
 			</Wrapper>
 		);
 	}

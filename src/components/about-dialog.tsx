@@ -6,7 +6,7 @@ import DialogActions from '@material-ui/core/DialogActions/DialogActions';
 import Button from '@material-ui/core/Button/Button';
 import Dialog from '@material-ui/core/Dialog/Dialog';
 
-export default function({isOpen, onCloseRequested}) {
+export default function({isOpen, onCloseRequested} : {isOpen: boolean, onCloseRequested: () => void}) {
 	return (
 		<Dialog
 			open={isOpen}

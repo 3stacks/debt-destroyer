@@ -5,7 +5,6 @@ import AboutDialog from './about-dialog';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import HelpIcon from '@material-ui/icons/HelpOutline';
 import Button from '@material-ui/core/Button';
-import AddIcon from '@material-ui/icons/Add';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Radio from '@material-ui/core/Radio';
@@ -13,10 +12,11 @@ import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
-import Fab from '@material-ui/core/Fab';
 import styled from 'styled-components';
 import SnowballDialog from './snowball-dialog';
 import DebtTable from './debt-table';
+import StackedBarChart, {parseChartData} from "./stacked-bar-chart";
+import chartData from '../data/sample-chart-data.js';
 
 const Accoutrements = styled.div`
 	margin-bottom: 24px;
@@ -104,21 +104,6 @@ export default class App extends Component<IProps, IState> {
 		});
 	};
 
-	handleDebtFormChanged = (debtIndex: number, values: any) => {
-		this.setState(state => {
-			return {
-				...state,
-				debts: state.debts.map((debt: IDebt, index: number) => {
-					if (index === debtIndex) {
-						return values;
-					}
-
-					return debt;
-				})
-			};
-		});
-	};
-
 	handleChange = (name: string) => (event: React.ChangeEvent<any>) => {
 		const newValue = event.target.value;
 
@@ -196,6 +181,7 @@ export default class App extends Component<IProps, IState> {
 						/>
 					</Accoutrements>
 					<DebtTable />
+					<StackedBarChart months={parseChartData(chartData)}/>
 				</div>
 				<AboutDialog
 					isOpen={this.state.isAboutDialogOpen}

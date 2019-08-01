@@ -4,6 +4,7 @@ import TableRow from '@material-ui/core/TableRow';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
+import AddIcon from '@material-ui/icons/Add';
 import { IDebt } from './app';
 import InputAdornment from '@material-ui/core/InputAdornment/InputAdornment';
 import TextField from '@material-ui/core/TextField/TextField';
@@ -164,7 +165,7 @@ export default class DebtTable extends React.Component<any, IState> {
 					<TableRow>
 						<TableCell colSpan={4}>
 							<ButtonBase onClick={this.handleNewRowRequested}>
-								+ Add Row
+								<AddIcon /> Add Row
 							</ButtonBase>
 						</TableCell>
 					</TableRow>

@@ -1,81 +1,25 @@
 import * as React from 'react';
-import {
-	BarChart, Bar, XAxis, YAxis, Tooltip, Legend,
-} from 'recharts';
-import chartData from '../data/sample-chart-data';
-import formatDate from 'date-fns/format';
-import addMonths from 'date-fns/add_months';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { IStackData } from '../utils';
+import red from '@material-ui/core/colors/red';
+import blue from '@material-ui/core/colors/blue';
+import green from '@material-ui/core/colors/green';
+import pink from '@material-ui/core/colors/pink';
+import deepOrange from '@material-ui/core/colors/deepOrange';
+import { IDebt } from './app';
 
-interface IStackData {
-	month: string,
-	values: {
-		[debtName : string]: number
-	}
-}
-
-export function parseChartData(rawChartData : any) : IStackData[] {
-	const a =  [
-		{
-			month: 'Aug 2019',
-			values: {
-				'some-debt': 1000,
-				'another-one': 1200,
-				'another-two': 1200
-			}
-		},
-		{
-			month: 'Sep 2019',
-			values: {
-				'some-debt': 400,
-				'another-one': 2900,
-				'another-two': 6200
-			}
-		}
-	]
-
-	const numberOfMonthsUntilDebtsPaidOff = Math.max(...chartData.map(debt => {
-		return Object.keys(debt.repayments).length;
-	}));
-
-	const months = new Array(numberOfMonthsUntilDebtsPaidOff).fill(true).map((month, index) => {
-		const parsedMonth = addMonths(new Date(), index);
-
-		return {
-			month: `${index + 1}`,
-			values: {}
-		}
-	});
-
-	return months.map((month, index) => {
-		const debts = chartData.reduce((acc, debt) => {
-			const monthIndex : string = `${index + 1}` as any;
-			// @ts-ignore
-			const foundDebtRepayment = debt.repayments[monthIndex];
-
-			if (foundDebtRepayment) {
-				return {
-					...acc,
-					[debt.id]: foundDebtRepayment.amountPaid
-				};
-			}
-
-			return acc;
-		}, {});
-
-		return {
-			...month,
-			values: debts
-		};
-	});
-}
+const colours = [red[500], blue[500], green[500], pink[500], deepOrange[500]];
 
 interface IProps {
-	months: IStackData[]
+	months: IStackData[];
+	width: number;
+	debts: IDebt[];
 }
 
 function getRandomColor() {
 	const letters = '0123456789ABCDEF';
 	let color = '#';
+
 	for (let i = 0; i < 6; i++) {
 		color += letters[Math.floor(Math.random() * 16)];
 	}
@@ -85,16 +29,32 @@ function getRandomColor() {
 export default class StackedBarChart extends React.Component<IProps> {
 	render() {
 		return (
-			<BarChart width={500} height={300} data={this.props.months}>
+			<BarChart
+				width={this.props.width}
+				height={this.props.width * 0.6}
+				data={this.props.months}
+				style={{ paddingTop: 24 }}
+			>
 				<XAxis dataKey="month" />
 				<YAxis />
-				<Tooltip />
+				<Tooltip formatter={value => `$${value}`} />
 				<Legend />
-				{Object.keys(this.props.months[0].values).map(value => {
-					return (
-						<Bar dataKey={`values.${value}`} stackId="a" fill={getRandomColor()} />
-					);
-				})}
+				{Object.keys(this.props.months[0].values).map(
+					(value, index) => {
+						return (
+							<Bar
+								dataKey={`values.${value}`}
+								name={
+									this.props.debts.find(
+										debt => debt.id === value
+									)!.name
+								}
+								stackId="a"
+								fill={colours[index % colours.length]}
+							/>
+						);
+					}
+				)}
 			</BarChart>
 		);
 	}

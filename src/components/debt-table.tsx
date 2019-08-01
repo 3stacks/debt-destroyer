@@ -9,10 +9,12 @@ import { IDebt } from './app';
 import InputAdornment from '@material-ui/core/InputAdornment/InputAdornment';
 import TextField from '@material-ui/core/TextField/TextField';
 import ButtonBase from '@material-ui/core/ButtonBase';
+import nanoid from 'nanoid';
 
 function debtFactory(): IDebt {
 	return {
 		name: '',
+		id: nanoid(),
 		amount: '',
 		repayment: '',
 		rate: ''
@@ -45,17 +47,29 @@ interface IState {
 
 export default class DebtTable extends React.Component<any, IState> {
 	state = {
-		rows: new Array(4).fill(debtFactory()).map(
-			(row: IDebt): IDebt => {
-				return {
-					...row,
-					name: 'fuck you',
-					amount: '10000',
-					rate: '4',
-					repayment: '100'
-				};
+		rows: [
+			{
+				name: 'AMEX',
+				id: nanoid(),
+				amount: '10000',
+				rate: '16',
+				repayment: '450'
+			},
+			{
+				name: 'CBA',
+				id: nanoid(),
+				amount: '6000',
+				rate: '12',
+				repayment: '200'
+			},
+			{
+				name: 'Car Loan',
+				id: nanoid(),
+				amount: '9450',
+				rate: '7',
+				repayment: '600'
 			}
-		)
+		]
 	};
 
 	handleNewRowRequested = () => {
@@ -72,10 +86,26 @@ export default class DebtTable extends React.Component<any, IState> {
 	) => {
 		const newValue = event.target.value;
 
+		this.setState(
+			state => {
+				return {
+					...state,
+					rows: editRow(state.rows, debtIndex, debtProperty, newValue)
+				};
+			},
+			() => {
+				this.props.onDebtChanged(this.state.rows);
+			}
+		);
+	};
+
+	handleRowRemoveRequested = (rowId: string) => () => {
 		this.setState(state => {
 			return {
 				...state,
-				rows: editRow(state.rows, debtIndex, debtProperty, newValue)
+				rows: state.rows.filter(row => {
+					return row.id !== rowId;
+				})
 			};
 		});
 	};
@@ -89,16 +119,17 @@ export default class DebtTable extends React.Component<any, IState> {
 						<TableCell>Amount</TableCell>
 						<TableCell>Interest rate (%)</TableCell>
 						<TableCell>Min. monthly repayment ($)</TableCell>
+						<TableCell>Action</TableCell>
 					</TableRow>
 				</TableHead>
 				<TableBody>
 					{this.state.rows.map(
-						({ name, amount, repayment, rate }, index) => {
+						({ id, name, amount, repayment, rate }, index) => {
 							const changeHandler = (debtProperty: keyof IDebt) =>
 								this.handleChange(debtProperty, index);
 
 							return (
-								<TableRow>
+								<TableRow key={id}>
 									<TableCell>
 										<TextField
 											label="Name"
@@ -158,12 +189,21 @@ export default class DebtTable extends React.Component<any, IState> {
 											value={repayment}
 										/>
 									</TableCell>
+									<TableCell>
+										<ButtonBase
+											onClick={this.handleRowRemoveRequested(
+												id
+											)}
+										>
+											Remove
+										</ButtonBase>
+									</TableCell>
 								</TableRow>
 							);
 						}
 					)}
 					<TableRow>
-						<TableCell colSpan={4}>
+						<TableCell colSpan={5}>
 							<ButtonBase onClick={this.handleNewRowRequested}>
 								<AddIcon /> Add Row
 							</ButtonBase>

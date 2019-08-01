@@ -15,8 +15,8 @@ import FormLabel from '@material-ui/core/FormLabel';
 import styled from 'styled-components';
 import SnowballDialog from './snowball-dialog';
 import DebtTable from './debt-table';
-import StackedBarChart, {parseChartData} from "./stacked-bar-chart";
-import chartData from '../data/sample-chart-data.js';
+import StackedBarChart from './stacked-bar-chart';
+import { calculateDebts, parseChartData } from '../utils';
 
 const Accoutrements = styled.div`
 	margin-bottom: 24px;
@@ -30,6 +30,7 @@ interface IProps {}
 
 export interface IDebt {
 	name: string;
+	id: string;
 	amount: string;
 	rate: string;
 	repayment: string;
@@ -38,9 +39,9 @@ export interface IDebt {
 enum APP_STATE_KEYS {
 	IS_ABOUT_DIALOG_OPEN = 'isAboutDialogOpen',
 	IS_SNOWBALL_DIALOG_OPEN = 'isSnowballDialogOpen',
+	DEBTS = 'debts',
 	EXTRA_CONTRIBUTIONS = 'extraContributions',
-	DEBT_PAYOFF_METHOD = 'debtPayoffMethod',
-	DEBTS = 'debts'
+	DEBT_PAYOFF_METHOD = 'debtPayoffMethod'
 }
 
 enum DEBT_PAYOFF_METHODS {
@@ -51,17 +52,19 @@ enum DEBT_PAYOFF_METHODS {
 interface IState {
 	[APP_STATE_KEYS.IS_ABOUT_DIALOG_OPEN]: boolean;
 	[APP_STATE_KEYS.IS_SNOWBALL_DIALOG_OPEN]: boolean;
-	[APP_STATE_KEYS.DEBTS]: Array<IDebt>;
+	[APP_STATE_KEYS.DEBTS]: IDebt[];
 	[APP_STATE_KEYS.EXTRA_CONTRIBUTIONS]: string;
 	[APP_STATE_KEYS.DEBT_PAYOFF_METHOD]: DEBT_PAYOFF_METHODS;
 }
 
 export default class App extends Component<IProps, IState> {
+	wrapper: HTMLDivElement | null = null;
+
 	state = {
 		isAboutDialogOpen: false,
 		isSnowballDialogOpen: false,
-		debts: [],
 		extraContributions: '0',
+		debts: [],
 		debtPayoffMethod: DEBT_PAYOFF_METHODS.SNOWBALL
 	};
 
@@ -87,23 +90,6 @@ export default class App extends Component<IProps, IState> {
 		});
 	};
 
-	handleAddDebtButtonPressed = () => {
-		this.setState(state => {
-			return {
-				...state,
-				debts: [
-					...state.debts,
-					{
-						name: '',
-						amount: '',
-						rate: '',
-						repayment: ''
-					}
-				]
-			};
-		});
-	};
-
 	handleChange = (name: string) => (event: React.ChangeEvent<any>) => {
 		const newValue = event.target.value;
 
@@ -111,6 +97,15 @@ export default class App extends Component<IProps, IState> {
 			return {
 				...state,
 				[name]: newValue
+			};
+		});
+	};
+
+	handleDebtChanged = newDebts => {
+		this.setState(state => {
+			return {
+				...state,
+				debts: newDebts
 			};
 		});
 	};
@@ -131,7 +126,7 @@ export default class App extends Component<IProps, IState> {
 					</ButtonBase>
 				</AppBar>
 				<div className="max-width-container">
-					<Accoutrements>
+					<Accoutrements ref={el => (this.wrapper = el)}>
 						<FormControl component="fieldset">
 							<FormLabel component="legend">
 								Debt payoff method
@@ -180,8 +175,23 @@ export default class App extends Component<IProps, IState> {
 							helperText="How much extra can you afford per month?"
 						/>
 					</Accoutrements>
-					<DebtTable />
-					<StackedBarChart months={parseChartData(chartData)}/>
+					<DebtTable onDebtChanged={this.handleDebtChanged} />
+					{this.state.debts.length > 0 && (
+						<StackedBarChart
+							width={this.wrapper!.getBoundingClientRect().width}
+							months={parseChartData(
+								calculateDebts({
+									debts: this.state.debts,
+									debtMethod: this.state.debtPayoffMethod,
+									extraContributions: parseInt(
+										this.state.extraContributions,
+										10
+									)
+								})
+							)}
+							debts={this.state.debts}
+						/>
+					)}
 				</div>
 				<AboutDialog
 					isOpen={this.state.isAboutDialogOpen}

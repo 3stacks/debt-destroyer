@@ -15,33 +15,45 @@ import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
 import Fab from '@material-ui/core/Fab';
 import styled from 'styled-components';
-import Debt from './debt';
-import SnowballDialog from "./snowball-dialog";
+import SnowballDialog from './snowball-dialog';
+import DebtTable from './debt-table';
 
 const Accoutrements = styled.div`
 	margin-bottom: 24px;
-	
+
 	fieldset {
 		margin-right: 20px;
 	}
 `;
 
-interface IProps {
+interface IProps {}
 
+export interface IDebt {
+	name: string;
+	amount: string;
+	rate: string;
+	repayment: string;
 }
 
-interface IDebt {
-	name: string,
-	amount: string,
-	rate: string,
-	repayment: string,
+enum APP_STATE_KEYS {
+	IS_ABOUT_DIALOG_OPEN = 'isAboutDialogOpen',
+	IS_SNOWBALL_DIALOG_OPEN = 'isSnowballDialogOpen',
+	EXTRA_CONTRIBUTIONS = 'extraContributions',
+	DEBT_PAYOFF_METHOD = 'debtPayoffMethod',
+	DEBTS = 'debts'
+}
+
+enum DEBT_PAYOFF_METHODS {
+	SNOWBALL = 'snowball',
+	AVALANCHE = 'avalanche'
 }
 
 interface IState {
-	isAboutDialogOpen: boolean,
-	debts: Array<IDebt>,
-	extraContributions: string,
-	debtPayoffMethod: string
+	[APP_STATE_KEYS.IS_ABOUT_DIALOG_OPEN]: boolean;
+	[APP_STATE_KEYS.IS_SNOWBALL_DIALOG_OPEN]: boolean;
+	[APP_STATE_KEYS.DEBTS]: Array<IDebt>;
+	[APP_STATE_KEYS.EXTRA_CONTRIBUTIONS]: string;
+	[APP_STATE_KEYS.DEBT_PAYOFF_METHOD]: DEBT_PAYOFF_METHODS;
 }
 
 export default class App extends Component<IProps, IState> {
@@ -50,20 +62,29 @@ export default class App extends Component<IProps, IState> {
 		isSnowballDialogOpen: false,
 		debts: [],
 		extraContributions: '0',
-		debtPayoffMethod: 'snowball'
+		debtPayoffMethod: DEBT_PAYOFF_METHODS.SNOWBALL
 	};
 
-	handleDialogCloseRequested = (whichDialog : string) => () => {
-		console.log(whichDialog)
-		this.setState({
-			[whichDialog]: false
-		} as any);
+	handleDialogCloseRequested = (
+		whichDialog:
+			| APP_STATE_KEYS.IS_SNOWBALL_DIALOG_OPEN
+			| APP_STATE_KEYS.IS_ABOUT_DIALOG_OPEN
+	) => () => {
+		this.setState(state => {
+			return {
+				...state,
+				[whichDialog]: false
+			};
+		});
 	};
 
-	handleDialogOpenRequested = (whichDialog : string) => () =>{
-		this.setState({
-			[whichDialog]: true
-		} as any);
+	handleDialogOpenRequested = (whichDialog: APP_STATE_KEYS) => () => {
+		this.setState(state => {
+			return {
+				...state,
+				[whichDialog]: true
+			};
+		});
 	};
 
 	handleAddDebtButtonPressed = () => {
@@ -79,15 +100,15 @@ export default class App extends Component<IProps, IState> {
 						repayment: ''
 					}
 				]
-			}
+			};
 		});
 	};
 
-	handleDebtFormChanged = (debtIndex : number, values : any) => {
+	handleDebtFormChanged = (debtIndex: number, values: any) => {
 		this.setState(state => {
 			return {
 				...state,
-				debts: state.debts.map((debt : IDebt, index : number) => {
+				debts: state.debts.map((debt: IDebt, index: number) => {
 					if (index === debtIndex) {
 						return values;
 					}
@@ -98,32 +119,28 @@ export default class App extends Component<IProps, IState> {
 		});
 	};
 
-	handleChange = (name : string) => (event : React.ChangeEvent<HTMLInputElement>) => {
+	handleChange = (name: string) => (event: React.ChangeEvent<any>) => {
 		const newValue = event.target.value;
 
-		console.log(event);
-
-		this.setState({
-			[name]: newValue
-		} as any);
+		this.setState(state => {
+			return {
+				...state,
+				[name]: newValue
+			};
+		});
 	};
 
 	render() {
 		return (
-			<Typography
-				variant="body1"
-				component="div"
-				className="root"
-			>
-				<AppBar
-					className="app-bar"
-					position="static"
-				>
+			<Typography variant="body1" component="div" className="root">
+				<AppBar className="app-bar" position="static">
 					<Typography variant="h5" component="h1" color="inherit">
 						Debt Destroyer
 					</Typography>
 					<ButtonBase
-						onClick={this.handleDialogOpenRequested('isAboutDialogOpen')}
+						onClick={this.handleDialogOpenRequested(
+							APP_STATE_KEYS.IS_ABOUT_DIALOG_OPEN
+						)}
 					>
 						<HelpIcon />
 					</ButtonBase>
@@ -131,15 +148,15 @@ export default class App extends Component<IProps, IState> {
 				<div className="max-width-container">
 					<Accoutrements>
 						<FormControl component="fieldset">
-							<FormLabel
-								component="legend"
-							>
+							<FormLabel component="legend">
 								Debt payoff method
 							</FormLabel>
 							<RadioGroup
 								name="debt_payoff_method"
 								value={this.state.debtPayoffMethod}
-								onChange={this.handleChange('debtPayoffMethod') as any}
+								onChange={this.handleChange(
+									APP_STATE_KEYS.DEBT_PAYOFF_METHOD
+								)}
 							>
 								<FormControlLabel
 									value="snowball"
@@ -151,7 +168,13 @@ export default class App extends Component<IProps, IState> {
 									control={<Radio />}
 									label="Avalanche"
 								/>
-								<Button color="primary" variant="contained" onClick={this.handleDialogOpenRequested('isSnowballDialogOpen') as any}>
+								<Button
+									color="primary"
+									variant="contained"
+									onClick={this.handleDialogOpenRequested(
+										APP_STATE_KEYS.IS_SNOWBALL_DIALOG_OPEN
+									)}
+								>
 									What is this?
 								</Button>
 							</RadioGroup>
@@ -159,38 +182,32 @@ export default class App extends Component<IProps, IState> {
 						<TextField
 							label="Extra contributions"
 							InputProps={{
-								startAdornment: <InputAdornment position="end">$</InputAdornment>
+								startAdornment: (
+									<InputAdornment position="end">
+										$
+									</InputAdornment>
+								)
 							}}
-							onChange={this.handleChange('extraContributions')}
+							onChange={this.handleChange(
+								APP_STATE_KEYS.EXTRA_CONTRIBUTIONS
+							)}
 							value={this.state.extraContributions}
 							helperText="How much extra can you afford per month?"
 						/>
 					</Accoutrements>
-					{this.state.debts.map((debt, index) => {
-						return (
-							<Debt
-								{...debt}
-								debtIndex={index}
-								handleFormChanged={this.handleDebtFormChanged}
-							/>
-						);
-					})}
+					<DebtTable />
 				</div>
-				<Fab
-					color="primary"
-					aria-label="Add"
-					style={{position: 'fixed', bottom: 10, right: 10}}
-					onClick={this.handleAddDebtButtonPressed}
-				>
-					<AddIcon />
-				</Fab>
 				<AboutDialog
 					isOpen={this.state.isAboutDialogOpen}
-					onCloseRequested={this.handleDialogCloseRequested('isAboutDialogOpen')}
+					onCloseRequested={this.handleDialogCloseRequested(
+						APP_STATE_KEYS.IS_ABOUT_DIALOG_OPEN
+					)}
 				/>
 				<SnowballDialog
 					isOpen={this.state.isSnowballDialogOpen}
-					onCloseRequested={this.handleDialogCloseRequested('isSnowballDialogOpen')}
+					onCloseRequested={this.handleDialogCloseRequested(
+						APP_STATE_KEYS.IS_SNOWBALL_DIALOG_OPEN
+					)}
 				/>
 			</Typography>
 		);

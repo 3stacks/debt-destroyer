@@ -16,6 +16,7 @@ import FormLabel from '@material-ui/core/FormLabel';
 import Fab from '@material-ui/core/Fab';
 import styled from 'styled-components';
 import Debt from './debt';
+import SnowballDialog from "./snowball-dialog";
 
 const Accoutrements = styled.div`
 	margin-bottom: 24px;
@@ -46,21 +47,23 @@ interface IState {
 export default class App extends Component<IProps, IState> {
 	state = {
 		isAboutDialogOpen: false,
+		isSnowballDialogOpen: false,
 		debts: [],
 		extraContributions: '0',
 		debtPayoffMethod: 'snowball'
 	};
 
-	handleAboutDialogCloseRequested = () => {
+	handleDialogCloseRequested = (whichDialog : string) => () => {
+		console.log(whichDialog)
 		this.setState({
-			isAboutDialogOpen: false
-		});
+			[whichDialog]: false
+		} as any);
 	};
 
-	handleAboutDialogOpenRequested = () =>{
+	handleDialogOpenRequested = (whichDialog : string) => () =>{
 		this.setState({
-			isAboutDialogOpen: true
-		});
+			[whichDialog]: true
+		} as any);
 	};
 
 	handleAddDebtButtonPressed = () => {
@@ -98,6 +101,8 @@ export default class App extends Component<IProps, IState> {
 	handleChange = (name : string) => (event : React.ChangeEvent<HTMLInputElement>) => {
 		const newValue = event.target.value;
 
+		console.log(event);
+
 		this.setState({
 			[name]: newValue
 		} as any);
@@ -118,7 +123,7 @@ export default class App extends Component<IProps, IState> {
 						Debt Destroyer
 					</Typography>
 					<ButtonBase
-						onClick={this.handleAboutDialogOpenRequested}
+						onClick={this.handleDialogOpenRequested('isAboutDialogOpen')}
 					>
 						<HelpIcon />
 					</ButtonBase>
@@ -134,7 +139,7 @@ export default class App extends Component<IProps, IState> {
 							<RadioGroup
 								name="debt_payoff_method"
 								value={this.state.debtPayoffMethod}
-								onChange={this.handleChange as any}
+								onChange={this.handleChange('debtPayoffMethod') as any}
 							>
 								<FormControlLabel
 									value="snowball"
@@ -146,9 +151,9 @@ export default class App extends Component<IProps, IState> {
 									control={<Radio />}
 									label="Avalanche"
 								/>
-								<ButtonBase>
+								<Button color="primary" variant="contained" onClick={this.handleDialogOpenRequested('isSnowballDialogOpen') as any}>
 									What is this?
-								</ButtonBase>
+								</Button>
 							</RadioGroup>
 						</FormControl>
 						<TextField
@@ -181,7 +186,11 @@ export default class App extends Component<IProps, IState> {
 				</Fab>
 				<AboutDialog
 					isOpen={this.state.isAboutDialogOpen}
-					onCloseRequested={this.handleAboutDialogCloseRequested}
+					onCloseRequested={this.handleDialogCloseRequested('isAboutDialogOpen')}
+				/>
+				<SnowballDialog
+					isOpen={this.state.isSnowballDialogOpen}
+					onCloseRequested={this.handleDialogCloseRequested('isSnowballDialogOpen')}
 				/>
 			</Typography>
 		);

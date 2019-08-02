@@ -12,6 +12,8 @@ import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 import styled from 'styled-components';
 import SnowballDialog from './snowball-dialog';
 import DebtTable from './debt-table';
@@ -22,6 +24,7 @@ import {
 	IStackData,
 	parseChartData
 } from '../utils';
+import Insights from './insights';
 
 const Accoutrements = styled.div`
 	margin-bottom: 24px;
@@ -54,12 +57,18 @@ enum DEBT_PAYOFF_METHODS {
 	AVALANCHE = 'avalanche'
 }
 
+enum TABS {
+	CHART = 'chart',
+	INSIGHTS = 'insight'
+}
+
 interface IState {
 	[APP_STATE_KEYS.IS_ABOUT_DIALOG_OPEN]: boolean;
 	[APP_STATE_KEYS.IS_SNOWBALL_DIALOG_OPEN]: boolean;
 	[APP_STATE_KEYS.DEBTS]: IDebt[];
 	[APP_STATE_KEYS.EXTRA_CONTRIBUTIONS]: string;
 	debtData: IRepaymentSchedule | null;
+	whichTab: number;
 	[APP_STATE_KEYS.DEBT_PAYOFF_METHOD]: DEBT_PAYOFF_METHODS;
 }
 
@@ -72,7 +81,8 @@ export default class App extends Component<IProps, IState> {
 		extraContributions: '0',
 		debts: [],
 		debtData: null,
-		debtPayoffMethod: DEBT_PAYOFF_METHODS.SNOWBALL
+		debtPayoffMethod: DEBT_PAYOFF_METHODS.SNOWBALL,
+		whichTab: 0
 	};
 
 	handleDialogCloseRequested = (
@@ -100,10 +110,33 @@ export default class App extends Component<IProps, IState> {
 	handleChange = (name: string) => (event: React.ChangeEvent<any>) => {
 		const newValue = event.target.value;
 
+		this.setState(
+			state => {
+				return {
+					...state,
+					[name]: newValue
+				};
+			},
+			() => {
+				if (
+					name === 'extraContributions' ||
+					name === 'debtPayoffMethod'
+				) {
+					this.calculate();
+				}
+			}
+		);
+	};
+
+	calculate = () => {
 		this.setState(state => {
 			return {
 				...state,
-				[name]: newValue
+				debtData: calculateDebts({
+					debts: state.debts,
+					debtMethod: state.debtPayoffMethod,
+					extraContributions: parseInt(state.extraContributions, 10)
+				})
 			};
 		});
 	};
@@ -112,15 +145,17 @@ export default class App extends Component<IProps, IState> {
 		this.setState(state => {
 			return {
 				...state,
-				debts: newDebts,
-				debtData: calculateDebts({
-					debts: newDebts,
-					debtMethod: this.state.debtPayoffMethod,
-					extraContributions: parseInt(
-						this.state.extraContributions,
-						10
-					)
-				})
+				debts: newDebts
+			};
+		}, this.calculate);
+	};
+
+	handleTabChanged = (event, newValue) => {
+		console.log(newValue);
+		this.setState(state => {
+			return {
+				...state,
+				whichTab: newValue
 			};
 		});
 	};
@@ -191,13 +226,29 @@ export default class App extends Component<IProps, IState> {
 						/>
 					</Accoutrements>
 					<DebtTable onDebtChanged={this.handleDebtChanged} />
-					{this.state.debts.length > 0 && (
-						<StackedBarChart
-							width={this.wrapper!.getBoundingClientRect().width}
-							months={parseChartData(this.state.debtData)}
-							debts={this.state.debts}
-						/>
-					)}
+					<Tabs
+						value={this.state.whichTab}
+						onChange={this.handleTabChanged}
+					>
+						<Tab label="Chart" />
+						<Tab label="Insights" />
+					</Tabs>
+					<div hidden={this.state.whichTab !== 0}>
+						{this.state.debtData && (
+							<StackedBarChart
+								width={
+									this.wrapper!.getBoundingClientRect().width
+								}
+								months={parseChartData(this.state.debtData)}
+								debts={this.state.debts}
+							/>
+						)}
+					</div>
+					<div hidden={this.state.whichTab !== 1}>
+						{this.state.debtData && (
+							<Insights debtData={this.state.debtData!} />
+						)}
+					</div>
 				</div>
 				<AboutDialog
 					isOpen={this.state.isAboutDialogOpen}

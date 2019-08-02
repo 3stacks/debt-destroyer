@@ -122,6 +122,7 @@ export interface IRepaymentSchedule {
 			[debtId: string]: {
 				remainingBalance: number;
 				amountPaid: number;
+				interestPaid: number;
 			};
 		};
 	}[];
@@ -174,11 +175,13 @@ function calculateRepayments(
 			{
 				month: lastMonth.month + 1,
 				values: debts.reduce((acc, debt) => {
+					const interestOnBalance = calculateMonthlyInterest(
+						debt.rate,
+						lastMonth.values[debt.id].remainingBalance
+					);
 					const balanceAsAtLastMonth =
-						calculateMonthlyInterest(
-							debt.rate,
-							lastMonth.values[debt.id].remainingBalance
-						) + lastMonth.values[debt.id].remainingBalance;
+						interestOnBalance +
+						lastMonth.values[debt.id].remainingBalance;
 
 					let amountPaid: number = 0;
 
@@ -187,6 +190,7 @@ function calculateRepayments(
 							...acc,
 							[debt.id]: {
 								amountPaid: 0,
+								interestPaid: 0,
 								remainingBalance: 0
 							}
 						};
@@ -205,6 +209,7 @@ function calculateRepayments(
 							...acc,
 							[debt.id]: {
 								amountPaid,
+								interestPaid: interestOnBalance,
 								remainingBalance: 0
 							}
 						};
@@ -221,6 +226,7 @@ function calculateRepayments(
 						...acc,
 						[debt.id]: {
 							amountPaid,
+							interestPaid: interestOnBalance,
 							remainingBalance: newRemainingBalance
 						}
 					};

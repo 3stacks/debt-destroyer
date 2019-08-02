@@ -1,6 +1,4 @@
 import { IDebt } from '../components/app';
-import formatDate from 'date-fns/format';
-import addMonths from 'date-fns/add_months';
 
 enum DEBT_PAYOFF_METHODS {
 	SNOWBALL = 'snowball',
@@ -66,8 +64,11 @@ function calculateMinimumMonthlyRepayment(
 	return monthlyInterest * debtAmount + debtAmount * 0.01;
 }
 
-function calculateMonthlyInterest(interest: number, debtAmount: number) {
-	return calculateMonthlyInterestRate(interest) * debtAmount * 100;
+function calculateMonthlyInterest(
+	interest: number,
+	debtAmount: number
+): number {
+	return calculateMonthlyInterestRate(interest) * debtAmount;
 }
 
 function isDebtValid(debt: IParsedDebt) {
@@ -97,7 +98,6 @@ function parseDebt(debt: IDebt): IParsedDebt {
 }
 
 export function parseChartData(rawChartData: any): IStackData[] {
-	console.log(rawChartData);
 	return rawChartData.months.map(month => {
 		return {
 			...month,
@@ -124,8 +124,6 @@ interface IRepaymentSchedule {
 	}[];
 }
 
-// TODO: calculate monthly interest
-// TODO: calculate extra contributions
 function calculateRepayments(
 	debts: IParsedDebt[],
 	repaymentSchedule: IRepaymentSchedule
@@ -138,60 +136,97 @@ function calculateRepayments(
 		  }, 0)
 		: 1;
 
-	if (totalDebtRemaining > 0) {
-		let extraFunds = 0;
-		const newRepaymentSchedule: IRepaymentSchedule = {
-			...repaymentSchedule,
-			months: [
-				...repaymentSchedule.months,
-				{
-					month: lastMonth.month + 1,
-					values: debts.reduce((acc, debt) => {
-						const balanceAsAtLastMonth =
-							lastMonth.values[debt.id].remainingBalance;
-						let amountPaid: number;
+	if (totalDebtRemaining <= 0) {
+		return repaymentSchedule;
+	}
 
-						if (balanceAsAtLastMonth <= 0) {
-							return {
-								...acc,
-								[debt.id]: {
-									amountPaid: 0,
-									remainingBalance: 0
-								}
-							};
-						}
+	let extraContributions = repaymentSchedule.extraContributions;
+	let paidOffDebts: IParsedDebt[] = Object.entries(lastMonth.values).reduce(
+		(acc, [key, value]) => {
+			const debt = debts.find(debt => debt.id === key);
 
-						if (balanceAsAtLastMonth < debt.repayment) {
-							amountPaid = balanceAsAtLastMonth;
-							extraFunds =
-								extraFunds +
-								(debt.repayment - balanceAsAtLastMonth);
-						} else {
-							amountPaid = debt.repayment + extraFunds;
+			if (value.remainingBalance <= 0 && debt) {
+				// @ts-ignore
+				acc.push(debt);
+			}
 
-							// Reset this value because we've just used it for this debt
-							extraFunds = 0;
-						}
+			return acc;
+		},
+		[]
+	);
+	/**
+	 * TODO: fix edge case where you pay off a non priority 1 debt and it
+	 * rolls funds into the next priority (e.g. priority 2 gets paid
+	 * off, the remainder of that month's payment goes to priority 3
+	 * instead of p1
+	 */
+	let extraFunds = paidOffDebts.reduce((acc, paidOffDebt) => {
+		return acc + paidOffDebt.repayment;
+	}, 0);
 
-						const newRemainingBalance =
-							balanceAsAtLastMonth - amountPaid;
+	const newRepaymentSchedule: IRepaymentSchedule = {
+		...repaymentSchedule,
+		months: [
+			...repaymentSchedule.months,
+			{
+				month: lastMonth.month + 1,
+				values: debts.reduce((acc, debt) => {
+					const balanceAsAtLastMonth =
+						calculateMonthlyInterest(
+							debt.rate,
+							lastMonth.values[debt.id].remainingBalance
+						) + lastMonth.values[debt.id].remainingBalance;
+
+					let amountPaid: number = 0;
+
+					if (balanceAsAtLastMonth <= 0) {
+						return {
+							...acc,
+							[debt.id]: {
+								amountPaid: 0,
+								remainingBalance: 0
+							}
+						};
+					}
+
+					extraFunds = extraFunds + extraContributions;
+					extraContributions = 0;
+
+					if (balanceAsAtLastMonth < debt.repayment) {
+						amountPaid = balanceAsAtLastMonth;
+						extraFunds =
+							extraFunds +
+							(debt.repayment - balanceAsAtLastMonth);
 
 						return {
 							...acc,
 							[debt.id]: {
 								amountPaid,
-								remainingBalance: newRemainingBalance
+								remainingBalance: 0
 							}
 						};
-					}, {})
-				}
-			]
-		};
+					}
 
-		return calculateRepayments(debts, newRepaymentSchedule);
-	}
+					amountPaid = debt.repayment + extraFunds;
 
-	return repaymentSchedule;
+					// Reset this value because we've just used it for this debt
+					extraFunds = 0;
+
+					const newRemainingBalance =
+						balanceAsAtLastMonth - amountPaid;
+					return {
+						...acc,
+						[debt.id]: {
+							amountPaid,
+							remainingBalance: newRemainingBalance
+						}
+					};
+				}, {})
+			}
+		]
+	};
+
+	return calculateRepayments(debts, newRepaymentSchedule);
 }
 
 export function calculateDebts({

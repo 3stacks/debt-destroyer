@@ -1,4 +1,6 @@
 import { IDebt } from '../components/app';
+import addMonths from 'date-fns/add_months';
+import formatDate from 'date-fns/format';
 
 enum DEBT_PAYOFF_METHODS {
 	SNOWBALL = 'snowball',
@@ -98,9 +100,10 @@ function parseDebt(debt: IDebt): IParsedDebt {
 }
 
 export function parseChartData(rawChartData: any): IStackData[] {
-	return rawChartData.months.map(month => {
+	return rawChartData.months.slice(1).map(month => {
 		return {
 			...month,
+			month: formatDate(addMonths(new Date(), month.month), 'MMM YY'),
 			values: Object.keys(month.values).reduce((acc, debtId: string) => {
 				return {
 					...acc,
@@ -111,7 +114,7 @@ export function parseChartData(rawChartData: any): IStackData[] {
 	});
 }
 
-interface IRepaymentSchedule {
+export interface IRepaymentSchedule {
 	extraContributions: number;
 	months: {
 		month: number;
@@ -233,7 +236,7 @@ export function calculateDebts({
 	debtMethod,
 	debts,
 	extraContributions
-}: ICalculateDebtArguments) {
+}: ICalculateDebtArguments): IRepaymentSchedule {
 	const parsedDebts = debts.map(parseDebt);
 	const validDebts = parsedDebts.filter(isDebtValid);
 

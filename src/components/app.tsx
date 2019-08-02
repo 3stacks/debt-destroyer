@@ -16,7 +16,12 @@ import styled from 'styled-components';
 import SnowballDialog from './snowball-dialog';
 import DebtTable from './debt-table';
 import StackedBarChart from './stacked-bar-chart';
-import { calculateDebts, parseChartData } from '../utils';
+import {
+	calculateDebts,
+	IRepaymentSchedule,
+	IStackData,
+	parseChartData
+} from '../utils';
 
 const Accoutrements = styled.div`
 	margin-bottom: 24px;
@@ -54,6 +59,7 @@ interface IState {
 	[APP_STATE_KEYS.IS_SNOWBALL_DIALOG_OPEN]: boolean;
 	[APP_STATE_KEYS.DEBTS]: IDebt[];
 	[APP_STATE_KEYS.EXTRA_CONTRIBUTIONS]: string;
+	debtData: IRepaymentSchedule | null;
 	[APP_STATE_KEYS.DEBT_PAYOFF_METHOD]: DEBT_PAYOFF_METHODS;
 }
 
@@ -65,6 +71,7 @@ export default class App extends Component<IProps, IState> {
 		isSnowballDialogOpen: false,
 		extraContributions: '0',
 		debts: [],
+		debtData: null,
 		debtPayoffMethod: DEBT_PAYOFF_METHODS.SNOWBALL
 	};
 
@@ -105,7 +112,15 @@ export default class App extends Component<IProps, IState> {
 		this.setState(state => {
 			return {
 				...state,
-				debts: newDebts
+				debts: newDebts,
+				debtData: calculateDebts({
+					debts: newDebts,
+					debtMethod: this.state.debtPayoffMethod,
+					extraContributions: parseInt(
+						this.state.extraContributions,
+						10
+					)
+				})
 			};
 		});
 	};
@@ -179,16 +194,7 @@ export default class App extends Component<IProps, IState> {
 					{this.state.debts.length > 0 && (
 						<StackedBarChart
 							width={this.wrapper!.getBoundingClientRect().width}
-							months={parseChartData(
-								calculateDebts({
-									debts: this.state.debts,
-									debtMethod: this.state.debtPayoffMethod,
-									extraContributions: parseInt(
-										this.state.extraContributions,
-										10
-									)
-								})
-							)}
+							months={parseChartData(this.state.debtData)}
 							debts={this.state.debts}
 						/>
 					)}

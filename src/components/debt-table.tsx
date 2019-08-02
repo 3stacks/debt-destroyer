@@ -81,6 +81,10 @@ export default class DebtTable extends React.Component<any, IState> {
 		});
 	};
 
+	componentDidMount() {
+		this.props.onDebtChanged(this.state.rows);
+	}
+
 	handleChange = (debtProperty: keyof IDebt, debtIndex: number) => (
 		event: any
 	) => {

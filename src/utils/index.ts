@@ -98,45 +98,15 @@ function parseDebt(debt: IDebt): IParsedDebt {
 
 export function parseChartData(rawChartData: any): IStackData[] {
 	console.log(rawChartData);
-	const numberOfMonthsUntilDebtsPaidOff = Math.max(
-		...rawChartData.map(debt => {
-			return Object.keys(debt.repayments).length;
-		})
-	);
-
-	const months = new Array(numberOfMonthsUntilDebtsPaidOff)
-		.fill(true)
-		.map((month, index) => {
-			const parsedMonth = formatDate(
-				addMonths(new Date(), index),
-				'MMM YYYY'
-			);
-
-			return {
-				month: parsedMonth,
-				values: {}
-			};
-		});
-
-	return months.map((month, index) => {
-		const debts = rawChartData.reduce((acc, debt) => {
-			const monthIndex: string = `${index + 1}` as any;
-			// @ts-ignore
-			const foundDebtRepayment = debt.repayments[monthIndex];
-
-			if (foundDebtRepayment) {
-				return {
-					...acc,
-					[debt.id]: foundDebtRepayment.amountPaid
-				};
-			}
-
-			return acc;
-		}, {});
-
+	return rawChartData.months.map(month => {
 		return {
 			...month,
-			values: debts
+			values: Object.keys(month.values).reduce((acc, debtId: string) => {
+				return {
+					...acc,
+					[debtId]: month.values[debtId].amountPaid
+				};
+			}, {})
 		};
 	});
 }
@@ -155,6 +125,7 @@ interface IRepaymentSchedule {
 }
 
 // TODO: calculate monthly interest
+// TODO: calculate extra contributions
 function calculateRepayments(
 	debts: IParsedDebt[],
 	repaymentSchedule: IRepaymentSchedule

@@ -137,11 +137,6 @@ export default class DebtTable extends React.Component<any, IState> {
 									<TableCell>
 										<TextField
 											label="Name"
-											InputProps={{
-												startAdornment: (
-													<InputAdornment position="start" />
-												)
-											}}
 											onChange={changeHandler('name')}
 											value={name}
 										/>
@@ -164,9 +159,6 @@ export default class DebtTable extends React.Component<any, IState> {
 										<TextField
 											label="Rate"
 											InputProps={{
-												startAdornment: (
-													<InputAdornment position="start" />
-												),
 												endAdornment: (
 													<InputAdornment position="start">
 														%

@@ -28,17 +28,6 @@ interface IParsedDebt {
 	repayment: number;
 }
 
-interface IPaidOffDebt extends IParsedDebt {
-	paidOffMonth: number;
-	repayment: number;
-	repayments: ICalculatedDebts;
-	amount: number;
-	id: string;
-	rate: number;
-	interestPaid: number;
-	totalPaid: number;
-}
-
 interface IRepayments {
 	amountLeft: number;
 	amountPaid: number;
@@ -47,19 +36,6 @@ interface IRepayments {
 
 interface ICalculatedDebts {
 	[key: string]: IRepayments;
-}
-
-let paidOffDebts: IPaidOffDebt[] = [];
-let extraUserContributions = 0;
-
-function getMinPaymentsFromPreviousDebts(month: number) {
-	return paidOffDebts.reduce((acc, curr) => {
-		if (month >= curr.paidOffMonth) {
-			return acc + curr.repayment * 100;
-		} else {
-			return acc;
-		}
-	}, 0);
 }
 
 export function sortArray(
@@ -84,7 +60,7 @@ function calculateMonthlyInterestRate(interest: number) {
 function calculateMinimumMonthlyRepayment(
 	interest: number,
 	debtAmount: number
-) {
+): number {
 	const monthlyInterest = calculateMonthlyInterestRate(interest);
 
 	return monthlyInterest * debtAmount + debtAmount * 0.01;
@@ -92,148 +68,6 @@ function calculateMinimumMonthlyRepayment(
 
 function calculateMonthlyInterest(interest: number, debtAmount: number) {
 	return calculateMonthlyInterestRate(interest) * debtAmount * 100;
-}
-
-function calculateRepayments(
-	debt: number,
-	repay: number,
-	interest: number,
-	month: number = 1,
-	valueSoFar: ICalculatedDebts = {},
-	extraContributions: number,
-	monthToAddExtraContributions: number | null,
-	rolloverFromLastDebt: number | null
-): ICalculatedDebts {
-	if (debt > 0) {
-		const adjustedRepayment =
-			!monthToAddExtraContributions ||
-			month >= monthToAddExtraContributions
-				? repay + extraContributions
-				: repay;
-		const monthlyInterest = calculateMonthlyInterest(interest, debt);
-		// This amount may be zero
-		const minPaymentsFromPreviousDebts = getMinPaymentsFromPreviousDebts(
-			month
-		);
-		// this is our 'new debt' amount except it doesn't account for the minPayments from other debts
-		const debtWithExtraContributions =
-			!!rolloverFromLastDebt &&
-			month === monthToAddExtraContributions! - 1
-				? debt +
-				  monthlyInterest -
-				  (adjustedRepayment +
-						rolloverFromLastDebt * 100 +
-						minPaymentsFromPreviousDebts)
-				: debt +
-				  monthlyInterest -
-				  (adjustedRepayment + minPaymentsFromPreviousDebts);
-		const parsedRollover =
-			!!rolloverFromLastDebt &&
-			month === monthToAddExtraContributions! - 1
-				? rolloverFromLastDebt * 100
-				: 0;
-
-		return calculateRepayments(
-			debtWithExtraContributions,
-			repay,
-			interest,
-			month + 1,
-			{
-				...valueSoFar,
-				[month]: {
-					amountLeft: debt / 100,
-					// If the debt left is less than our regular repayment, just pay what's left
-					amountPaid:
-						(debt <= adjustedRepayment + parsedRollover
-							? debt
-							: adjustedRepayment +
-							  parsedRollover +
-							  minPaymentsFromPreviousDebts) / 100,
-					interestPaid: monthlyInterest / 100
-				}
-			},
-			extraContributions,
-			monthToAddExtraContributions,
-			rolloverFromLastDebt
-		);
-	} else {
-		return {
-			...valueSoFar,
-			[month]: {
-				amountLeft: 0,
-				amountPaid: 0,
-				interestPaid: 0
-			}
-		};
-	}
-}
-
-function handleDebtCalculation(
-	debt: IParsedDebt,
-	prevDebtPaidOffMonth: number | null = null,
-	lastMonthLeftOverMoney: number | null = null
-) {
-	const { id, amount, rate, repayment } = debt;
-
-	const adjustedDebt = debt.amount * 100;
-	const adjustedRate = debt.rate / 100;
-	const adjustedRepayment = debt.repayment * 100;
-	const parsedExtraContributions =
-		extraUserContributions > 0 ? extraUserContributions * 100 : 0;
-	const repayments = calculateRepayments(
-		adjustedDebt,
-		adjustedRepayment,
-		adjustedRate,
-		1,
-		{},
-		parsedExtraContributions,
-		prevDebtPaidOffMonth,
-		lastMonthLeftOverMoney
-	);
-	const lastMonthOfRepayments = Math.max(
-		...Object.keys(repayments).map(month => parseInt(month, 10))
-	);
-
-	const interestPaid = Object.values(repayments).reduce((acc, curr) => {
-		return acc + curr.interestPaid;
-	}, 0);
-
-	const calculatedDebt = {
-		...debt,
-		id,
-		amount,
-		rate,
-		interestPaid,
-		repayment,
-		repayments,
-		totalPaid: interestPaid + debt.amount,
-		paidOffMonth: lastMonthOfRepayments
-	};
-
-	paidOffDebts.push(calculatedDebt);
-
-	return calculatedDebt;
-}
-
-function calculateDebt(debt: IParsedDebt, debtIndex: number) {
-	if (debtIndex === 0) {
-		return handleDebtCalculation(debt);
-	} else {
-		const previousDebt = paidOffDebts[paidOffDebts.length - 1];
-		const previousDebtBasePayment =
-			previousDebt.repayment + extraUserContributions;
-		const moneyLeftFromLastMonth =
-			previousDebtBasePayment -
-			Object.values(previousDebt.repayments)[
-				previousDebt.paidOffMonth - 1
-			].amountPaid /
-				100;
-		return handleDebtCalculation(
-			debt,
-			previousDebt.paidOffMonth,
-			moneyLeftFromLastMonth
-		);
-	}
 }
 
 function isDebtValid(debt: IParsedDebt) {
@@ -262,24 +96,8 @@ function parseDebt(debt: IDebt): IParsedDebt {
 	};
 }
 
-export function calculateDebts({
-	debtMethod,
-	debts,
-	extraContributions
-}: ICalculateDebtArguments) {
-	extraUserContributions = extraContributions || 0;
-	const parsedDebts = debts.map(parseDebt);
-	const validDebts = parsedDebts.filter(isDebtValid);
-
-	const sortedDebts =
-		debtMethod === DEBT_PAYOFF_METHODS.SNOWBALL
-			? sortArray(validDebts, sortByAmount)
-			: sortArray(validDebts, sortByRate).reverse();
-
-	return sortedDebts.map(calculateDebt);
-}
-
 export function parseChartData(rawChartData: any): IStackData[] {
+	console.log(rawChartData);
 	const numberOfMonthsUntilDebtsPaidOff = Math.max(
 		...rawChartData.map(debt => {
 			return Object.keys(debt.repayments).length;
@@ -320,5 +138,104 @@ export function parseChartData(rawChartData: any): IStackData[] {
 			...month,
 			values: debts
 		};
+	});
+}
+
+interface IRepaymentSchedule {
+	extraContributions: number;
+	months: {
+		month: number;
+		values: {
+			[debtId: string]: {
+				remainingBalance: number;
+				amountPaid: number;
+			};
+		};
+	}[];
+}
+
+// TODO: calculate monthly interest
+function calculateRepayments(
+	debts: IParsedDebt[],
+	repaymentSchedule: IRepaymentSchedule
+): IRepaymentSchedule {
+	const lastMonth =
+		repaymentSchedule.months[repaymentSchedule.months.length - 1];
+	const totalDebtRemaining = lastMonth
+		? Object.values(lastMonth.values).reduce((acc, value) => {
+				return acc + value.remainingBalance;
+		  }, 0)
+		: 1;
+
+	if (totalDebtRemaining > 0) {
+		let extraFunds = 0;
+		const newRepaymentSchedule: IRepaymentSchedule = {
+			...repaymentSchedule,
+			months: [
+				...repaymentSchedule.months,
+				{
+					month: lastMonth.month + 1,
+					values: debts.reduce((acc, debt) => {
+						const balanceAsAtLastMonth =
+							lastMonth.values[debt.id].remainingBalance;
+						let amountPaid: number;
+
+						if (balanceAsAtLastMonth < debt.repayment) {
+							amountPaid = balanceAsAtLastMonth;
+							extraFunds =
+								extraFunds +
+								(debt.repayment - balanceAsAtLastMonth);
+						} else {
+							amountPaid = debt.repayment;
+						}
+
+						return {
+							...acc,
+							[debt.id]: {
+								amountPaid,
+								remainingBalance:
+									balanceAsAtLastMonth - amountPaid
+							}
+						};
+					}, {})
+				}
+			]
+		};
+
+		return calculateRepayments(debts, newRepaymentSchedule);
+	}
+
+	return repaymentSchedule;
+}
+
+export function calculateDebts({
+	debtMethod,
+	debts,
+	extraContributions
+}: ICalculateDebtArguments) {
+	const parsedDebts = debts.map(parseDebt);
+	const validDebts = parsedDebts.filter(isDebtValid);
+
+	const sortedDebts =
+		debtMethod === DEBT_PAYOFF_METHODS.SNOWBALL
+			? sortArray(validDebts, sortByAmount)
+			: sortArray(validDebts, sortByRate).reverse();
+
+	return calculateRepayments(sortedDebts, {
+		extraContributions,
+		months: [
+			{
+				month: 0,
+				values: sortedDebts.reduce((acc, debt) => {
+					return {
+						...acc,
+						[debt.id]: {
+							remainingBalance: debt.amount,
+							amountPaid: 0
+						}
+					};
+				}, {})
+			}
+		]
 	});
 }

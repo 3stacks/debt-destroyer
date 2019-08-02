@@ -151,21 +151,36 @@ function calculateRepayments(
 							lastMonth.values[debt.id].remainingBalance;
 						let amountPaid: number;
 
+						if (balanceAsAtLastMonth <= 0) {
+							return {
+								...acc,
+								[debt.id]: {
+									amountPaid: 0,
+									remainingBalance: 0
+								}
+							};
+						}
+
 						if (balanceAsAtLastMonth < debt.repayment) {
 							amountPaid = balanceAsAtLastMonth;
 							extraFunds =
 								extraFunds +
 								(debt.repayment - balanceAsAtLastMonth);
 						} else {
-							amountPaid = debt.repayment;
+							amountPaid = debt.repayment + extraFunds;
+
+							// Reset this value because we've just used it for this debt
+							extraFunds = 0;
 						}
+
+						const newRemainingBalance =
+							balanceAsAtLastMonth - amountPaid;
 
 						return {
 							...acc,
 							[debt.id]: {
 								amountPaid,
-								remainingBalance:
-									balanceAsAtLastMonth - amountPaid
+								remainingBalance: newRemainingBalance
 							}
 						};
 					}, {})

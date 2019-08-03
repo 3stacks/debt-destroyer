@@ -1,1 +1,3 @@
-
+action "deploy" {
+  uses = "./deploy/"
+}

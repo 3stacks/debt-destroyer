@@ -2,18 +2,12 @@ import React from 'react';
 import Link from '@material-ui/core/Link';
 import DialogTitle from '@material-ui/core/DialogTitle/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions/DialogActions';
 import Button from '@material-ui/core/Button/Button';
 import Dialog from '@material-ui/core/Dialog/Dialog';
+import { IDialogProps } from '../@types';
 
-export default function({
-	isOpen,
-	onCloseRequested
-}: {
-	isOpen: boolean;
-	onCloseRequested: () => void;
-}) {
+export default function({ isOpen, onCloseRequested }: IDialogProps) {
 	return (
 		<Dialog
 			open={isOpen}

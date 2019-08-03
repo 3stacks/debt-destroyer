@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
+import throttle from 'lodash/throttle';
 import debounce from 'lodash/debounce';
 import Typography from '@material-ui/core/Typography';
 import AppBar from '@material-ui/core/AppBar';
 import Paper from '@material-ui/core/Paper';
 import AboutDialog from '../about-dialog';
-import ButtonBase from '@material-ui/core/ButtonBase';
 import HelpIcon from '@material-ui/icons/HelpOutline';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
@@ -52,6 +52,7 @@ interface IState {
 	debtData: IRepaymentSchedule | null;
 	whichTab: number;
 	debtPayoffMethod: DEBT_PAYOFF_METHODS;
+	wrapperWidth: number;
 }
 
 export default class App extends Component<IProps, IState> {
@@ -64,7 +65,8 @@ export default class App extends Component<IProps, IState> {
 		debts: [],
 		debtData: null,
 		debtPayoffMethod: DEBT_PAYOFF_METHODS.SNOWBALL,
-		whichTab: 0
+		whichTab: 0,
+		wrapperWidth: 0
 	};
 
 	handleDialogCloseRequested = (whichDialog: keyof IState) => () => {
@@ -125,6 +127,12 @@ export default class App extends Component<IProps, IState> {
 		});
 	}, 300);
 
+	handleResize = () => {
+		this.setState({
+			wrapperWidth: this.wrapper!.getBoundingClientRect().width
+		});
+	};
+
 	handleDebtChanged = newDebts => {
 		this.setState(state => {
 			return {
@@ -142,6 +150,11 @@ export default class App extends Component<IProps, IState> {
 			};
 		});
 	};
+
+	componentDidMount() {
+		this.handleResize();
+		window.addEventListener('resize', throttle(this.handleResize, 300));
+	}
 
 	render() {
 		const { classes } = this.props;
@@ -227,10 +240,7 @@ export default class App extends Component<IProps, IState> {
 						<div hidden={this.state.whichTab !== 0}>
 							{this.state.debtData && (
 								<StackedBarChart
-									width={
-										this.wrapper!.getBoundingClientRect()
-											.width
-									}
+									width={this.state.wrapperWidth}
 									months={parseChartData(this.state.debtData)}
 									debts={this.state.debts}
 								/>

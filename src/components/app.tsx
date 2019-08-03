@@ -246,7 +246,14 @@ export default class App extends Component<IProps, IState> {
 					</div>
 					<div hidden={this.state.whichTab !== 1}>
 						{this.state.debtData && (
-							<Insights debtData={this.state.debtData!} />
+							<Insights
+								extraContributions={
+									this.state.extraContributions
+								}
+								debtPayoffMethod={this.state.debtPayoffMethod}
+								debtData={this.state.debtData!}
+								debts={this.state.debts}
+							/>
 						)}
 					</div>
 				</div>

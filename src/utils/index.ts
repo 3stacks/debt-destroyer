@@ -2,7 +2,7 @@ import { IDebt } from '../components/app';
 import addMonths from 'date-fns/add_months';
 import formatDate from 'date-fns/format';
 
-enum DEBT_PAYOFF_METHODS {
+export enum DEBT_PAYOFF_METHODS {
 	SNOWBALL = 'snowball',
 	AVALANCHE = 'avalanche'
 }

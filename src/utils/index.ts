@@ -1,4 +1,4 @@
-import { IDebt } from '../components/app';
+import { IDebt } from '../components/app/app';
 import addMonths from 'date-fns/add_months';
 import formatDate from 'date-fns/format';
 

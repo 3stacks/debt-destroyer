@@ -5,7 +5,7 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import AddIcon from '@material-ui/icons/Add';
-import { IDebt } from '../app';
+import { IDebt } from '../app/app';
 import InputAdornment from '@material-ui/core/InputAdornment/InputAdornment';
 import TextField from '@material-ui/core/TextField/TextField';
 import ButtonBase from '@material-ui/core/ButtonBase';

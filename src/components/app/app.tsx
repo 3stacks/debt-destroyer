@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Typography from '@material-ui/core/Typography';
 import AppBar from '@material-ui/core/AppBar';
-import AboutDialog from './about-dialog';
+import AboutDialog from '../about-dialog';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import HelpIcon from '@material-ui/icons/HelpOutline';
 import Button from '@material-ui/core/Button';
@@ -14,22 +14,20 @@ import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import styled from 'styled-components';
-import SnowballDialog from './snowball-dialog';
-import DebtTable from './debt-table';
-import StackedBarChart from './stacked-bar-chart';
-import { calculateDebts, IRepaymentSchedule, parseChartData } from '../utils';
-import Insights from './insights';
+import SnowballDialog from '../snowball-dialog';
+import DebtTable from '../debt-table';
+import StackedBarChart from '../stacked-bar-chart';
+import {
+	calculateDebts,
+	IRepaymentSchedule,
+	parseChartData
+} from '../../utils';
+import Insights from '../insights';
+import { IClasses } from '../../@types';
 
-const Accoutrements = styled.div`
-	margin-bottom: 24px;
-
-	fieldset {
-		margin-right: 20px;
-	}
-`;
-
-interface IProps {}
+interface IProps {
+	classes: IClasses;
+}
 
 export interface IDebt {
 	name: string;
@@ -156,6 +154,8 @@ export default class App extends Component<IProps, IState> {
 	};
 
 	render() {
+		const { classes } = this.props;
+
 		return (
 			<Typography variant="body1" component="div" className="root">
 				<AppBar className="app-bar" position="static">
@@ -171,7 +171,10 @@ export default class App extends Component<IProps, IState> {
 					</ButtonBase>
 				</AppBar>
 				<div className="max-width-container">
-					<Accoutrements ref={el => (this.wrapper = el)}>
+					<div
+						className={classes.accoutrements}
+						ref={el => (this.wrapper = el)}
+					>
 						<FormControl component="fieldset">
 							<FormLabel component="legend">
 								Debt payoff method
@@ -219,7 +222,7 @@ export default class App extends Component<IProps, IState> {
 							value={this.state.extraContributions}
 							helperText="How much extra can you afford per month?"
 						/>
-					</Accoutrements>
+					</div>
 					<DebtTable onDebtChanged={this.handleDebtChanged} />
 					<Tabs
 						value={this.state.whichTab}

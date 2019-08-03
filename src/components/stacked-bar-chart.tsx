@@ -6,7 +6,7 @@ import blue from '@material-ui/core/colors/blue';
 import green from '@material-ui/core/colors/green';
 import pink from '@material-ui/core/colors/pink';
 import deepOrange from '@material-ui/core/colors/deepOrange';
-import { IDebt } from './app';
+import { IDebt } from './app/app';
 
 const colours = [red[500], blue[500], green[500], pink[500], deepOrange[500]];
 

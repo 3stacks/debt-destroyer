@@ -5,9 +5,11 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import AddIcon from '@material-ui/icons/Add';
+import DeleteIcon from '@material-ui/icons/Remove';
 import { IDebt } from '../app/app';
 import InputAdornment from '@material-ui/core/InputAdornment/InputAdornment';
 import TextField from '@material-ui/core/TextField/TextField';
+import Button from '@material-ui/core/Button';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import nanoid from 'nanoid';
 import { IClasses } from '../../@types';
@@ -112,7 +114,7 @@ export default class DebtTable extends React.Component<IProps, IState> {
 						<TableCell>Amount</TableCell>
 						<TableCell>Interest rate (%)</TableCell>
 						<TableCell>Min. monthly repayment ($)</TableCell>
-						<TableCell>Action</TableCell>
+						<TableCell>Remove row</TableCell>
 					</TableRow>
 				</TableHead>
 				<TableBody>
@@ -175,13 +177,13 @@ export default class DebtTable extends React.Component<IProps, IState> {
 										/>
 									</TableCell>
 									<TableCell>
-										<ButtonBase
+										<Button
 											onClick={this.handleRowRemoveRequested(
 												id
 											)}
 										>
-											Remove
-										</ButtonBase>
+											<DeleteIcon />
+										</Button>
 									</TableCell>
 								</TableRow>
 							);
@@ -189,9 +191,9 @@ export default class DebtTable extends React.Component<IProps, IState> {
 					)}
 					<TableRow>
 						<TableCell colSpan={5}>
-							<ButtonBase onClick={this.handleNewRowRequested}>
+							<Button onClick={this.handleNewRowRequested}>
 								<AddIcon /> Add Row
-							</ButtonBase>
+							</Button>
 						</TableCell>
 					</TableRow>
 				</TableBody>

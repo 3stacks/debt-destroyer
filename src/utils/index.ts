@@ -1,4 +1,5 @@
 import { IDebt } from '../components/app/app';
+import nanoid from 'nanoid';
 import addMonths from 'date-fns/add_months';
 import formatDate from 'date-fns/format';
 
@@ -116,6 +117,9 @@ export function parseChartData(rawChartData: any): IStackData[] {
 
 export interface IRepaymentSchedule {
 	extraContributions: number;
+	// so we don't have to do deep equality checks on the whole tree to
+	// figure out if it has been recalculated
+	guid: string;
 	months: {
 		month: number;
 		values: {
@@ -253,6 +257,7 @@ export function calculateDebts({
 
 	return calculateRepayments(sortedDebts, {
 		extraContributions,
+		guid: nanoid(),
 		months: [
 			{
 				month: 0,

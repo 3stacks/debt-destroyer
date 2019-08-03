@@ -58,7 +58,7 @@ function calculateMonthlyInterestRate(interest: number) {
 	return interest / 12 / 100;
 }
 
-function calculateMinimumMonthlyRepayment(
+export function calculateMinimumMonthlyRepayment(
 	interest: number,
 	debtAmount: number
 ): number {

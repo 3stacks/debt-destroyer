@@ -214,7 +214,7 @@ export default class App extends Component<IProps, IState> {
 						/>
 					</div>
 					<DebtTable onDebtChanged={this.handleDebtChanged} />
-					<Paper>
+					<Paper className={classes.tabWrapper}>
 						<Tabs
 							value={this.state.whichTab}
 							onChange={this.handleTabChanged}

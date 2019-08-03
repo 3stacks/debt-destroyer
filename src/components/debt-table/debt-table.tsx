@@ -1,4 +1,5 @@
 import * as React from 'react';
+import Paper from '@material-ui/core/Paper';
 import Table from '@material-ui/core/Table';
 import TableRow from '@material-ui/core/TableRow';
 import TableBody from '@material-ui/core/TableBody';
@@ -234,116 +235,130 @@ export default class DebtTable extends React.Component<IProps, IState> {
 		const { classes } = this.props;
 
 		return (
-			<Table className={classes.root}>
-				<TableHead>
-					<TableRow>
-						<TableCell>Name</TableCell>
-						<TableCell>Amount</TableCell>
-						<TableCell>Interest rate (%)</TableCell>
-						<TableCell>Min. monthly repayment ($)</TableCell>
-						<TableCell>Remove row</TableCell>
-					</TableRow>
-				</TableHead>
-				<TableBody>
-					{this.state.rows.map(
-						({ id, name, amount, repayment, rate }, index) => {
-							const errors = this.state.errors[index].fields;
-							const changeHandler = (debtProperty: keyof IDebt) =>
-								this.handleChange(debtProperty, index);
+			<Paper className={classes.root}>
+				<Table>
+					<TableHead>
+						<TableRow>
+							<TableCell>Name</TableCell>
+							<TableCell>Amount</TableCell>
+							<TableCell>Interest rate (%)</TableCell>
+							<TableCell>Min. monthly repayment ($)</TableCell>
+							<TableCell>Remove row</TableCell>
+						</TableRow>
+					</TableHead>
+					<TableBody>
+						{this.state.rows.map(
+							({ id, name, amount, repayment, rate }, index) => {
+								const errors = this.state.errors[index].fields;
+								const changeHandler = (
+									debtProperty: keyof IDebt
+								) => this.handleChange(debtProperty, index);
 
-							return (
-								<TableRow key={id}>
-									<TableCell>
-										<TextField
-											label="Name"
-											onChange={changeHandler('name')}
-											value={name}
-											error={errors.get('name')!.error}
-											helperText={
-												errors.get('name')!.message
-											}
-										/>
-									</TableCell>
-									<TableCell>
-										<TextField
-											label="Amount"
-											InputProps={{
-												startAdornment: (
-													<InputAdornment position="end">
-														$
-													</InputAdornment>
-												)
-											}}
-											onChange={changeHandler('amount')}
-											value={amount}
-											error={errors.get('amount')!.error}
-											helperText={
-												errors.get('amount')!.message
-											}
-										/>
-									</TableCell>
-									<TableCell>
-										<TextField
-											label="Rate"
-											InputProps={{
-												endAdornment: (
-													<InputAdornment position="start">
-														%
-													</InputAdornment>
-												)
-											}}
-											onChange={changeHandler('rate')}
-											value={rate}
-											error={errors.get('rate')!.error}
-											helperText={
-												errors.get('rate')!.message
-											}
-										/>
-									</TableCell>
-									<TableCell>
-										<TextField
-											label="Monthly repayment"
-											InputProps={{
-												startAdornment: (
-													<InputAdornment position="end">
-														$
-													</InputAdornment>
-												)
-											}}
-											onChange={changeHandler(
-												'repayment'
-											)}
-											value={repayment}
-											error={
-												errors.get('repayment')!.error
-											}
-											helperText={
-												errors.get('repayment')!.message
-											}
-										/>
-									</TableCell>
-									<TableCell>
-										<Button
-											onClick={this.handleRowRemoveRequested(
-												id
-											)}
-										>
-											<DeleteIcon />
-										</Button>
-									</TableCell>
-								</TableRow>
-							);
-						}
-					)}
-					<TableRow>
-						<TableCell colSpan={5}>
-							<Button onClick={this.handleNewRowRequested}>
-								<AddIcon /> Add Row
-							</Button>
-						</TableCell>
-					</TableRow>
-				</TableBody>
-			</Table>
+								return (
+									<TableRow key={id}>
+										<TableCell>
+											<TextField
+												label="Name"
+												onChange={changeHandler('name')}
+												value={name}
+												error={
+													errors.get('name')!.error
+												}
+												helperText={
+													errors.get('name')!.message
+												}
+											/>
+										</TableCell>
+										<TableCell>
+											<TextField
+												label="Amount"
+												InputProps={{
+													startAdornment: (
+														<InputAdornment position="end">
+															$
+														</InputAdornment>
+													)
+												}}
+												onChange={changeHandler(
+													'amount'
+												)}
+												value={amount}
+												error={
+													errors.get('amount')!.error
+												}
+												helperText={
+													errors.get('amount')!
+														.message
+												}
+											/>
+										</TableCell>
+										<TableCell>
+											<TextField
+												label="Rate"
+												InputProps={{
+													endAdornment: (
+														<InputAdornment position="start">
+															%
+														</InputAdornment>
+													)
+												}}
+												onChange={changeHandler('rate')}
+												value={rate}
+												error={
+													errors.get('rate')!.error
+												}
+												helperText={
+													errors.get('rate')!.message
+												}
+											/>
+										</TableCell>
+										<TableCell>
+											<TextField
+												label="Monthly repayment"
+												InputProps={{
+													startAdornment: (
+														<InputAdornment position="end">
+															$
+														</InputAdornment>
+													)
+												}}
+												onChange={changeHandler(
+													'repayment'
+												)}
+												value={repayment}
+												error={
+													errors.get('repayment')!
+														.error
+												}
+												helperText={
+													errors.get('repayment')!
+														.message
+												}
+											/>
+										</TableCell>
+										<TableCell>
+											<Button
+												onClick={this.handleRowRemoveRequested(
+													id
+												)}
+											>
+												<DeleteIcon />
+											</Button>
+										</TableCell>
+									</TableRow>
+								);
+							}
+						)}
+						<TableRow>
+							<TableCell colSpan={5}>
+								<Button onClick={this.handleNewRowRequested}>
+									<AddIcon /> Add Row
+								</Button>
+							</TableCell>
+						</TableRow>
+					</TableBody>
+				</Table>
+			</Paper>
 		);
 	}
 }

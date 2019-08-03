@@ -20,7 +20,7 @@ export default class StackedBarChart extends React.Component<IProps> {
 	render() {
 		return (
 			<BarChart
-				width={this.props.width}
+				width={this.props.width - 12}
 				height={this.props.width * 0.6}
 				data={this.props.months}
 				style={{ paddingTop: 24 }}

@@ -148,17 +148,19 @@ export default class App extends Component<IProps, IState> {
 
 		return (
 			<Typography variant="body1" component="div" className="root">
-				<AppBar className="app-bar" position="static">
+				<AppBar className={classes.appBar} position="static">
+					<div className={classes.aboutButton} />
 					<Typography variant="h5" component="h1" color="inherit">
 						Debt Destroyer
 					</Typography>
-					<ButtonBase
+					<Button
+						className={classes.aboutButton}
 						onClick={this.handleDialogOpenRequested(
 							'isAboutDialogOpen'
 						)}
 					>
 						<HelpIcon />
-					</ButtonBase>
+					</Button>
 				</AppBar>
 				<div className="max-width-container">
 					<div

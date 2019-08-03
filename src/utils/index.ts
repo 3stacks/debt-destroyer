@@ -269,3 +269,23 @@ export function calculateDebts({
 		]
 	});
 }
+
+export function editDebt(debt: IDebt, key: keyof IDebt, value: string): IDebt {
+	return {
+		...debt,
+		[key]: value
+	};
+}
+
+export function editRow(
+	rows: IDebt[],
+	rowIndex: number,
+	key: keyof IDebt,
+	value: string
+) {
+	const newValue = [...rows];
+
+	newValue[rowIndex] = editDebt(newValue[rowIndex], key, value);
+
+	return newValue;
+}

@@ -10,6 +10,8 @@ import InputAdornment from '@material-ui/core/InputAdornment/InputAdornment';
 import TextField from '@material-ui/core/TextField/TextField';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import nanoid from 'nanoid';
+import { IClasses } from '../../@types';
+import { editRow, editDebt } from '../../utils';
 
 function debtFactory(): IDebt {
 	return {
@@ -21,31 +23,16 @@ function debtFactory(): IDebt {
 	};
 }
 
-function editDebt(debt: IDebt, key: keyof IDebt, value: string): IDebt {
-	return {
-		...debt,
-		[key]: value
-	};
-}
-
-function editRow(
-	rows: IDebt[],
-	rowIndex: number,
-	key: keyof IDebt,
-	value: string
-) {
-	const newValue = [...rows];
-
-	newValue[rowIndex] = editDebt(newValue[rowIndex], key, value);
-
-	return newValue;
+interface IProps {
+	classes: IClasses;
+	onDebtChanged: (rows: IDebt[]) => void;
 }
 
 interface IState {
 	rows: IDebt[];
 }
 
-export default class DebtTable extends React.Component<any, IState> {
+export default class DebtTable extends React.Component<IProps, IState> {
 	state = {
 		rows: [
 			{
@@ -115,8 +102,10 @@ export default class DebtTable extends React.Component<any, IState> {
 	};
 
 	render() {
+		const { classes } = this.props;
+
 		return (
-			<Table>
+			<Table className={classes.root}>
 				<TableHead>
 					<TableRow>
 						<TableCell>Name</TableCell>

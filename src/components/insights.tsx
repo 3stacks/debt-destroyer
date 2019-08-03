@@ -21,6 +21,7 @@ interface IProps {
 }
 
 interface IState {
+	debtData: IRepaymentSchedule;
 	fiftyExtraScenario: IRepaymentSchedule;
 	oneHundredFiftyExtraScenario: IRepaymentSchedule;
 }
@@ -52,6 +53,7 @@ function getDebtPayoffDate(debtData: IRepaymentSchedule): string {
 
 export default class Insights extends React.Component<IProps, IState> {
 	state = {
+		debtData: this.props.debtData,
 		fiftyExtraScenario: calculateDebts({
 			debtMethod: this.props.debtPayoffMethod,
 			extraContributions:
@@ -65,6 +67,27 @@ export default class Insights extends React.Component<IProps, IState> {
 			debts: this.props.debts
 		})
 	};
+
+	static getDerivedStateFromProps(props, state) {
+		if (props.debtData.guid === state.debtData.guid) {
+			return null;
+		}
+
+		return {
+			debtData: props.debtData,
+			fiftyExtraScenario: calculateDebts({
+				debtMethod: props.debtPayoffMethod,
+				extraContributions: parseInt(props.extraContributions, 10) + 50,
+				debts: props.debts
+			}),
+			oneHundredFiftyExtraScenario: calculateDebts({
+				debtMethod: props.debtPayoffMethod,
+				extraContributions:
+					parseInt(props.extraContributions, 10) + 150,
+				debts: props.debts
+			})
+		};
+	}
 
 	render() {
 		const { debtData } = this.props;

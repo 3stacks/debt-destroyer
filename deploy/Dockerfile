@@ -6,6 +6,7 @@ COPY * ./
 
 RUN curl -o- -L https://yarnpkg.com/install.sh | bash
 
+RUN apt-get install sudo
 RUN sudo apt-get install python3
 
 RUN pip3 install awscli --upgrade --user

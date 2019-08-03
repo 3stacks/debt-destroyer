@@ -108,7 +108,6 @@ function validateFields(
 		);
 
 		if (repayment < minPayment) {
-			console.log('erherehe');
 			return error.fields.set('repayment', {
 				error: true,
 				message: `Minimum repayment is $${minPayment.toFixed(2)}`
@@ -117,8 +116,6 @@ function validateFields(
 			error.fields.set('repayment', errorTemplate);
 		}
 	}
-
-	console.log('we made it!');
 
 	return error.fields.set(debtProperty, {
 		error: false,

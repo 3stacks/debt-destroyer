@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
+import debounce from 'lodash/debounce';
 import Typography from '@material-ui/core/Typography';
 import AppBar from '@material-ui/core/AppBar';
+import Paper from '@material-ui/core/Paper';
 import AboutDialog from '../about-dialog';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import HelpIcon from '@material-ui/icons/HelpOutline';
@@ -37,32 +39,19 @@ export interface IDebt {
 	repayment: string;
 }
 
-enum APP_STATE_KEYS {
-	IS_ABOUT_DIALOG_OPEN = 'isAboutDialogOpen',
-	IS_SNOWBALL_DIALOG_OPEN = 'isSnowballDialogOpen',
-	DEBTS = 'debts',
-	EXTRA_CONTRIBUTIONS = 'extraContributions',
-	DEBT_PAYOFF_METHOD = 'debtPayoffMethod'
-}
-
 enum DEBT_PAYOFF_METHODS {
 	SNOWBALL = 'snowball',
 	AVALANCHE = 'avalanche'
 }
 
-enum TABS {
-	CHART = 'chart',
-	INSIGHTS = 'insight'
-}
-
 interface IState {
-	[APP_STATE_KEYS.IS_ABOUT_DIALOG_OPEN]: boolean;
-	[APP_STATE_KEYS.IS_SNOWBALL_DIALOG_OPEN]: boolean;
-	[APP_STATE_KEYS.DEBTS]: IDebt[];
-	[APP_STATE_KEYS.EXTRA_CONTRIBUTIONS]: string;
+	isAboutDialogOpen: boolean;
+	isSnowballDialogOpen: boolean;
+	debts: IDebt[];
+	extraContributions: string;
 	debtData: IRepaymentSchedule | null;
 	whichTab: number;
-	[APP_STATE_KEYS.DEBT_PAYOFF_METHOD]: DEBT_PAYOFF_METHODS;
+	debtPayoffMethod: DEBT_PAYOFF_METHODS;
 }
 
 export default class App extends Component<IProps, IState> {
@@ -78,11 +67,7 @@ export default class App extends Component<IProps, IState> {
 		whichTab: 0
 	};
 
-	handleDialogCloseRequested = (
-		whichDialog:
-			| APP_STATE_KEYS.IS_SNOWBALL_DIALOG_OPEN
-			| APP_STATE_KEYS.IS_ABOUT_DIALOG_OPEN
-	) => () => {
+	handleDialogCloseRequested = (whichDialog: keyof IState) => () => {
 		this.setState(state => {
 			return {
 				...state,
@@ -91,7 +76,7 @@ export default class App extends Component<IProps, IState> {
 		});
 	};
 
-	handleDialogOpenRequested = (whichDialog: APP_STATE_KEYS) => () => {
+	handleDialogOpenRequested = (whichDialog: keyof IState) => () => {
 		this.setState(state => {
 			return {
 				...state,
@@ -100,7 +85,7 @@ export default class App extends Component<IProps, IState> {
 		});
 	};
 
-	handleChange = (name: string) => (event: React.ChangeEvent<any>) => {
+	handleChange = (name: keyof IState) => (event: React.ChangeEvent<any>) => {
 		const newValue = event.target.value;
 
 		this.setState(
@@ -112,8 +97,8 @@ export default class App extends Component<IProps, IState> {
 			},
 			() => {
 				if (
-					name === 'extraContributions' ||
-					name === 'debtPayoffMethod'
+					name === 'debtPayoffMethod' ||
+					name === 'extraContributions'
 				) {
 					this.calculate();
 				}
@@ -121,7 +106,13 @@ export default class App extends Component<IProps, IState> {
 		);
 	};
 
-	calculate = () => {
+	calculate = debounce(() => {
+		const extraContributions = parseInt(this.state.extraContributions, 10);
+
+		if (Number.isNaN(extraContributions) || extraContributions < 0) {
+			return;
+		}
+
 		this.setState(state => {
 			return {
 				...state,
@@ -132,7 +123,7 @@ export default class App extends Component<IProps, IState> {
 				})
 			};
 		});
-	};
+	}, 300);
 
 	handleDebtChanged = newDebts => {
 		this.setState(state => {
@@ -144,7 +135,6 @@ export default class App extends Component<IProps, IState> {
 	};
 
 	handleTabChanged = (event, newValue) => {
-		console.log(newValue);
 		this.setState(state => {
 			return {
 				...state,
@@ -164,7 +154,7 @@ export default class App extends Component<IProps, IState> {
 					</Typography>
 					<ButtonBase
 						onClick={this.handleDialogOpenRequested(
-							APP_STATE_KEYS.IS_ABOUT_DIALOG_OPEN
+							'isAboutDialogOpen'
 						)}
 					>
 						<HelpIcon />
@@ -182,9 +172,7 @@ export default class App extends Component<IProps, IState> {
 							<RadioGroup
 								name="debt_payoff_method"
 								value={this.state.debtPayoffMethod}
-								onChange={this.handleChange(
-									APP_STATE_KEYS.DEBT_PAYOFF_METHOD
-								)}
+								onChange={this.handleChange('debtPayoffMethod')}
 							>
 								<FormControlLabel
 									value="snowball"
@@ -200,7 +188,7 @@ export default class App extends Component<IProps, IState> {
 									color="primary"
 									variant="contained"
 									onClick={this.handleDialogOpenRequested(
-										APP_STATE_KEYS.IS_SNOWBALL_DIALOG_OPEN
+										'isSnowballDialogOpen'
 									)}
 								>
 									What is this?
@@ -209,6 +197,8 @@ export default class App extends Component<IProps, IState> {
 						</FormControl>
 						<TextField
 							label="Extra contributions"
+							{...({ min: '0' } as any)}
+							type="number"
 							InputProps={{
 								startAdornment: (
 									<InputAdornment position="end">
@@ -216,55 +206,60 @@ export default class App extends Component<IProps, IState> {
 									</InputAdornment>
 								)
 							}}
-							onChange={this.handleChange(
-								APP_STATE_KEYS.EXTRA_CONTRIBUTIONS
-							)}
+							onChange={this.handleChange('extraContributions')}
 							value={this.state.extraContributions}
 							helperText="How much extra can you afford per month?"
 						/>
 					</div>
 					<DebtTable onDebtChanged={this.handleDebtChanged} />
-					<Tabs
-						value={this.state.whichTab}
-						onChange={this.handleTabChanged}
-					>
-						<Tab label="Chart" />
-						<Tab label="Insights" />
-					</Tabs>
-					<div hidden={this.state.whichTab !== 0}>
-						{this.state.debtData && (
-							<StackedBarChart
-								width={
-									this.wrapper!.getBoundingClientRect().width
-								}
-								months={parseChartData(this.state.debtData)}
-								debts={this.state.debts}
-							/>
-						)}
-					</div>
-					<div hidden={this.state.whichTab !== 1}>
-						{this.state.debtData && (
-							<Insights
-								extraContributions={
-									this.state.extraContributions
-								}
-								debtPayoffMethod={this.state.debtPayoffMethod}
-								debtData={this.state.debtData!}
-								debts={this.state.debts}
-							/>
-						)}
-					</div>
+					<Paper>
+						<Tabs
+							value={this.state.whichTab}
+							onChange={this.handleTabChanged}
+							textColor="primary"
+							indicatorColor="primary"
+						>
+							<Tab label="Chart" />
+							<Tab label="Insights" />
+						</Tabs>
+						<div hidden={this.state.whichTab !== 0}>
+							{this.state.debtData && (
+								<StackedBarChart
+									width={
+										this.wrapper!.getBoundingClientRect()
+											.width
+									}
+									months={parseChartData(this.state.debtData)}
+									debts={this.state.debts}
+								/>
+							)}
+						</div>
+						<div hidden={this.state.whichTab !== 1}>
+							{this.state.debtData && (
+								<Insights
+									extraContributions={
+										this.state.extraContributions
+									}
+									debtPayoffMethod={
+										this.state.debtPayoffMethod
+									}
+									debtData={this.state.debtData!}
+									debts={this.state.debts}
+								/>
+							)}
+						</div>
+					</Paper>
 				</div>
 				<AboutDialog
 					isOpen={this.state.isAboutDialogOpen}
 					onCloseRequested={this.handleDialogCloseRequested(
-						APP_STATE_KEYS.IS_ABOUT_DIALOG_OPEN
+						'isAboutDialogOpen'
 					)}
 				/>
 				<SnowballDialog
 					isOpen={this.state.isSnowballDialogOpen}
 					onCloseRequested={this.handleDialogCloseRequested(
-						APP_STATE_KEYS.IS_SNOWBALL_DIALOG_OPEN
+						'isSnowballDialogOpen'
 					)}
 				/>
 			</Typography>

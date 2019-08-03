@@ -1,7 +1,10 @@
 import Component from './app';
 import withStyles from '@material-ui/core/styles/withStyles';
 
-const classes = {
+const classes = theme => ({
+	tabs: {
+		padding: 24
+	},
 	accoutrements: {
 		marginBottom: 24,
 
@@ -9,6 +12,6 @@ const classes = {
 			marginRight: 24
 		}
 	}
-};
+});
 
 export default withStyles(classes)(Component);

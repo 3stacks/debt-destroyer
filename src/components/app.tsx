@@ -18,12 +18,7 @@ import styled from 'styled-components';
 import SnowballDialog from './snowball-dialog';
 import DebtTable from './debt-table';
 import StackedBarChart from './stacked-bar-chart';
-import {
-	calculateDebts,
-	IRepaymentSchedule,
-	IStackData,
-	parseChartData
-} from '../utils';
+import { calculateDebts, IRepaymentSchedule, parseChartData } from '../utils';
 import Insights from './insights';
 
 const Accoutrements = styled.div`

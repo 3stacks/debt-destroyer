@@ -3,9 +3,7 @@ import withStyles from '@material-ui/core/styles/withStyles';
 import { FlexDirectionProperty, OverflowProperty } from 'csstype';
 
 const classes = theme => ({
-	tabWrapper: {
-		overflowX: 'auto' as OverflowProperty
-	},
+	tabWrapper: {},
 	tabs: {
 		padding: 24
 	},

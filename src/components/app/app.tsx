@@ -26,6 +26,7 @@ import {
 } from '../../utils';
 import Insights from '../insights';
 import { IClasses } from '../../@types';
+import BurndownChart from '../burndown-chart';
 
 interface IProps {
 	classes: IClasses;
@@ -237,35 +238,37 @@ export default class App extends Component<IProps, IState> {
 							<Tab label="Chart" />
 							<Tab label="Insights" />
 						</Tabs>
-						<div hidden={this.state.whichTab !== 0}>
-							{this.state.debtData && (
-								<StackedBarChart
-									width={this.state.wrapperWidth}
-									months={
-										this.state.debtData === null
-											? []
-											: parseChartData(
-													this.state.debtData!
-											  )
-									}
-									debts={this.state.debts}
-								/>
-							)}
-						</div>
-						<div hidden={this.state.whichTab !== 1}>
-							{this.state.debtData && (
-								<Insights
-									extraContributions={
-										this.state.extraContributions
-									}
-									debtPayoffMethod={
-										this.state.debtPayoffMethod
-									}
-									debtData={this.state.debtData!}
-									debts={this.state.debts}
-								/>
-							)}
-						</div>
+						{this.state.debtData && (
+							<React.Fragment>
+								<div hidden={this.state.whichTab !== 0}>
+									{this.state.whichTab === 0 && (
+										<StackedBarChart
+											width={this.state.wrapperWidth}
+											months={
+												this.state.debtData === null
+													? []
+													: parseChartData(
+															this.state.debtData!
+													  )
+											}
+											debts={this.state.debts}
+										/>
+									)}
+								</div>
+								<div hidden={this.state.whichTab !== 1}>
+									<Insights
+										extraContributions={
+											this.state.extraContributions
+										}
+										debtPayoffMethod={
+											this.state.debtPayoffMethod
+										}
+										debtData={this.state.debtData!}
+										debts={this.state.debts}
+									/>
+								</div>
+							</React.Fragment>
+						)}
 					</Paper>
 				</div>
 				<AboutDialog

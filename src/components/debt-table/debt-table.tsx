@@ -94,37 +94,31 @@ export default class DebtTable extends React.Component<IProps, IState> {
 	};
 
 	componentDidMount() {
-		this.props.onDebtChanged(this.state.rows);
+		this.dispatchRows();
 	}
+
+	dispatchRows = () => {
+		this.props.onDebtChanged(this.state.rows);
+	};
 
 	handleChange = (debtProperty: keyof IDebt, debtIndex: number) => (
 		event: any
 	) => {
 		const newValue = event.target.value;
 
-		this.setState(
-			state => {
-				return {
-					...state,
-					rows: editRow(
-						state.rows,
-						debtIndex,
-						debtProperty,
-						newValue
-					),
-					errors: validateRow(
-						state.errors,
-						debtIndex,
-						state.rows[debtIndex],
-						debtProperty,
-						newValue
-					)
-				};
-			},
-			() => {
-				this.props.onDebtChanged(this.state.rows);
-			}
-		);
+		this.setState(state => {
+			return {
+				...state,
+				rows: editRow(state.rows, debtIndex, debtProperty, newValue),
+				errors: validateRow(
+					state.errors,
+					debtIndex,
+					state.rows[debtIndex],
+					debtProperty,
+					newValue
+				)
+			};
+		}, this.dispatchRows);
 	};
 
 	handleRowRemoveRequested = (rowId: string) => () => {
@@ -135,7 +129,7 @@ export default class DebtTable extends React.Component<IProps, IState> {
 					return row.id !== rowId;
 				})
 			};
-		});
+		}, this.dispatchRows);
 	};
 
 	render() {

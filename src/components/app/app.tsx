@@ -241,7 +241,13 @@ export default class App extends Component<IProps, IState> {
 							{this.state.debtData && (
 								<StackedBarChart
 									width={this.state.wrapperWidth}
-									months={parseChartData(this.state.debtData)}
+									months={
+										this.state.debtData === null
+											? []
+											: parseChartData(
+													this.state.debtData!
+											  )
+									}
 									debts={this.state.debts}
 								/>
 							)}

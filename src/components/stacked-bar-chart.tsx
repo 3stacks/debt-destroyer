@@ -31,6 +31,10 @@ export default class StackedBarChart extends React.Component<IProps> {
 				<Legend />
 				{Object.keys(this.props.months[0].values).map(
 					(value, index) => {
+						if (!this.props.debts.find(debt => debt.id === value)) {
+							return null;
+						}
+
 						return (
 							<Bar
 								key={value}

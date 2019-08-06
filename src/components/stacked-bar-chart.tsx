@@ -38,7 +38,7 @@ export default class StackedBarChart extends React.Component<IProps> {
 						return (
 							<Bar
 								key={value}
-								dataKey={`values.${value}`}
+								dataKey={`values.${value}.amountPaid`}
 								name={
 									this.props.debts.find(
 										debt => debt.id === value

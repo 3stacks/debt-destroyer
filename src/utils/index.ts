@@ -1,7 +1,5 @@
 import { IDebt } from '../components/app/app';
 import nanoid from 'nanoid';
-import addMonths from 'date-fns/add_months';
-import formatDate from 'date-fns/format';
 import { errorTemplate } from '../constants';
 import { IError, IErrorFields } from '../@types';
 
@@ -12,8 +10,12 @@ export enum DEBT_PAYOFF_METHODS {
 
 export interface IStackData {
 	month: string;
+	remainingBalance: number;
 	values: {
-		[debtName: string]: number;
+		[debtName: string]: {
+			amountPaid: number;
+			remainingBalance: number;
+		};
 	};
 }
 
@@ -102,17 +104,29 @@ function parseDebt(debt: IDebt): IParsedDebt {
 	};
 }
 
-export function parseChartData(rawChartData: any): IStackData[] {
-	return rawChartData.months.slice(1).map(month => {
-		return {
-			...month,
-			month: formatDate(addMonths(new Date(), month.month), 'MMM YY'),
-			values: Object.keys(month.values).reduce((acc, debtId: string) => {
+export function parseChartData(rawChartData: IRepaymentSchedule): IStackData[] {
+	return rawChartData.months.map(month => {
+		const values = Object.keys(month.values).reduce(
+			(acc, debtId: string) => {
 				return {
 					...acc,
-					[debtId]: month.values[debtId].amountPaid
+					[debtId]: {
+						amountPaid: month.values[debtId].amountPaid,
+						remainingBalance: month.values[debtId].remainingBalance
+					}
 				};
-			}, {})
+			},
+			{}
+		);
+
+		return {
+			...month,
+			month: `${month.month}`,
+			remainingBalance: Object.keys(values).reduce(
+				(acc, curr) => acc + values[curr].remainingBalance,
+				0
+			),
+			values
 		};
 	});
 }

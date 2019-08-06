@@ -105,7 +105,7 @@ function parseDebt(debt: IDebt): IParsedDebt {
 }
 
 export function parseChartData(rawChartData: IRepaymentSchedule): IStackData[] {
-	return rawChartData.months.map(month => {
+	return rawChartData.months.slice(1).map(month => {
 		const values = Object.keys(month.values).reduce(
 			(acc, debtId: string) => {
 				return {

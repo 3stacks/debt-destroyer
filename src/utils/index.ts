@@ -2,6 +2,8 @@ import { IDebt } from '../components/app/app';
 import nanoid from 'nanoid';
 import addMonths from 'date-fns/add_months';
 import formatDate from 'date-fns/format';
+import { errorTemplate } from '../constants';
+import { IError, IErrorFields } from '../@types';
 
 export enum DEBT_PAYOFF_METHODS {
 	SNOWBALL = 'snowball',
@@ -293,4 +295,75 @@ export function editRow(
 	newValue[rowIndex] = editDebt(newValue[rowIndex], key, value);
 
 	return newValue;
+}
+
+function validateFields(
+	error: IError,
+	debt: IDebt,
+	debtProperty: keyof IDebt,
+	newValue: string
+): IErrorFields {
+	// we construct a new debt to base validations off
+	const newDebt = {
+		...debt,
+		[debtProperty]: newValue
+	};
+
+	if (debtProperty === 'amount' && parseInt(newDebt.amount, 10) <= 0) {
+		return error.fields.set('amount', {
+			error: true,
+			message: 'Amount should be more than 0'
+		});
+	}
+
+	if (
+		debtProperty === 'amount' ||
+		debtProperty === 'repayment' ||
+		debtProperty === 'rate'
+	) {
+		const valueAsNumber = parseInt(newDebt[debtProperty], 10);
+		const isItNaN = Number.isNaN(valueAsNumber);
+
+		if (isItNaN) {
+			return error.fields.set(debtProperty, {
+				error: true,
+				message: 'Value must be a number'
+			});
+		}
+
+		const repayment = parseInt(newDebt.repayment, 10);
+		const minPayment = calculateMinimumMonthlyRepayment(
+			parseInt(newDebt.rate, 10),
+			parseInt(newDebt.amount, 10)
+		);
+
+		if (repayment < minPayment) {
+			return error.fields.set('repayment', {
+				error: true,
+				message: `Minimum repayment is $${minPayment.toFixed(2)}`
+			});
+		} else {
+			error.fields.set('repayment', errorTemplate);
+		}
+	}
+
+	return error.fields.set(debtProperty, {
+		error: false,
+		message: ''
+	});
+}
+
+export function validateRow(
+	errors: IError[],
+	debtIndex: number,
+	debt: IDebt,
+	debtProperty: keyof IDebt,
+	newValue: string
+): IError[] {
+	errors[debtIndex] = {
+		...errors[debtIndex],
+		fields: validateFields(errors[debtIndex], debt, debtProperty, newValue)
+	};
+
+	return errors;
 }

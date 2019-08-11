@@ -19,6 +19,7 @@ import Tab from '@material-ui/core/Tab';
 import SnowballDialog from '../snowball-dialog';
 import DebtTable from '../debt-table';
 import StackedBarChart from '../stacked-bar-chart';
+import { stringify, parse } from 'query-string';
 import {
 	calculateDebts,
 	IRepaymentSchedule,
@@ -26,7 +27,6 @@ import {
 } from '../../utils';
 import Insights from '../insights';
 import { IClasses } from '../../@types';
-import BurndownChart from '../burndown-chart';
 
 interface IProps {
 	classes: IClasses;
@@ -46,6 +46,7 @@ enum DEBT_PAYOFF_METHODS {
 }
 
 interface IState {
+	isViewReady: boolean;
 	isAboutDialogOpen: boolean;
 	isSnowballDialogOpen: boolean;
 	debts: IDebt[];
@@ -54,6 +55,25 @@ interface IState {
 	whichTab: number;
 	debtPayoffMethod: DEBT_PAYOFF_METHODS;
 	wrapperWidth: number;
+}
+
+function parseQueryStringParameter(
+	parameter: string | string[] | null | undefined,
+	defaultValue?: string
+): string {
+	if (!parameter && defaultValue) {
+		return defaultValue;
+	}
+
+	if (Array.isArray(parameter)) {
+		return parameter[0];
+	}
+
+	if (typeof parameter === 'string') {
+		return parameter;
+	}
+
+	return '';
 }
 
 export default class App extends Component<IProps, IState> {
@@ -67,7 +87,47 @@ export default class App extends Component<IProps, IState> {
 		debtData: null,
 		debtPayoffMethod: DEBT_PAYOFF_METHODS.SNOWBALL,
 		whichTab: 0,
-		wrapperWidth: 0
+		wrapperWidth: 0,
+		isViewReady: false
+	};
+
+	backupState = () => {
+		const { extraContributions, debts, debtPayoffMethod } = this.state;
+		const query = stringify({
+			extraContributions,
+			debts: JSON.stringify(debts),
+			debtPayoffMethod
+		});
+
+		window.history.pushState({}, '', `/?${query}`);
+	};
+
+	restoreState = () => {
+		const location = window.location;
+		const queryParams = parse(location.search);
+
+		this.setState(state => {
+			const debts = parseQueryStringParameter(queryParams.debts);
+			const payoffMethod = parseQueryStringParameter(
+				queryParams.debtPayoffMethod as DEBT_PAYOFF_METHODS,
+				DEBT_PAYOFF_METHODS.SNOWBALL
+			);
+
+			return {
+				...state,
+				isViewReady: true,
+				debts: debts === '' ? [] : JSON.parse(debts),
+				extraContributions: parseQueryStringParameter(
+					queryParams.extraContributions,
+					'0'
+				),
+				debtPayoffMethod:
+					payoffMethod !== DEBT_PAYOFF_METHODS.SNOWBALL &&
+					payoffMethod !== DEBT_PAYOFF_METHODS.AVALANCHE
+						? DEBT_PAYOFF_METHODS.SNOWBALL
+						: payoffMethod
+			};
+		}, this.handleResize);
 	};
 
 	handleDialogCloseRequested = (whichDialog: keyof IState) => () => {
@@ -112,6 +172,8 @@ export default class App extends Component<IProps, IState> {
 	calculate = debounce(() => {
 		const extraContributions = parseInt(this.state.extraContributions, 10);
 
+		this.backupState();
+
 		if (Number.isNaN(extraContributions) || extraContributions < 0) {
 			return;
 		}
@@ -130,7 +192,9 @@ export default class App extends Component<IProps, IState> {
 
 	handleResize = () => {
 		this.setState({
-			wrapperWidth: this.wrapper!.getBoundingClientRect().width
+			wrapperWidth: this.wrapper
+				? this.wrapper.getBoundingClientRect().width
+				: 0
 		});
 	};
 
@@ -154,11 +218,16 @@ export default class App extends Component<IProps, IState> {
 
 	componentDidMount() {
 		this.handleResize();
+		this.restoreState();
 		window.addEventListener('resize', throttle(this.handleResize, 300));
 	}
 
 	render() {
 		const { classes } = this.props;
+
+		if (!this.state.isViewReady) {
+			return null;
+		}
 
 		return (
 			<Typography variant="body1" component="div" className="root">

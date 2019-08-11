@@ -29,27 +29,32 @@ export default class StackedBarChart extends React.Component<IProps> {
 				<YAxis />
 				<Tooltip formatter={value => `$${value}`} />
 				<Legend />
-				{Object.keys(this.props.months[0].values).map(
-					(value, index) => {
-						if (!this.props.debts.find(debt => debt.id === value)) {
-							return null;
-						}
+				{this.props.months.length > 0 &&
+					Object.keys(this.props.months[0].values).map(
+						(value, index) => {
+							if (
+								!this.props.debts.find(
+									debt => debt.id === value
+								)
+							) {
+								return null;
+							}
 
-						return (
-							<Bar
-								key={value}
-								dataKey={`values.${value}.amountPaid`}
-								name={
-									this.props.debts.find(
-										debt => debt.id === value
-									)!.name
-								}
-								stackId="a"
-								fill={colours[index % colours.length]}
-							/>
-						);
-					}
-				)}
+							return (
+								<Bar
+									key={value}
+									dataKey={`values.${value}.amountPaid`}
+									name={
+										this.props.debts.find(
+											debt => debt.id === value
+										)!.name
+									}
+									stackId="a"
+									fill={colours[index % colours.length]}
+								/>
+							);
+						}
+					)}
 			</BarChart>
 		);
 	}

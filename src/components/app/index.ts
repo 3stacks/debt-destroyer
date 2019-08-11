@@ -1,6 +1,6 @@
 import Component from './app';
 import withStyles from '@material-ui/core/styles/withStyles';
-import { FlexDirectionProperty, OverflowProperty } from 'csstype';
+import { FlexDirectionProperty } from 'csstype';
 
 const classes = theme => ({
 	tabWrapper: {},

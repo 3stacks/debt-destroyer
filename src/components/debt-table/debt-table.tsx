@@ -82,7 +82,10 @@ export default class DebtTable extends React.Component<IProps, IState> {
 			this.props.initialDebtState.length === 0
 				? sampleDebts
 				: this.props.initialDebtState,
-		errors: sampleDebtErrors
+		errors:
+			this.props.initialDebtState.length === 0
+				? sampleDebtErrors
+				: this.props.initialDebtState.map(debt => errorFactory(debt.id))
 	};
 
 	handleNewRowRequested = () => {

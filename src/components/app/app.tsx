@@ -116,7 +116,7 @@ export default class App extends Component<IProps, IState> {
 			return {
 				...state,
 				isViewReady: true,
-				debts: JSON.parse(debts),
+				debts: debts === '' ? [] : JSON.parse(debts),
 				extraContributions: parseQueryStringParameter(
 					queryParams.extraContributions,
 					'0'

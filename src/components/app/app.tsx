@@ -116,7 +116,7 @@ export default class App extends Component<IProps, IState> {
 			return {
 				...state,
 				isViewReady: true,
-				debts: debts === '' ? [] : JSON.parse(debts),
+				debts: JSON.parse(debts),
 				extraContributions: parseQueryStringParameter(
 					queryParams.extraContributions,
 					'0'
@@ -296,7 +296,10 @@ export default class App extends Component<IProps, IState> {
 							helperText="How much extra can you afford per month?"
 						/>
 					</div>
-					<DebtTable onDebtChanged={this.handleDebtChanged} />
+					<DebtTable
+						initialDebtState={this.state.debts}
+						onDebtChanged={this.handleDebtChanged}
+					/>
 					<Paper className={classes.tabWrapper}>
 						<Tabs
 							value={this.state.whichTab}

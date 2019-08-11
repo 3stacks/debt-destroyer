@@ -41,6 +41,7 @@ function errorFactory(debtId: string): IError {
 interface IProps {
 	classes: IClasses;
 	onDebtChanged: (rows: IDebt[]) => void;
+	initialDebtState: IDebt[];
 }
 
 interface IState {
@@ -77,7 +78,10 @@ const sampleDebtErrors = sampleDebts.map(debt => {
 
 export default class DebtTable extends React.Component<IProps, IState> {
 	state = {
-		rows: sampleDebts,
+		rows:
+			this.props.initialDebtState.length === 0
+				? sampleDebts
+				: this.props.initialDebtState,
 		errors: sampleDebtErrors
 	};
 

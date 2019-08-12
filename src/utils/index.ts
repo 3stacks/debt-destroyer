@@ -222,13 +222,13 @@ function calculateRepayments(
 					if (balanceAsAtLastMonth < debt.repayment + extraFunds) {
 						const standardPaymentRemainder =
 							debt.repayment - balanceAsAtLastMonth;
+						console.log(
+							lastMonth.month + 1,
+							standardPaymentRemainder
+						);
 
 						amountPaid = balanceAsAtLastMonth;
-						extraFunds =
-							extraFunds +
-							(standardPaymentRemainder < 0
-								? 0
-								: standardPaymentRemainder);
+						extraFunds = extraFunds + standardPaymentRemainder;
 
 						return {
 							...acc,

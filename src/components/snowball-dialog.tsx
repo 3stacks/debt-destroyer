@@ -50,6 +50,10 @@ export default function SnowballDialog({
 					https://hbr.org/2016/12/research-the-best-strategy-for-paying-off-credit-card-debt
 				</a>
 			</DialogContent>
+			<DialogContent>
+				For more information about these methods, read: <a
+				href="https://www.investopedia.com/articles/personal-finance/080716/debt-avalanche-vs-debt-snowball-which-best-you.asp">https://www.investopedia.com/articles/personal-finance/080716/debt-avalanche-vs-debt-snowball-which-best-you.asp</a>
+			</DialogContent>
 			<DialogActions>
 				<Button onClick={onCloseRequested} color="primary">
 					OK

@@ -165,6 +165,14 @@ function calculateRepayments(
 	}
 
 	let extraContributions = repaymentSchedule.extraContributions;
+
+	const firstDebtNotPaidOff : number = debts.findIndex(debt => {
+		return lastMonth.values[debt.id].remainingBalance > 0;
+	});
+	let otherDebtRemainder = debts.slice(firstDebtNotPaidOff).reduce((acc, debt) => {
+		const thisDebtLastMonth = lastMonth.values[debt.id];
+		return thisDebtLastMonth.remainingBalance > 0 && thisDebtLastMonth.remainingBalance <= debt.repayment ? debt.repayment - thisDebtLastMonth.remainingBalance : 0
+	}, 0);
 	let paidOffDebts: IParsedDebt[] = Object.entries(lastMonth.values).reduce(
 		(acc, [key, value]) => {
 			const debt = debts.find(debt => debt.id === key);
@@ -178,12 +186,7 @@ function calculateRepayments(
 		},
 		[]
 	);
-	/**
-	 * TODO: fix edge case where you pay off a non priority 1 debt and it
-	 * rolls funds into the next priority (e.g. priority 2 gets paid
-	 * off, the remainder of that month's payment goes to priority 3
-	 * instead of p1
-	 */
+
 	let extraFunds = paidOffDebts.reduce((acc, paidOffDebt) => {
 		return acc + paidOffDebt.repayment;
 	}, 0);
@@ -216,8 +219,9 @@ function calculateRepayments(
 						};
 					}
 
-					extraFunds = extraFunds + extraContributions;
+					extraFunds = extraFunds + extraContributions + otherDebtRemainder;
 					extraContributions = 0;
+					otherDebtRemainder = 0;
 
 					if (balanceAsAtLastMonth < debt.repayment + extraFunds) {
 						const standardPaymentRemainder =

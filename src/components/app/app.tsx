@@ -151,6 +151,10 @@ export default class App extends Component<IProps, IState> {
 	handleChange = (name: keyof IState) => (event: React.ChangeEvent<any>) => {
 		const newValue = event.target.value;
 
+		if (name === "debtPayoffMethod" && newValue === DEBT_PAYOFF_METHODS.AVALANCHE) {
+			(window as any).mixpanel.track('Debt payoff method changed', {value: newValue});
+		}
+
 		this.setState(
 			state => {
 				return {

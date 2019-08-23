@@ -26,7 +26,9 @@ import {
 	parseChartData
 } from '../../utils';
 import Insights from '../insights';
+
 import { IClasses } from '../../@types';
+import mixpanel from '../../utils/mixpanel';
 
 interface IProps {
 	classes: IClasses;
@@ -151,8 +153,11 @@ export default class App extends Component<IProps, IState> {
 	handleChange = (name: keyof IState) => (event: React.ChangeEvent<any>) => {
 		const newValue = event.target.value;
 
-		if (name === "debtPayoffMethod" && newValue === DEBT_PAYOFF_METHODS.AVALANCHE) {
-			(window as any).mixpanel.track('Debt payoff method changed', {value: newValue});
+		if (
+			name === 'debtPayoffMethod' &&
+			newValue === DEBT_PAYOFF_METHODS.AVALANCHE
+		) {
+			mixpanel.track('Debt payoff method changed', { value: newValue });
 		}
 
 		this.setState(
@@ -181,6 +186,8 @@ export default class App extends Component<IProps, IState> {
 		if (Number.isNaN(extraContributions) || extraContributions < 0) {
 			return;
 		}
+
+		mixpanel.track('Debts re-calculated');
 
 		this.setState(state => {
 			return {
@@ -212,6 +219,7 @@ export default class App extends Component<IProps, IState> {
 	};
 
 	handleTabChanged = (event, newValue) => {
+		mixpanel.track('tab changed', newValue);
 		this.setState(state => {
 			return {
 				...state,

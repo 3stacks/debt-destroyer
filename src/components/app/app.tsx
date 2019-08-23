@@ -232,6 +232,7 @@ export default class App extends Component<IProps, IState> {
 		this.handleResize();
 		this.restoreState();
 		window.addEventListener('resize', throttle(this.handleResize, 300));
+		mixpanel.track('New visitor', {source: !!window.location.search ? 'Link' : 'Organic'});
 	}
 
 	render() {

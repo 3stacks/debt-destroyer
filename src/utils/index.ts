@@ -83,16 +83,7 @@ function isDebtValid(debt: IParsedDebt) {
 		return false;
 	}
 
-	if (debt.rate < 0) {
-		return false;
-	}
-
-	const minMonthlyRepayment = calculateMinimumMonthlyRepayment(
-		debt.rate,
-		debt.amount
-	);
-
-	return debt.repayment >= minMonthlyRepayment;
+	return debt.rate >= 0;
 }
 
 function parseDebt(debt: IDebt): IParsedDebt {
@@ -131,6 +122,16 @@ export function parseChartData(rawChartData: IRepaymentSchedule): IStackData[] {
 	});
 }
 
+interface IValue {
+	remainingBalance: number;
+	amountPaid: number;
+	interestPaid: number;
+}
+
+interface IValueMap {
+	[debtId: string]: IValue;
+}
+
 export interface IRepaymentSchedule {
 	extraContributions: number;
 	// so we don't have to do deep equality checks on the whole tree to
@@ -138,14 +139,14 @@ export interface IRepaymentSchedule {
 	guid: string;
 	months: {
 		month: number;
-		values: {
-			[debtId: string]: {
-				remainingBalance: number;
-				amountPaid: number;
-				interestPaid: number;
-			};
-		};
+		values: IValueMap;
 	}[];
+}
+
+function getTotalBalanceFromValues(values: IValueMap): number {
+	return Object.values(values).reduce((acc, value) => {
+		return acc + (value.remainingBalance || 0);
+	}, 0);
 }
 
 function calculateRepayments(
@@ -155,9 +156,7 @@ function calculateRepayments(
 	const lastMonth =
 		repaymentSchedule.months[repaymentSchedule.months.length - 1];
 	const totalDebtRemaining = lastMonth
-		? Object.values(lastMonth.values).reduce((acc, value) => {
-				return acc + value.remainingBalance;
-		  }, 0)
+		? getTotalBalanceFromValues(lastMonth.values)
 		: 1;
 
 	if (totalDebtRemaining <= 0) {
@@ -222,10 +221,6 @@ function calculateRepayments(
 					if (balanceAsAtLastMonth < debt.repayment + extraFunds) {
 						const standardPaymentRemainder =
 							debt.repayment - balanceAsAtLastMonth;
-						console.log(
-							lastMonth.month + 1,
-							standardPaymentRemainder
-						);
 
 						amountPaid = balanceAsAtLastMonth;
 						extraFunds = extraFunds + standardPaymentRemainder;
@@ -247,6 +242,29 @@ function calculateRepayments(
 
 					const newRemainingBalance =
 						balanceAsAtLastMonth - amountPaid;
+					const newRemainingPlusInterest =
+						calculateMonthlyInterest(
+							debt.rate,
+							newRemainingBalance
+						) + newRemainingBalance;
+
+					// If the balance of the loan is increasing month to month then
+					// it will recurse infinitely. so just set the remaining balance to 0
+					if (
+						newRemainingPlusInterest - amountPaid >
+						balanceAsAtLastMonth
+					) {
+						console.log('aerasrgf');
+						return {
+							...acc,
+							[debt.id]: {
+								amountPaid,
+								interestPaid: interestOnBalance,
+								remainingBalance: 0
+							}
+						};
+					}
+
 					return {
 						...acc,
 						[debt.id]: {
@@ -350,20 +368,7 @@ function validateFields(
 			});
 		}
 
-		const repayment = parseInt(newDebt.repayment, 10);
-		const minPayment = calculateMinimumMonthlyRepayment(
-			parseInt(newDebt.rate, 10),
-			parseInt(newDebt.amount, 10)
-		);
-
-		if (repayment < minPayment) {
-			return error.fields.set('repayment', {
-				error: true,
-				message: `Minimum repayment is $${minPayment.toFixed(2)}`
-			});
-		} else {
-			error.fields.set('repayment', errorTemplate);
-		}
+		error.fields.set('repayment', errorTemplate);
 	}
 
 	return error.fields.set(debtProperty, {

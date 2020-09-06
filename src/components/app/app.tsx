@@ -28,7 +28,6 @@ import {
 import Insights from '../insights';
 
 import { IClasses } from '../../@types';
-import mixpanel from '../../utils/mixpanel';
 
 interface IProps {
 	classes: IClasses;
@@ -153,13 +152,6 @@ export default class App extends Component<IProps, IState> {
 	handleChange = (name: keyof IState) => (event: React.ChangeEvent<any>) => {
 		const newValue = event.target.value;
 
-		if (
-			name === 'debtPayoffMethod' &&
-			newValue === DEBT_PAYOFF_METHODS.AVALANCHE
-		) {
-			mixpanel.track('Debt payoff method changed', { value: newValue });
-		}
-
 		this.setState(
 			state => {
 				return {
@@ -186,8 +178,6 @@ export default class App extends Component<IProps, IState> {
 		if (Number.isNaN(extraContributions) || extraContributions < 0) {
 			return;
 		}
-
-		mixpanel.track('Debts re-calculated');
 
 		this.setState(state => {
 			return {
@@ -219,7 +209,6 @@ export default class App extends Component<IProps, IState> {
 	};
 
 	handleTabChanged = (event, newValue) => {
-		mixpanel.track('tab changed', newValue);
 		this.setState(state => {
 			return {
 				...state,
@@ -232,7 +221,6 @@ export default class App extends Component<IProps, IState> {
 		this.handleResize();
 		this.restoreState();
 		window.addEventListener('resize', throttle(this.handleResize, 300));
-		mixpanel.track('New visitor', {source: !!window.location.search ? 'Link' : 'Organic'});
 	}
 
 	render() {

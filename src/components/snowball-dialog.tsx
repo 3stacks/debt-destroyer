@@ -5,14 +5,11 @@ import DialogActions from '@material-ui/core/DialogActions/DialogActions';
 import Button from '@material-ui/core/Button/Button';
 import Dialog from '@material-ui/core/Dialog/Dialog';
 import { IDialogProps } from '../@types';
-import mixpanel from '../utils/mixpanel';
 
 export default function SnowballDialog({
 	isOpen,
 	onCloseRequested
 }: IDialogProps) {
-	mixpanel.track('about dialog opened');
-
 	return (
 		<Dialog
 			open={isOpen}

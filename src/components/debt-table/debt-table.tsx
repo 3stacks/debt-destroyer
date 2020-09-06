@@ -49,43 +49,10 @@ interface IState {
 	errors: IError[];
 }
 
-const sampleDebts = [
-	{
-		name: 'AMEX',
-		id: nanoid(),
-		amount: '10000',
-		rate: '16',
-		repayment: '450'
-	},
-	{
-		name: 'CBA',
-		id: nanoid(),
-		amount: '6000',
-		rate: '12',
-		repayment: '200'
-	},
-	{
-		name: 'Car Loan',
-		id: nanoid(),
-		amount: '9450',
-		rate: '7',
-		repayment: '600'
-	}
-];
-const sampleDebtErrors = sampleDebts.map(debt => {
-	return errorFactory(debt.id);
-});
-
 export default class DebtTable extends React.Component<IProps, IState> {
 	state = {
-		rows:
-			this.props.initialDebtState.length === 0
-				? sampleDebts
-				: this.props.initialDebtState,
-		errors:
-			this.props.initialDebtState.length === 0
-				? sampleDebtErrors
-				: this.props.initialDebtState.map(debt => errorFactory(debt.id))
+		rows: this.props.initialDebtState,
+		errors: this.props.initialDebtState.map(debt => errorFactory(debt.id))
 	};
 
 	handleNewRowRequested = () => {

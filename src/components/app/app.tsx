@@ -26,7 +26,6 @@ import {
 	parseChartData
 } from '../../utils';
 import Insights from '../insights';
-
 import { IClasses } from '../../@types';
 
 interface IProps {

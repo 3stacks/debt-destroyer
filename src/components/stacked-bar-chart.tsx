@@ -1,61 +1,49 @@
-import * as React from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
-import { IStackData } from '../utils';
-import red from '@material-ui/core/colors/red';
-import blue from '@material-ui/core/colors/blue';
-import green from '@material-ui/core/colors/green';
-import pink from '@material-ui/core/colors/pink';
-import deepOrange from '@material-ui/core/colors/deepOrange';
-import { IDebt } from './app/app';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { IStackData, IDebt } from '../utils'
 
-const colours = [red[500], blue[500], green[500], pink[500], deepOrange[500]];
+const CHART_COLORS = [
+  'hsl(var(--chart-1))',
+  'hsl(var(--chart-2))',
+  'hsl(var(--chart-3))',
+  'hsl(var(--chart-4))',
+  'hsl(var(--chart-5))',
+]
 
-interface IProps {
-	months: IStackData[];
-	width: number;
-	debts: IDebt[];
+interface StackedBarChartProps {
+  months: IStackData[]
+  width: number
+  debts: IDebt[]
 }
 
-export default class StackedBarChart extends React.Component<IProps> {
-	render() {
-		return (
-			<BarChart
-				width={this.props.width - 12}
-				height={this.props.width * 0.6}
-				data={this.props.months}
-				style={{ paddingTop: 24 }}
-			>
-				<XAxis dataKey="month" />
-				<YAxis />
-				<Tooltip formatter={value => `$${value}`} />
-				<Legend />
-				{this.props.months.length > 0 &&
-					Object.keys(this.props.months[0].values).map(
-						(value, index) => {
-							if (
-								!this.props.debts.find(
-									debt => debt.id === value
-								)
-							) {
-								return null;
-							}
+export default function StackedBarChart({ months, width, debts }: StackedBarChartProps) {
+  if (months.length === 0) {
+    return null
+  }
 
-							return (
-								<Bar
-									key={value}
-									dataKey={`values.${value}.amountPaid`}
-									name={
-										this.props.debts.find(
-											debt => debt.id === value
-										)!.name
-									}
-									stackId="a"
-									fill={colours[index % colours.length]}
-								/>
-							);
-						}
-					)}
-			</BarChart>
-		);
-	}
+  return (
+    <div style={{ paddingTop: 24 }}>
+      <ResponsiveContainer width="100%" height={Math.max(300, width * 0.5)}>
+        <BarChart data={months}>
+          <XAxis dataKey="month" />
+          <YAxis />
+          <Tooltip formatter={(value) => `$${value}`} />
+          <Legend />
+          {Object.keys(months[0].values).map((debtId, index) => {
+            const debt = debts.find(d => d.id === debtId)
+            if (!debt) return null
+
+            return (
+              <Bar
+                key={debtId}
+                dataKey={`values.${debtId}.amountPaid`}
+                name={debt.name}
+                stackId="a"
+                fill={CHART_COLORS[index % CHART_COLORS.length]}
+              />
+            )
+          })}
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  )
 }

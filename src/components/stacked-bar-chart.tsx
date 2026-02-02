@@ -1,4 +1,6 @@
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { useMemo } from 'react'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, TooltipProps } from 'recharts'
+import { format, addMonths } from 'date-fns'
 import { IStackData, IDebt } from '../utils'
 
 // Direct HSL values (CSS variables don't work in SVG fill attributes)
@@ -16,20 +18,64 @@ interface StackedBarChartProps {
   debts: IDebt[]
 }
 
+interface ChartDataPoint extends IStackData {
+  dateLabel: string
+  totalPaid: number
+}
+
+function CustomTooltip({ active, payload, label }: TooltipProps<number, string>) {
+  if (!active || !payload || payload.length === 0) {
+    return null
+  }
+
+  const totalPaid = payload.reduce((sum, entry) => sum + (entry.value || 0), 0)
+
+  return (
+    <div className="bg-background border rounded-lg shadow-lg p-3 text-sm">
+      <p className="font-medium mb-2">{label}</p>
+      {payload.map((entry, index) => (
+        <p key={index} style={{ color: entry.color }}>
+          {entry.name}: ${entry.value?.toFixed(2)}
+        </p>
+      ))}
+      <p className="font-medium mt-2 pt-2 border-t">
+        Total: ${totalPaid.toFixed(2)}
+      </p>
+    </div>
+  )
+}
+
 export default function StackedBarChart({ months, width, debts }: StackedBarChartProps) {
-  if (months.length === 0) {
+  const chartData = useMemo<ChartDataPoint[]>(() => {
+    const startDate = new Date()
+    return months.map(month => {
+      const monthNumber = parseInt(month.month, 10)
+      const date = addMonths(startDate, monthNumber)
+      const totalPaid = Object.values(month.values).reduce(
+        (sum, v) => sum + (v.amountPaid || 0),
+        0
+      )
+      return {
+        ...month,
+        dateLabel: format(date, 'MMM, yy'),
+        totalPaid
+      }
+    })
+  }, [months])
+
+  if (chartData.length === 0) {
     return null
   }
 
   return (
     <div style={{ paddingTop: 24 }}>
       <ResponsiveContainer width="100%" height={Math.max(300, width * 0.5)}>
-        <BarChart data={months}>
-          <XAxis dataKey="month" />
+        <BarChart data={chartData}>
+          <XAxis dataKey="dateLabel" />
           <YAxis />
-          <Tooltip formatter={(value) => `$${value}`} />
+          <Tooltip content={<CustomTooltip />} />
           <Legend />
-          {Object.keys(months[0].values).map((debtId, index) => {
+          {Object.keys(chartData[0].values).map((debtId, index) => {
             const debt = debts.find(d => d.id === debtId)
             if (!debt) return null
 

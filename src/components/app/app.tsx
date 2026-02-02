@@ -1,361 +1,253 @@
-import React, { Component } from 'react';
-import throttle from 'lodash/throttle';
-import debounce from 'lodash/debounce';
-import Typography from '@material-ui/core/Typography';
-import AppBar from '@material-ui/core/AppBar';
-import Paper from '@material-ui/core/Paper';
-import AboutDialog from '../about-dialog';
-import HelpIcon from '@material-ui/icons/HelpOutline';
-import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import Radio from '@material-ui/core/Radio';
-import RadioGroup from '@material-ui/core/RadioGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormControl from '@material-ui/core/FormControl';
-import FormLabel from '@material-ui/core/FormLabel';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import SnowballDialog from '../snowball-dialog';
-import DebtTable from '../debt-table';
-import StackedBarChart from '../stacked-bar-chart';
-import { stringify, parse } from 'query-string';
+import { useState, useEffect, useRef, useCallback } from 'react'
+import throttle from 'lodash/throttle'
+import debounce from 'lodash/debounce'
+import { HelpCircle } from 'lucide-react'
+import { stringify, parse } from 'query-string'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card, CardContent } from '@/components/ui/card'
+import AboutDialog from '../about-dialog'
+import SnowballDialog from '../snowball-dialog'
+import DebtTable from '../debt-table/debt-table'
+import StackedBarChart from '../stacked-bar-chart'
+import Insights from '../insights'
 import {
-	calculateDebts,
-	IRepaymentSchedule,
-	parseChartData
-} from '../../utils';
-import Insights from '../insights';
-import { IClasses } from '../../@types';
-
-interface IProps {
-	classes: IClasses;
-}
-
-export interface IDebt {
-	name: string;
-	id: string;
-	amount: string;
-	rate: string;
-	repayment: string;
-}
-
-enum DEBT_PAYOFF_METHODS {
-	SNOWBALL = 'snowball',
-	AVALANCHE = 'avalanche'
-}
-
-interface IState {
-	isViewReady: boolean;
-	isAboutDialogOpen: boolean;
-	isSnowballDialogOpen: boolean;
-	debts: IDebt[];
-	extraContributions: string;
-	debtData: IRepaymentSchedule | null;
-	whichTab: number;
-	debtPayoffMethod: DEBT_PAYOFF_METHODS;
-	wrapperWidth: number;
-}
+  calculateDebts,
+  IRepaymentSchedule,
+  parseChartData,
+  DEBT_PAYOFF_METHODS,
+  IDebt
+} from '../../utils'
+import { DEBOUNCE_MS } from '../../constants'
 
 function parseQueryStringParameter(
-	parameter: string | string[] | null | undefined,
-	defaultValue?: string
+  parameter: string | string[] | null | undefined,
+  defaultValue?: string
 ): string {
-	if (!parameter && defaultValue) {
-		return defaultValue;
-	}
-
-	if (Array.isArray(parameter)) {
-		return parameter[0];
-	}
-
-	if (typeof parameter === 'string') {
-		return parameter;
-	}
-
-	return '';
+  if (!parameter && defaultValue) {
+    return defaultValue
+  }
+  if (Array.isArray(parameter)) {
+    return parameter[0]
+  }
+  if (typeof parameter === 'string') {
+    return parameter
+  }
+  return ''
 }
 
-export default class App extends Component<IProps, IState> {
-	wrapper: HTMLDivElement | null = null;
+export default function App() {
+  const wrapperRef = useRef<HTMLDivElement>(null)
 
-	state = {
-		isAboutDialogOpen: false,
-		isSnowballDialogOpen: false,
-		extraContributions: '0',
-		debts: [],
-		debtData: null,
-		debtPayoffMethod: DEBT_PAYOFF_METHODS.SNOWBALL,
-		whichTab: 0,
-		wrapperWidth: 0,
-		isViewReady: false
-	};
+  const [isViewReady, setIsViewReady] = useState(false)
+  const [isAboutDialogOpen, setIsAboutDialogOpen] = useState(false)
+  const [isSnowballDialogOpen, setIsSnowballDialogOpen] = useState(false)
+  const [debts, setDebts] = useState<IDebt[]>([])
+  const [extraContributions, setExtraContributions] = useState('0')
+  const [debtData, setDebtData] = useState<IRepaymentSchedule | null>(null)
+  const [debtPayoffMethod, setDebtPayoffMethod] = useState<DEBT_PAYOFF_METHODS>(
+    DEBT_PAYOFF_METHODS.SNOWBALL
+  )
+  const [wrapperWidth, setWrapperWidth] = useState(0)
 
-	backupState = () => {
-		const { extraContributions, debts, debtPayoffMethod } = this.state;
-		const query = stringify({
-			extraContributions,
-			debts: JSON.stringify(debts),
-			debtPayoffMethod
-		});
+  const backupState = useCallback(() => {
+    const query = stringify({
+      extraContributions,
+      debts: JSON.stringify(debts),
+      debtPayoffMethod
+    })
+    window.history.pushState({}, '', `/?${query}`)
+  }, [extraContributions, debts, debtPayoffMethod])
 
-		window.history.pushState({}, '', `/?${query}`);
-	};
+  const calculate = useCallback(
+    debounce((currentDebts: IDebt[], method: DEBT_PAYOFF_METHODS, extra: string) => {
+      const extraValue = parseInt(extra, 10)
+      if (Number.isNaN(extraValue) || extraValue < 0) {
+        return
+      }
+      setDebtData(
+        calculateDebts({
+          debts: currentDebts,
+          debtMethod: method,
+          extraContributions: extraValue
+        })
+      )
+    }, DEBOUNCE_MS),
+    []
+  )
 
-	restoreState = () => {
-		const location = window.location;
-		const queryParams = parse(location.search);
+  const handleResize = useCallback(() => {
+    if (wrapperRef.current) {
+      setWrapperWidth(wrapperRef.current.getBoundingClientRect().width)
+    }
+  }, [])
 
-		this.setState(state => {
-			const debts = parseQueryStringParameter(queryParams.debts);
-			const payoffMethod = parseQueryStringParameter(
-				queryParams.debtPayoffMethod as DEBT_PAYOFF_METHODS,
-				DEBT_PAYOFF_METHODS.SNOWBALL
-			);
+  // Restore state from URL on mount
+  useEffect(() => {
+    const queryParams = parse(window.location.search)
+    const debtsParam = parseQueryStringParameter(queryParams.debts)
+    const payoffMethod = parseQueryStringParameter(
+      queryParams.debtPayoffMethod as string,
+      DEBT_PAYOFF_METHODS.SNOWBALL
+    )
+    const extraParam = parseQueryStringParameter(queryParams.extraContributions, '0')
 
-			return {
-				...state,
-				isViewReady: true,
-				debts: debts === '' ? [] : JSON.parse(debts),
-				extraContributions: parseQueryStringParameter(
-					queryParams.extraContributions,
-					'0'
-				),
-				debtPayoffMethod:
-					payoffMethod !== DEBT_PAYOFF_METHODS.SNOWBALL &&
-					payoffMethod !== DEBT_PAYOFF_METHODS.AVALANCHE
-						? DEBT_PAYOFF_METHODS.SNOWBALL
-						: payoffMethod
-			};
-		}, this.handleResize);
-	};
+    const parsedDebts = debtsParam === '' ? [] : JSON.parse(debtsParam)
+    const validMethod =
+      payoffMethod !== DEBT_PAYOFF_METHODS.SNOWBALL &&
+      payoffMethod !== DEBT_PAYOFF_METHODS.AVALANCHE
+        ? DEBT_PAYOFF_METHODS.SNOWBALL
+        : (payoffMethod as DEBT_PAYOFF_METHODS)
 
-	handleDialogCloseRequested = (whichDialog: keyof IState) => () => {
-		this.setState(state => {
-			return {
-				...state,
-				[whichDialog]: false
-			};
-		});
-	};
+    setDebts(parsedDebts)
+    setExtraContributions(extraParam)
+    setDebtPayoffMethod(validMethod)
+    setIsViewReady(true)
 
-	handleDialogOpenRequested = (whichDialog: keyof IState) => () => {
-		this.setState(state => {
-			return {
-				...state,
-				[whichDialog]: true
-			};
-		});
-	};
+    // Initial calculation
+    calculate(parsedDebts, validMethod, extraParam)
+  }, [calculate])
 
-	handleChange = (name: keyof IState) => (event: React.ChangeEvent<any>) => {
-		const newValue = event.target.value;
+  // Handle resize
+  useEffect(() => {
+    handleResize()
+    const throttledResize = throttle(handleResize, DEBOUNCE_MS)
+    window.addEventListener('resize', throttledResize)
+    return () => window.removeEventListener('resize', throttledResize)
+  }, [handleResize])
 
-		this.setState(
-			state => {
-				return {
-					...state,
-					[name]: newValue
-				};
-			},
-			() => {
-				if (
-					name === 'debtPayoffMethod' ||
-					name === 'extraContributions'
-				) {
-					this.calculate();
-				}
-			}
-		);
-	};
+  // Backup state when relevant values change
+  useEffect(() => {
+    if (isViewReady) {
+      backupState()
+    }
+  }, [debts, extraContributions, debtPayoffMethod, isViewReady, backupState])
 
-	calculate = debounce(() => {
-		const extraContributions = parseInt(this.state.extraContributions, 10);
+  const handleMethodChange = (value: string) => {
+    setDebtPayoffMethod(value as DEBT_PAYOFF_METHODS)
+    calculate(debts, value as DEBT_PAYOFF_METHODS, extraContributions)
+  }
 
-		this.backupState();
+  const handleExtraContributionsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setExtraContributions(value)
+    calculate(debts, debtPayoffMethod, value)
+  }
 
-		if (Number.isNaN(extraContributions) || extraContributions < 0) {
-			return;
-		}
+  const handleDebtChanged = (newDebts: IDebt[]) => {
+    setDebts(newDebts)
+    calculate(newDebts, debtPayoffMethod, extraContributions)
+  }
 
-		this.setState(state => {
-			return {
-				...state,
-				debtData: calculateDebts({
-					debts: state.debts,
-					debtMethod: state.debtPayoffMethod,
-					extraContributions: parseInt(state.extraContributions, 10)
-				})
-			};
-		});
-	}, 300);
+  if (!isViewReady) {
+    return null
+  }
 
-	handleResize = () => {
-		this.setState({
-			wrapperWidth: this.wrapper
-				? this.wrapper.getBoundingClientRect().width
-				: 0
-		});
-	};
+  return (
+    <div className="min-h-screen">
+      <header className="bg-primary text-primary-foreground py-4 px-6 flex items-center justify-between">
+        <div className="w-10" />
+        <h1 className="text-xl font-semibold">Debt Destroyer</h1>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-primary-foreground hover:bg-primary/90"
+          onClick={() => setIsAboutDialogOpen(true)}
+        >
+          <HelpCircle className="h-5 w-5" />
+        </Button>
+      </header>
 
-	handleDebtChanged = newDebts => {
-		this.setState(state => {
-			return {
-				...state,
-				debts: newDebts
-			};
-		}, this.calculate);
-	};
+      <main className="max-w-4xl mx-auto p-6 space-y-6" ref={wrapperRef}>
+        <div className="flex flex-col sm:flex-row gap-6">
+          <div className="space-y-3">
+            <Label className="text-base font-medium">Debt payoff method</Label>
+            <RadioGroup
+              value={debtPayoffMethod}
+              onValueChange={handleMethodChange}
+              className="space-y-2"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="snowball" id="snowball" />
+                <Label htmlFor="snowball" className="font-normal cursor-pointer">
+                  Snowball
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="avalanche" id="avalanche" />
+                <Label htmlFor="avalanche" className="font-normal cursor-pointer">
+                  Avalanche
+                </Label>
+              </div>
+            </RadioGroup>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => setIsSnowballDialogOpen(true)}
+            >
+              What is this?
+            </Button>
+          </div>
 
-	handleTabChanged = (event, newValue) => {
-		this.setState(state => {
-			return {
-				...state,
-				whichTab: newValue
-			};
-		});
-	};
+          <div className="space-y-2">
+            <Label htmlFor="extra">Extra contributions</Label>
+            <Input
+              id="extra"
+              type="number"
+              min="0"
+              startAdornment="$"
+              value={extraContributions}
+              onChange={handleExtraContributionsChange}
+              helperText="How much extra can you afford per month?"
+            />
+          </div>
+        </div>
 
-	componentDidMount() {
-		this.handleResize();
-		this.restoreState();
-		window.addEventListener('resize', throttle(this.handleResize, 300));
-	}
+        <DebtTable
+          initialDebtState={debts}
+          onDebtChanged={handleDebtChanged}
+        />
 
-	render() {
-		const { classes } = this.props;
+        {debtData && (
+          <Card>
+            <Tabs defaultValue="chart">
+              <CardContent className="pt-6">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="chart">Chart</TabsTrigger>
+                  <TabsTrigger value="insights">Insights</TabsTrigger>
+                </TabsList>
+                <TabsContent value="chart">
+                  <StackedBarChart
+                    width={wrapperWidth}
+                    months={parseChartData(debtData)}
+                    debts={debts}
+                  />
+                </TabsContent>
+                <TabsContent value="insights">
+                  <Insights
+                    extraContributions={extraContributions}
+                    debtPayoffMethod={debtPayoffMethod}
+                    debtData={debtData}
+                    debts={debts}
+                  />
+                </TabsContent>
+              </CardContent>
+            </Tabs>
+          </Card>
+        )}
+      </main>
 
-		if (!this.state.isViewReady) {
-			return null;
-		}
-
-		return (
-			<Typography variant="body1" component="div" className="root">
-				<AppBar className={classes.appBar} position="static">
-					<div className={classes.aboutButton} />
-					<Typography variant="h5" component="h1" color="inherit">
-						Debt Destroyer
-					</Typography>
-					<Button
-						className={classes.aboutButton}
-						onClick={this.handleDialogOpenRequested(
-							'isAboutDialogOpen'
-						)}
-					>
-						<HelpIcon />
-					</Button>
-				</AppBar>
-				<div className="max-width-container">
-					<div
-						className={classes.accoutrements}
-						ref={el => (this.wrapper = el)}
-					>
-						<FormControl component="fieldset">
-							<FormLabel component="legend">
-								Debt payoff method
-							</FormLabel>
-							<RadioGroup
-								name="debt_payoff_method"
-								value={this.state.debtPayoffMethod}
-								onChange={this.handleChange('debtPayoffMethod')}
-							>
-								<FormControlLabel
-									value="snowball"
-									control={<Radio />}
-									label="Snowball"
-								/>
-								<FormControlLabel
-									value="avalanche"
-									control={<Radio />}
-									label="Avalanche"
-								/>
-								<Button
-									color="primary"
-									variant="contained"
-									onClick={this.handleDialogOpenRequested(
-										'isSnowballDialogOpen'
-									)}
-								>
-									What is this?
-								</Button>
-							</RadioGroup>
-						</FormControl>
-						<TextField
-							label="Extra contributions"
-							{...({ min: '0' } as any)}
-							type="number"
-							InputProps={{
-								startAdornment: (
-									<InputAdornment position="end">
-										$
-									</InputAdornment>
-								)
-							}}
-							onChange={this.handleChange('extraContributions')}
-							value={this.state.extraContributions}
-							helperText="How much extra can you afford per month?"
-						/>
-					</div>
-					<DebtTable
-						initialDebtState={this.state.debts}
-						onDebtChanged={this.handleDebtChanged}
-					/>
-					<Paper className={classes.tabWrapper}>
-						<Tabs
-							value={this.state.whichTab}
-							onChange={this.handleTabChanged}
-							textColor="primary"
-							indicatorColor="primary"
-						>
-							<Tab label="Chart" />
-							<Tab label="Insights" />
-						</Tabs>
-						{this.state.debtData && (
-							<React.Fragment>
-								<div hidden={this.state.whichTab !== 0}>
-									{this.state.whichTab === 0 && (
-										<StackedBarChart
-											width={this.state.wrapperWidth}
-											months={
-												this.state.debtData === null
-													? []
-													: parseChartData(
-															this.state.debtData!
-													  )
-											}
-											debts={this.state.debts}
-										/>
-									)}
-								</div>
-								<div hidden={this.state.whichTab !== 1}>
-									<Insights
-										extraContributions={
-											this.state.extraContributions
-										}
-										debtPayoffMethod={
-											this.state.debtPayoffMethod
-										}
-										debtData={this.state.debtData!}
-										debts={this.state.debts}
-									/>
-								</div>
-							</React.Fragment>
-						)}
-					</Paper>
-				</div>
-				<AboutDialog
-					isOpen={this.state.isAboutDialogOpen}
-					onCloseRequested={this.handleDialogCloseRequested(
-						'isAboutDialogOpen'
-					)}
-				/>
-				<SnowballDialog
-					isOpen={this.state.isSnowballDialogOpen}
-					onCloseRequested={this.handleDialogCloseRequested(
-						'isSnowballDialogOpen'
-					)}
-				/>
-			</Typography>
-		);
-	}
+      <AboutDialog
+        isOpen={isAboutDialogOpen}
+        onCloseRequested={() => setIsAboutDialogOpen(false)}
+      />
+      <SnowballDialog
+        isOpen={isSnowballDialogOpen}
+        onCloseRequested={() => setIsSnowballDialogOpen(false)}
+      />
+    </div>
+  )
 }

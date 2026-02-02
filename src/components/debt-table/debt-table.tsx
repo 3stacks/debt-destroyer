@@ -1,239 +1,176 @@
-import * as React from 'react';
-import Paper from '@material-ui/core/Paper';
-import Table from '@material-ui/core/Table';
-import TableRow from '@material-ui/core/TableRow';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableHead from '@material-ui/core/TableHead';
-import AddIcon from '@material-ui/icons/Add';
-import DeleteIcon from '@material-ui/icons/Remove';
-import { IDebt } from '../app/app';
-import InputAdornment from '@material-ui/core/InputAdornment/InputAdornment';
-import TextField from '@material-ui/core/TextField/TextField';
-import Button from '@material-ui/core/Button';
-import nanoid from 'nanoid';
-import { IClasses, IError } from '../../@types';
-import { editRow, validateRow } from '../../utils';
-import { errorTemplate } from '../../constants';
+import { useState, useEffect } from 'react'
+import { nanoid } from 'nanoid'
+import { Plus, Minus } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Card, CardContent } from '@/components/ui/card'
+import { editRow, validateRow, IDebt } from '../../utils'
+import { errorTemplate } from '../../constants'
+
+interface IError {
+  id: string
+  fields: Map<keyof IDebt, { error: boolean; message: string }>
+}
 
 function debtFactory(): IDebt {
-	return {
-		name: '',
-		id: nanoid(),
-		amount: '',
-		repayment: '',
-		rate: ''
-	};
+  return {
+    name: '',
+    id: nanoid(),
+    amount: '',
+    repayment: '',
+    rate: ''
+  }
 }
 
 function errorFactory(debtId: string): IError {
-	return {
-		id: debtId,
-		fields: new Map([
-			['name', errorTemplate],
-			['amount', errorTemplate],
-			['repayment', errorTemplate],
-			['rate', errorTemplate]
-		])
-	};
+  return {
+    id: debtId,
+    fields: new Map([
+      ['name', errorTemplate],
+      ['amount', errorTemplate],
+      ['repayment', errorTemplate],
+      ['rate', errorTemplate]
+    ])
+  }
 }
 
-interface IProps {
-	classes: IClasses;
-	onDebtChanged: (rows: IDebt[]) => void;
-	initialDebtState: IDebt[];
+interface DebtTableProps {
+  onDebtChanged: (rows: IDebt[]) => void
+  initialDebtState: IDebt[]
 }
 
-interface IState {
-	rows: IDebt[];
-	errors: IError[];
-}
+export default function DebtTable({ onDebtChanged, initialDebtState }: DebtTableProps) {
+  const [rows, setRows] = useState<IDebt[]>(initialDebtState)
+  const [errors, setErrors] = useState<IError[]>(
+    initialDebtState.map(debt => errorFactory(debt.id))
+  )
 
-export default class DebtTable extends React.Component<IProps, IState> {
-	state = {
-		rows: this.props.initialDebtState,
-		errors: this.props.initialDebtState.map(debt => errorFactory(debt.id))
-	};
+  // Sync with parent when initialDebtState changes (e.g., from URL restore)
+  useEffect(() => {
+    setRows(initialDebtState)
+    setErrors(initialDebtState.map(debt => errorFactory(debt.id)))
+  }, [initialDebtState])
 
-	handleNewRowRequested = () => {
-		const newDebt = debtFactory();
+  // Notify parent of changes
+  useEffect(() => {
+    onDebtChanged(rows)
+  }, [rows, onDebtChanged])
 
-		this.setState(state => {
-			return {
-				...state,
-				rows: [...state.rows, newDebt],
-				errors: [...state.errors, errorFactory(newDebt.id)]
-			};
-		});
-	};
+  const handleNewRow = () => {
+    const newDebt = debtFactory()
+    setRows(prev => [...prev, newDebt])
+    setErrors(prev => [...prev, errorFactory(newDebt.id)])
+  }
 
-	componentDidMount() {
-		this.dispatchRows();
-	}
+  const handleChange = (debtProperty: keyof IDebt, debtIndex: number) => (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const newValue = e.target.value
+    setRows(prev => editRow(prev, debtIndex, debtProperty, newValue))
+    setErrors(prev => {
+      const newErrors = [...prev]
+      return validateRow(newErrors, debtIndex, rows[debtIndex], debtProperty, newValue)
+    })
+  }
 
-	dispatchRows = () => {
-		this.props.onDebtChanged(this.state.rows);
-	};
+  const handleRemoveRow = (rowId: string) => () => {
+    setRows(prev => prev.filter(row => row.id !== rowId))
+    setErrors(prev => prev.filter(err => err.id !== rowId))
+  }
 
-	handleChange = (debtProperty: keyof IDebt, debtIndex: number) => (
-		event: any
-	) => {
-		const newValue = event.target.value;
+  return (
+    <Card>
+      <CardContent className="p-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead>Interest rate (%)</TableHead>
+              <TableHead>Min. monthly repayment</TableHead>
+              <TableHead className="w-16">Remove</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map(({ id, name, amount, repayment, rate }, index) => {
+              const fieldErrors = errors[index]?.fields
+              const changeHandler = (debtProperty: keyof IDebt) =>
+                handleChange(debtProperty, index)
 
-		this.setState(state => {
-			return {
-				...state,
-				rows: editRow(state.rows, debtIndex, debtProperty, newValue),
-				errors: validateRow(
-					state.errors,
-					debtIndex,
-					state.rows[debtIndex],
-					debtProperty,
-					newValue
-				)
-			};
-		}, this.dispatchRows);
-	};
-
-	handleRowRemoveRequested = (rowId: string) => () => {
-		this.setState(state => {
-			return {
-				...state,
-				rows: state.rows.filter(row => {
-					return row.id !== rowId;
-				})
-			};
-		}, this.dispatchRows);
-	};
-
-	render() {
-		const { classes } = this.props;
-
-		return (
-			<Paper className={classes.root}>
-				<Table>
-					<TableHead>
-						<TableRow>
-							<TableCell>Name</TableCell>
-							<TableCell>Amount</TableCell>
-							<TableCell>Interest rate (%)</TableCell>
-							<TableCell>Min. monthly repayment ($)</TableCell>
-							<TableCell>Remove row</TableCell>
-						</TableRow>
-					</TableHead>
-					<TableBody>
-						{this.state.rows.map(
-							({ id, name, amount, repayment, rate }, index) => {
-								const errors = this.state.errors[index].fields;
-								const changeHandler = (
-									debtProperty: keyof IDebt
-								) => this.handleChange(debtProperty, index);
-
-								return (
-									<TableRow key={id}>
-										<TableCell>
-											<TextField
-												label="Name"
-												onChange={changeHandler('name')}
-												value={name}
-												error={
-													errors.get('name')!.error
-												}
-												helperText={
-													errors.get('name')!.message
-												}
-											/>
-										</TableCell>
-										<TableCell>
-											<TextField
-												label="Amount"
-												InputProps={{
-													startAdornment: (
-														<InputAdornment position="end">
-															$
-														</InputAdornment>
-													)
-												}}
-												onChange={changeHandler(
-													'amount'
-												)}
-												value={amount}
-												error={
-													errors.get('amount')!.error
-												}
-												helperText={
-													errors.get('amount')!
-														.message
-												}
-											/>
-										</TableCell>
-										<TableCell>
-											<TextField
-												label="Rate"
-												InputProps={{
-													endAdornment: (
-														<InputAdornment position="start">
-															%
-														</InputAdornment>
-													)
-												}}
-												onChange={changeHandler('rate')}
-												value={rate}
-												error={
-													errors.get('rate')!.error
-												}
-												helperText={
-													errors.get('rate')!.message
-												}
-											/>
-										</TableCell>
-										<TableCell>
-											<TextField
-												label="Monthly repayment"
-												InputProps={{
-													startAdornment: (
-														<InputAdornment position="end">
-															$
-														</InputAdornment>
-													)
-												}}
-												onChange={changeHandler(
-													'repayment'
-												)}
-												value={repayment}
-												error={
-													errors.get('repayment')!
-														.error
-												}
-												helperText={
-													errors.get('repayment')!
-														.message
-												}
-											/>
-										</TableCell>
-										<TableCell>
-											<Button
-												onClick={this.handleRowRemoveRequested(
-													id
-												)}
-											>
-												<DeleteIcon />
-											</Button>
-										</TableCell>
-									</TableRow>
-								);
-							}
-						)}
-						<TableRow>
-							<TableCell colSpan={5}>
-								<Button onClick={this.handleNewRowRequested}>
-									<AddIcon /> Add Row
-								</Button>
-							</TableCell>
-						</TableRow>
-					</TableBody>
-				</Table>
-			</Paper>
-		);
-	}
+              return (
+                <TableRow key={id}>
+                  <TableCell>
+                    <Input
+                      placeholder="Name"
+                      value={name}
+                      onChange={changeHandler('name')}
+                      error={fieldErrors?.get('name')?.error}
+                      helperText={fieldErrors?.get('name')?.message}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Input
+                      placeholder="Amount"
+                      type="number"
+                      startAdornment="$"
+                      value={amount}
+                      onChange={changeHandler('amount')}
+                      error={fieldErrors?.get('amount')?.error}
+                      helperText={fieldErrors?.get('amount')?.message}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Input
+                      placeholder="Rate"
+                      type="number"
+                      endAdornment="%"
+                      value={rate}
+                      onChange={changeHandler('rate')}
+                      error={fieldErrors?.get('rate')?.error}
+                      helperText={fieldErrors?.get('rate')?.message}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Input
+                      placeholder="Monthly repayment"
+                      type="number"
+                      startAdornment="$"
+                      value={repayment}
+                      onChange={changeHandler('repayment')}
+                      error={fieldErrors?.get('repayment')?.error}
+                      helperText={fieldErrors?.get('repayment')?.message}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleRemoveRow(id)}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+            <TableRow>
+              <TableCell colSpan={5}>
+                <Button variant="outline" onClick={handleNewRow}>
+                  <Plus className="h-4 w-4 mr-2" /> Add Row
+                </Button>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  )
 }

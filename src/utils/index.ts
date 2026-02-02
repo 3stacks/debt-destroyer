@@ -190,83 +190,104 @@ function calculateRepayments(
     return acc + paidOffDebt.repayment
   }, 0)
 
+  // Calculate new month values
+  let newValues = debts.reduce<IValueMap>((acc, debt) => {
+    const interestOnBalance = calculateMonthlyInterest(
+      debt.rate,
+      lastMonth.values[debt.id].remainingBalance
+    )
+    const balanceAsAtLastMonth = roundCurrency(
+      interestOnBalance + lastMonth.values[debt.id].remainingBalance
+    )
+
+    let amountPaid: number = 0
+
+    if (balanceAsAtLastMonth <= 0) {
+      return {
+        ...acc,
+        [debt.id]: {
+          amountPaid: 0,
+          interestPaid: 0,
+          remainingBalance: 0
+        }
+      }
+    }
+
+    extraFunds = extraFunds + extraContributions
+    extraContributions = 0
+
+    if (balanceAsAtLastMonth < debt.repayment + extraFunds) {
+      const standardPaymentRemainder = roundCurrency(
+        debt.repayment - balanceAsAtLastMonth
+      )
+
+      amountPaid = roundCurrency(balanceAsAtLastMonth)
+      extraFunds = roundCurrency(extraFunds + standardPaymentRemainder)
+
+      return {
+        ...acc,
+        [debt.id]: {
+          amountPaid,
+          interestPaid: interestOnBalance,
+          remainingBalance: 0
+        }
+      }
+    }
+
+    amountPaid = roundCurrency(debt.repayment + extraFunds)
+    extraFunds = 0
+
+    const newRemainingBalance = roundCurrency(balanceAsAtLastMonth - amountPaid)
+    const newRemainingPlusInterest = roundCurrency(
+      calculateMonthlyInterest(debt.rate, newRemainingBalance) + newRemainingBalance
+    )
+
+    if (newRemainingPlusInterest - amountPaid > balanceAsAtLastMonth) {
+      return {
+        ...acc,
+        [debt.id]: {
+          amountPaid,
+          interestPaid: interestOnBalance,
+          remainingBalance: 0
+        }
+      }
+    }
+
+    return {
+      ...acc,
+      [debt.id]: {
+        amountPaid,
+        interestPaid: interestOnBalance,
+        remainingBalance: newRemainingBalance
+      }
+    }
+  }, {})
+
+  // If there's leftover extraFunds (from a debt paying off at end of iteration),
+  // apply it to the first unpaid debt
+  if (extraFunds > 0) {
+    const firstUnpaidDebt = debts.find(debt => newValues[debt.id].remainingBalance > 0)
+    if (firstUnpaidDebt) {
+      const debtValue = newValues[firstUnpaidDebt.id]
+      const additionalPayment = Math.min(extraFunds, debtValue.remainingBalance)
+      newValues = {
+        ...newValues,
+        [firstUnpaidDebt.id]: {
+          ...debtValue,
+          amountPaid: roundCurrency(debtValue.amountPaid + additionalPayment),
+          remainingBalance: roundCurrency(debtValue.remainingBalance - additionalPayment)
+        }
+      }
+    }
+  }
+
   const newRepaymentSchedule: IRepaymentSchedule = {
     ...repaymentSchedule,
     months: [
       ...repaymentSchedule.months,
       {
         month: lastMonth.month + 1,
-        values: debts.reduce<IValueMap>((acc, debt) => {
-          const interestOnBalance = calculateMonthlyInterest(
-            debt.rate,
-            lastMonth.values[debt.id].remainingBalance
-          )
-          const balanceAsAtLastMonth = roundCurrency(
-            interestOnBalance + lastMonth.values[debt.id].remainingBalance
-          )
-
-          let amountPaid: number = 0
-
-          if (balanceAsAtLastMonth <= 0) {
-            return {
-              ...acc,
-              [debt.id]: {
-                amountPaid: 0,
-                interestPaid: 0,
-                remainingBalance: 0
-              }
-            }
-          }
-
-          extraFunds = extraFunds + extraContributions
-          extraContributions = 0
-
-          if (balanceAsAtLastMonth < debt.repayment + extraFunds) {
-            const standardPaymentRemainder = roundCurrency(
-              debt.repayment - balanceAsAtLastMonth
-            )
-
-            amountPaid = roundCurrency(balanceAsAtLastMonth)
-            extraFunds = roundCurrency(extraFunds + standardPaymentRemainder)
-
-            return {
-              ...acc,
-              [debt.id]: {
-                amountPaid,
-                interestPaid: interestOnBalance,
-                remainingBalance: 0
-              }
-            }
-          }
-
-          amountPaid = roundCurrency(debt.repayment + extraFunds)
-          extraFunds = 0
-
-          const newRemainingBalance = roundCurrency(balanceAsAtLastMonth - amountPaid)
-          const newRemainingPlusInterest = roundCurrency(
-            calculateMonthlyInterest(debt.rate, newRemainingBalance) + newRemainingBalance
-          )
-
-          if (newRemainingPlusInterest - amountPaid > balanceAsAtLastMonth) {
-            return {
-              ...acc,
-              [debt.id]: {
-                amountPaid,
-                interestPaid: interestOnBalance,
-                remainingBalance: 0
-              }
-            }
-          }
-
-          return {
-            ...acc,
-            [debt.id]: {
-              amountPaid,
-              interestPaid: interestOnBalance,
-              remainingBalance: newRemainingBalance
-            }
-          }
-        }, {})
+        values: newValues
       }
     ]
   }

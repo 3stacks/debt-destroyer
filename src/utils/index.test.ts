@@ -310,6 +310,29 @@ describe('calculateDebts - payment rollover', () => {
     // After CC1 is fully paid off, its $200 redirects to CC2 (highest priority)
     expect(result.months[24].values['cc2'].amountPaid).toBe(300)
   })
+
+  it('rolls over leftover to first unpaid debt when last debt pays off (avalanche)', () => {
+    const debts: IDebt[] = [
+      { id: 'cc1', name: 'Credit Card 1', amount: '4000', repayment: '200', rate: '12.99' },
+      { id: 'cc2', name: 'Credit Card 2', amount: '7350', repayment: '100', rate: '23' },
+      { id: 'car', name: 'Car loan', amount: '23000', repayment: '600', rate: '8' }
+    ]
+
+    const result = calculateDebts({
+      debtMethod: DEBT_PAYOFF_METHODS.AVALANCHE,
+      debts,
+      extraContributions: 0
+    })
+
+    // Car (last in avalanche order) pays off at month 45
+    const month45 = result.months[45]
+    expect(month45.values['car'].remainingBalance).toBe(0)
+    expect(month45.values['car'].amountPaid).toBeCloseTo(171.21, 1)
+
+    // Car's leftover ($600 - $171.21 = $428.79) should go to CC2 (first unpaid)
+    // CC2's normal payment is $300, so total should be ~$728.79
+    expect(month45.values['cc2'].amountPaid).toBeCloseTo(728.79, 1)
+  })
 })
 
 describe('calculateDebts - car loan regression', () => {

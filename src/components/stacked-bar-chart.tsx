@@ -57,7 +57,7 @@ export default function StackedBarChart({ months, width, debts }: StackedBarChar
       )
       return {
         ...month,
-        dateLabel: format(date, 'MMM, yy'),
+        dateLabel: format(date, "MMM ''yy"),
         totalPaid
       }
     })

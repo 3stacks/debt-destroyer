@@ -252,6 +252,37 @@ describe('calculateDebts - edge cases', () => {
   })
 })
 
+describe('calculateDebts - payment rollover', () => {
+  it('correctly rolls over leftover payment when debt pays off mid-schedule', () => {
+    const debts: IDebt[] = [
+      { id: 'cc1', name: 'Credit Card 1', amount: '4000', repayment: '200', rate: '12.99' },
+      { id: 'cc2', name: 'Credit Card 2', amount: '7350', repayment: '100', rate: '23' },
+      { id: 'car', name: 'Car loan', amount: '23000', repayment: '600', rate: '8' }
+    ]
+
+    const result = calculateDebts({
+      debtMethod: DEBT_PAYOFF_METHODS.SNOWBALL,
+      debts,
+      extraContributions: 0
+    })
+
+    // CC1 pays off at month 23
+    const month23 = result.months[23]
+    expect(month23.values['cc1'].remainingBalance).toBe(0)
+
+    // CC1's final payment should be just enough to pay off the balance (not full $200)
+    // Balance was $130.97 + $1.42 interest = $132.39
+    expect(month23.values['cc1'].amountPaid).toBeCloseTo(132.39, 1)
+
+    // CC2 should receive its $100 + CC1's leftover ($200 - $132.39 = $67.61)
+    // Total: $167.61
+    expect(month23.values['cc2'].amountPaid).toBeCloseTo(167.61, 1)
+
+    // Subsequent months: CC2 should get CC1's full $200 redirected (total $300)
+    expect(result.months[24].values['cc2'].amountPaid).toBe(300)
+  })
+})
+
 describe('calculateDebts - car loan regression', () => {
   it('car loan $23000 at 8% with $600 payment should take ~46 months', () => {
     const debts: IDebt[] = [

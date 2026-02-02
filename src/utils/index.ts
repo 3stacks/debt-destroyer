@@ -179,7 +179,9 @@ function calculateRepayments(
     return lastMonth.values[debt.id].remainingBalance > 0
   })
 
-  let otherDebtRemainder = debts.slice(firstDebtNotPaidOff).reduce((total, debt) => {
+  // Calculate remainder for debts AFTER the first unpaid one that might also pay off this month
+  // The first unpaid debt's remainder is handled in the main loop with proper interest calculation
+  let otherDebtRemainder = debts.slice(firstDebtNotPaidOff + 1).reduce((total, debt) => {
     const thisDebtLastMonth = lastMonth.values[debt.id]
     const remainder = thisDebtLastMonth.remainingBalance > 0 && thisDebtLastMonth.remainingBalance <= debt.repayment
       ? debt.repayment - thisDebtLastMonth.remainingBalance

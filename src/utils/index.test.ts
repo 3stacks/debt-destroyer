@@ -253,7 +253,7 @@ describe('calculateDebts - edge cases', () => {
 })
 
 describe('calculateDebts - payment rollover', () => {
-  it('correctly rolls over leftover payment when debt pays off mid-schedule', () => {
+  it('correctly rolls over leftover payment when debt pays off mid-schedule (snowball)', () => {
     const debts: IDebt[] = [
       { id: 'cc1', name: 'Credit Card 1', amount: '4000', repayment: '200', rate: '12.99' },
       { id: 'cc2', name: 'Credit Card 2', amount: '7350', repayment: '100', rate: '23' },
@@ -279,6 +279,35 @@ describe('calculateDebts - payment rollover', () => {
     expect(month23.values['cc2'].amountPaid).toBeCloseTo(167.61, 1)
 
     // Subsequent months: CC2 should get CC1's full $200 redirected (total $300)
+    expect(result.months[24].values['cc2'].amountPaid).toBe(300)
+  })
+
+  it('correctly rolls over leftover payment when debt pays off mid-schedule (avalanche)', () => {
+    const debts: IDebt[] = [
+      { id: 'cc1', name: 'Credit Card 1', amount: '4000', repayment: '200', rate: '12.99' },
+      { id: 'cc2', name: 'Credit Card 2', amount: '7350', repayment: '100', rate: '23' },
+      { id: 'car', name: 'Car loan', amount: '23000', repayment: '600', rate: '8' }
+    ]
+
+    const result = calculateDebts({
+      debtMethod: DEBT_PAYOFF_METHODS.AVALANCHE,
+      debts,
+      extraContributions: 0
+    })
+
+    // Avalanche sorts by rate (highest first): CC2 (23%) -> CC1 (12.99%) -> Car (8%)
+    // CC1 pays off at month 23
+
+    const month23 = result.months[23]
+    expect(month23.values['cc1'].remainingBalance).toBe(0)
+
+    // CC2 should get its normal $100 (CC1 hasn't paid off when CC2 is processed)
+    expect(month23.values['cc2'].amountPaid).toBe(100)
+
+    // CC1's leftover ($67.61) goes to Car (next in iteration after CC1)
+    expect(month23.values['car'].amountPaid).toBeCloseTo(667.61, 1)
+
+    // After CC1 is fully paid off, its $200 redirects to CC2 (highest priority)
     expect(result.months[24].values['cc2'].amountPaid).toBe(300)
   })
 })

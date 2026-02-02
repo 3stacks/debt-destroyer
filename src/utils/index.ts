@@ -175,20 +175,6 @@ function calculateRepayments(
 
   let extraContributions = repaymentSchedule.extraContributions
 
-  const firstDebtNotPaidOff: number = debts.findIndex(debt => {
-    return lastMonth.values[debt.id].remainingBalance > 0
-  })
-
-  // Calculate remainder for debts AFTER the first unpaid one that might also pay off this month
-  // The first unpaid debt's remainder is handled in the main loop with proper interest calculation
-  let otherDebtRemainder = debts.slice(firstDebtNotPaidOff + 1).reduce((total, debt) => {
-    const thisDebtLastMonth = lastMonth.values[debt.id]
-    const remainder = thisDebtLastMonth.remainingBalance > 0 && thisDebtLastMonth.remainingBalance <= debt.repayment
-      ? debt.repayment - thisDebtLastMonth.remainingBalance
-      : 0
-    return total + remainder
-  }, 0)
-
   const paidOffDebts: IParsedDebt[] = Object.entries(lastMonth.values).reduce<IParsedDebt[]>(
     (acc, [key, value]) => {
       const debt = debts.find(debt => debt.id === key)
@@ -232,9 +218,8 @@ function calculateRepayments(
             }
           }
 
-          extraFunds = extraFunds + extraContributions + otherDebtRemainder
+          extraFunds = extraFunds + extraContributions
           extraContributions = 0
-          otherDebtRemainder = 0
 
           if (balanceAsAtLastMonth < debt.repayment + extraFunds) {
             const standardPaymentRemainder = roundCurrency(

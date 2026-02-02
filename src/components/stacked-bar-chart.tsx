@@ -1,12 +1,13 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { IStackData, IDebt } from '../utils'
 
+// Direct HSL values (CSS variables don't work in SVG fill attributes)
 const CHART_COLORS = [
-  'hsl(var(--chart-1))',
-  'hsl(var(--chart-2))',
-  'hsl(var(--chart-3))',
-  'hsl(var(--chart-4))',
-  'hsl(var(--chart-5))',
+  'hsl(0, 72%, 51%)',     // red
+  'hsl(217, 91%, 60%)',   // blue
+  'hsl(142, 71%, 45%)',   // green
+  'hsl(330, 81%, 60%)',   // pink
+  'hsl(25, 95%, 53%)',    // orange
 ]
 
 interface StackedBarChartProps {

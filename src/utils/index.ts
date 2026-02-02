@@ -179,11 +179,12 @@ function calculateRepayments(
     return lastMonth.values[debt.id].remainingBalance > 0
   })
 
-  let otherDebtRemainder = debts.slice(firstDebtNotPaidOff).reduce((acc, debt) => {
+  let otherDebtRemainder = debts.slice(firstDebtNotPaidOff).reduce((total, debt) => {
     const thisDebtLastMonth = lastMonth.values[debt.id]
-    return thisDebtLastMonth.remainingBalance > 0 && thisDebtLastMonth.remainingBalance <= debt.repayment
+    const remainder = thisDebtLastMonth.remainingBalance > 0 && thisDebtLastMonth.remainingBalance <= debt.repayment
       ? debt.repayment - thisDebtLastMonth.remainingBalance
       : 0
+    return total + remainder
   }, 0)
 
   const paidOffDebts: IParsedDebt[] = Object.entries(lastMonth.values).reduce<IParsedDebt[]>(

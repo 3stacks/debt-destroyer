@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import throttle from 'lodash/throttle'
 import debounce from 'lodash/debounce'
 import { HelpCircle } from 'lucide-react'
-import { stringify, parse } from 'query-string'
+import queryString from 'query-string'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -24,14 +24,14 @@ import {
 import { DEBOUNCE_MS } from '../../constants'
 
 function parseQueryStringParameter(
-  parameter: string | string[] | null | undefined,
+  parameter: string | (string | null)[] | null | undefined,
   defaultValue?: string
 ): string {
   if (!parameter && defaultValue) {
     return defaultValue
   }
   if (Array.isArray(parameter)) {
-    return parameter[0]
+    return parameter[0] ?? ''
   }
   if (typeof parameter === 'string') {
     return parameter
@@ -54,7 +54,7 @@ export default function App() {
   const [wrapperWidth, setWrapperWidth] = useState(0)
 
   const backupState = useCallback(() => {
-    const query = stringify({
+    const query = queryString.stringify({
       extraContributions,
       debts: JSON.stringify(debts),
       debtPayoffMethod
@@ -87,7 +87,7 @@ export default function App() {
 
   // Restore state from URL on mount
   useEffect(() => {
-    const queryParams = parse(window.location.search)
+    const queryParams = queryString.parse(window.location.search)
     const debtsParam = parseQueryStringParameter(queryParams.debts)
     const payoffMethod = parseQueryStringParameter(
       queryParams.debtPayoffMethod as string,

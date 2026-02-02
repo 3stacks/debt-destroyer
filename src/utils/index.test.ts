@@ -6,6 +6,7 @@ import {
   calculateDebts,
   calculateMinimumMonthlyRepayment,
   roundCurrency,
+  parseChartData,
   DEBT_PAYOFF_METHODS,
   IDebt
 } from './index'
@@ -248,5 +249,46 @@ describe('calculateDebts - edge cases', () => {
     // Should return initial month with empty values
     expect(result.months.length).toBe(1)
     expect(Object.keys(result.months[0].values)).toEqual([])
+  })
+})
+
+describe('calculateDebts - car loan regression', () => {
+  it('car loan $23000 at 8% with $600 payment should take ~46 months', () => {
+    const debts: IDebt[] = [
+      { id: 'car', name: 'Car Loan', amount: '23000', rate: '8', repayment: '600' }
+    ]
+
+    const result = calculateDebts({
+      debtMethod: DEBT_PAYOFF_METHODS.SNOWBALL,
+      debts,
+      extraContributions: 0
+    })
+
+    // Without interest: 23000 / 600 = 38.3 months
+    // With 8% interest it should be around 46 months
+    expect(result.months.length).toBe(46)
+
+    // Verify interest calculation: 8% annual = 0.667% monthly
+    // First month interest on $23,000 should be ~$153.33
+    expect(result.months[1].values['car'].interestPaid).toBeCloseTo(153.33, 1)
+  })
+
+  it('parseChartData preserves all months', () => {
+    const debts: IDebt[] = [
+      { id: 'car', name: 'Car Loan', amount: '23000', rate: '8', repayment: '600' }
+    ]
+
+    const result = calculateDebts({
+      debtMethod: DEBT_PAYOFF_METHODS.SNOWBALL,
+      debts,
+      extraContributions: 0
+    })
+
+    const chartData = parseChartData(result)
+
+    // parseChartData skips month 0 (initial state)
+    expect(chartData.length).toBe(result.months.length - 1)
+    expect(chartData[0].month).toBe('1')
+    expect(chartData[chartData.length - 1].month).toBe('45')
   })
 })

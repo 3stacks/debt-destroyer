@@ -65,16 +65,14 @@ export default function App() {
   const calculate = useCallback(
     debounce((currentDebts: IDebt[], method: DEBT_PAYOFF_METHODS, extra: string) => {
       const extraValue = parseInt(extra, 10)
-      if (Number.isNaN(extraValue) || extraValue < 0) {
-        return
-      }
-      setDebtData(
-        calculateDebts({
-          debts: currentDebts,
-          debtMethod: method,
-          extraContributions: extraValue
-        })
-      )
+      // Treat empty/invalid input as 0, not as "skip calculation"
+      const sanitizedExtra = Number.isNaN(extraValue) || extraValue < 0 ? 0 : extraValue
+      const result = calculateDebts({
+        debts: currentDebts,
+        debtMethod: method,
+        extraContributions: sanitizedExtra
+      })
+      setDebtData(result)
     }, DEBOUNCE_MS),
     []
   )

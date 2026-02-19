@@ -270,7 +270,7 @@ export default function OpportunityCost({ debtData, debts, width }: OpportunityC
       </div>
 
       {/* Summary stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-muted/50 rounded-lg p-4 text-center">
           <div className="text-2xl font-bold text-foreground">
             ${totalAmountPaid.toLocaleString(undefined, { maximumFractionDigits: 0 })}
@@ -288,12 +288,6 @@ export default function OpportunityCost({ debtData, debts, width }: OpportunityC
             ${lostWealth.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </div>
           <div className="text-sm text-muted-foreground">Lost to opportunity cost</div>
-        </div>
-        <div className="bg-green-500/10 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-green-500">
-            ${finalFutureWealth.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-          </div>
-          <div className="text-sm text-muted-foreground">Future wealth (30y)</div>
         </div>
       </div>
 
@@ -376,6 +370,24 @@ export default function OpportunityCost({ debtData, debts, width }: OpportunityC
           </p>
         </div>
 
+        {/* Future wealth stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-green-500/10 rounded-lg p-4 text-center">
+            <div className="text-2xl font-bold text-green-500">
+              ${finalFutureWealth.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            </div>
+            <div className="text-sm text-muted-foreground">Your future wealth (30y)</div>
+            <div className="text-xs text-muted-foreground mt-1">Pay off debt, then invest</div>
+          </div>
+          <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+            <div className="text-2xl font-bold text-purple-500">
+              ${finalOpportunityCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            </div>
+            <div className="text-sm text-muted-foreground">If you never had debt</div>
+            <div className="text-xs text-muted-foreground mt-1">Investing from day one</div>
+          </div>
+        </div>
+
         <ResponsiveContainer width="100%" height={Math.max(250, width * 0.35)}>
           <AreaChart data={futureWealthData}>
             <XAxis dataKey="label" />
@@ -404,6 +416,16 @@ export default function OpportunityCost({ debtData, debts, width }: OpportunityC
           </p>
           <p className="text-sm text-muted-foreground mt-1">
             The faster you're debt-free, the sooner your money starts working for you.
+          </p>
+        </div>
+
+        {/* The debt gap */}
+        <div className="bg-purple-500/5 border border-purple-500/20 rounded-lg p-4">
+          <h4 className="font-medium mb-2 text-purple-600 dark:text-purple-400">The debt gap</h4>
+          <p className="text-sm text-muted-foreground">
+            If you never had this debt and invested ${Math.round(averageMonthlyPayment).toLocaleString()}/month from day one,
+            you'd have <span className="text-purple-500 font-medium">${(finalOpportunityCost - finalFutureWealth).toLocaleString(undefined, { maximumFractionDigits: 0 })} more</span> than
+            you'll actually end up with. That's the lifetime cost of carrying this debt.
           </p>
         </div>
       </div>

@@ -151,35 +151,58 @@ export default function Insights({
 }: InsightsProps) {
   const currentExtra = parseInt(extraContributions, 10) || 0
 
-  const fiftyExtraScenario = useMemo(
+  // Calculate total monthly payment (sum of all minimum repayments + extra)
+  const totalMonthlyPayment = useMemo(() => {
+    const minPayments = debts.reduce((sum, debt) => sum + (parseFloat(debt.repayment) || 0), 0)
+    return minPayments + currentExtra
+  }, [debts, currentExtra])
+
+  // Percentage-based scenarios
+  const percentages = [10, 25, 50]
+  const extraAmounts = percentages.map(pct => Math.round(totalMonthlyPayment * (pct / 100)))
+
+  const scenario10 = useMemo(
     () =>
       calculateDebts({
         debtMethod: debtPayoffMethod,
-        extraContributions: currentExtra + 50,
+        extraContributions: currentExtra + extraAmounts[0],
         debts
       }),
-    [debtPayoffMethod, currentExtra, debts]
+    [debtPayoffMethod, currentExtra, extraAmounts[0], debts]
   )
 
-  const oneHundredFiftyExtraScenario = useMemo(
+  const scenario25 = useMemo(
     () =>
       calculateDebts({
         debtMethod: debtPayoffMethod,
-        extraContributions: currentExtra + 150,
+        extraContributions: currentExtra + extraAmounts[1],
         debts
       }),
-    [debtPayoffMethod, currentExtra, debts]
+    [debtPayoffMethod, currentExtra, extraAmounts[1], debts]
+  )
+
+  const scenario50 = useMemo(
+    () =>
+      calculateDebts({
+        debtMethod: debtPayoffMethod,
+        extraContributions: currentExtra + extraAmounts[2],
+        debts
+      }),
+    [debtPayoffMethod, currentExtra, extraAmounts[2], debts]
   )
 
   const currentMonths = getPayoffMonths(debtData)
   const currentInterest = getTotalInterestPaid(debtData)
   const payoffOrder = getDebtPayoffOrder(debtData, debts)
 
-  const fiftyMonths = getPayoffMonths(fiftyExtraScenario)
-  const fiftyInterest = getTotalInterestPaid(fiftyExtraScenario)
+  const scenario10Months = getPayoffMonths(scenario10)
+  const scenario10Interest = getTotalInterestPaid(scenario10)
 
-  const oneHundredFiftyMonths = getPayoffMonths(oneHundredFiftyExtraScenario)
-  const oneHundredFiftyInterest = getTotalInterestPaid(oneHundredFiftyExtraScenario)
+  const scenario25Months = getPayoffMonths(scenario25)
+  const scenario25Interest = getTotalInterestPaid(scenario25)
+
+  const scenario50Months = getPayoffMonths(scenario50)
+  const scenario50Interest = getTotalInterestPaid(scenario50)
 
   if (debts.length === 0 || currentMonths === 0) {
     return (
@@ -235,7 +258,10 @@ export default function Insights({
       {/* Scenario comparison */}
       <div>
         <h3 className="font-semibold mb-3">What if you paid more?</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <p className="text-sm text-muted-foreground mb-4">
+          Currently paying ${totalMonthlyPayment.toLocaleString()}/month toward debt
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <ScenarioCard
             title="Current plan"
             payoffDate={getDebtPayoffDate(debtData)}
@@ -243,31 +269,39 @@ export default function Insights({
             months={currentMonths}
           />
           <ScenarioCard
-            title="+$50/month"
-            payoffDate={getDebtPayoffDate(fiftyExtraScenario)}
-            totalInterest={fiftyInterest}
-            months={fiftyMonths}
-            monthsSaved={currentMonths - fiftyMonths}
-            interestSaved={currentInterest - fiftyInterest}
+            title={`+10% (+$${extraAmounts[0]})`}
+            payoffDate={getDebtPayoffDate(scenario10)}
+            totalInterest={scenario10Interest}
+            months={scenario10Months}
+            monthsSaved={currentMonths - scenario10Months}
+            interestSaved={currentInterest - scenario10Interest}
           />
           <ScenarioCard
-            title="+$150/month"
+            title={`+25% (+$${extraAmounts[1]})`}
+            payoffDate={getDebtPayoffDate(scenario25)}
+            totalInterest={scenario25Interest}
+            months={scenario25Months}
+            monthsSaved={currentMonths - scenario25Months}
+            interestSaved={currentInterest - scenario25Interest}
+          />
+          <ScenarioCard
+            title={`+50% (+$${extraAmounts[2]})`}
             highlight
-            payoffDate={getDebtPayoffDate(oneHundredFiftyExtraScenario)}
-            totalInterest={oneHundredFiftyInterest}
-            months={oneHundredFiftyMonths}
-            monthsSaved={currentMonths - oneHundredFiftyMonths}
-            interestSaved={currentInterest - oneHundredFiftyInterest}
+            payoffDate={getDebtPayoffDate(scenario50)}
+            totalInterest={scenario50Interest}
+            months={scenario50Months}
+            monthsSaved={currentMonths - scenario50Months}
+            interestSaved={currentInterest - scenario50Interest}
           />
         </div>
       </div>
 
       {/* Motivational nudge */}
-      {currentMonths - oneHundredFiftyMonths > 6 && (
+      {currentMonths - scenario50Months > 6 && (
         <div className="bg-green-500/5 border border-green-500/20 rounded-lg p-4 text-center">
           <p className="text-lg font-medium text-green-600 dark:text-green-400">
-            An extra $150/month gets you debt-free {formatMonthsAsTime(currentMonths - oneHundredFiftyMonths)} sooner
-            and saves ${(currentInterest - oneHundredFiftyInterest).toLocaleString(undefined, { maximumFractionDigits: 0 })} in interest!
+            Paying 50% more (${extraAmounts[2]}/month extra) gets you debt-free {formatMonthsAsTime(currentMonths - scenario50Months)} sooner
+            and saves ${(currentInterest - scenario50Interest).toLocaleString(undefined, { maximumFractionDigits: 0 })} in interest!
           </p>
         </div>
       )}

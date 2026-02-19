@@ -228,7 +228,7 @@ export default function OpportunityCost({ debtData, debts, width }: OpportunityC
 
   const finalOpportunityCost = opportunityCostData[opportunityCostData.length - 1]?.investedValue || 0
   const finalFutureWealth = futureWealthData[futureWealthData.length - 1]?.investedValue || 0
-  const lostWealth = finalOpportunityCost - totalAmountPaid
+  const debtGap = finalOpportunityCost - finalFutureWealth // What debt costs you over your lifetime
   const breakEvenRate = weightedAvgRate
 
   return (
@@ -285,7 +285,7 @@ export default function OpportunityCost({ debtData, debts, width }: OpportunityC
         </div>
         <div className="bg-amber-500/10 rounded-lg p-4 text-center">
           <div className="text-2xl font-bold text-amber-500">
-            ${lostWealth.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            ${debtGap.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </div>
           <div className="text-sm text-muted-foreground">Lost to opportunity cost</div>
         </div>
@@ -424,7 +424,7 @@ export default function OpportunityCost({ debtData, debts, width }: OpportunityC
           <h4 className="font-medium mb-2 text-purple-600 dark:text-purple-400">The debt gap</h4>
           <p className="text-sm text-muted-foreground">
             If you never had this debt and invested ${Math.round(averageMonthlyPayment).toLocaleString()}/month from day one,
-            you'd have <span className="text-purple-500 font-medium">${(finalOpportunityCost - finalFutureWealth).toLocaleString(undefined, { maximumFractionDigits: 0 })} more</span> than
+            you'd have <span className="text-purple-500 font-medium">${debtGap.toLocaleString(undefined, { maximumFractionDigits: 0 })} more</span> than
             you'll actually end up with. That's the lifetime cost of carrying this debt.
           </p>
         </div>

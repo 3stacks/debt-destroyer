@@ -1,13 +1,6 @@
 import { useMemo } from 'react'
 import { format, addMonths } from 'date-fns'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { TrendingDown, Calendar, DollarSign, Zap } from 'lucide-react'
 import {
   calculateDebts,
   DEBT_PAYOFF_METHODS,
@@ -36,10 +29,117 @@ function getTotalInterestPaid(debtData: IRepaymentSchedule): number {
   }, 0)
 }
 
-function getDebtPayoffDate(debtData: IRepaymentSchedule): string {
-  return format(
-    addMonths(new Date(), debtData.months[debtData.months.length - 1].month),
-    'MMM, yyyy'
+function getPayoffMonths(debtData: IRepaymentSchedule): number {
+  return debtData.months[debtData.months.length - 1]?.month || 0
+}
+
+function getDebtPayoffDate(debtData: IRepaymentSchedule): Date {
+  return addMonths(new Date(), getPayoffMonths(debtData))
+}
+
+function formatDate(date: Date): string {
+  return format(date, 'MMM yyyy')
+}
+
+function formatMonthsAsTime(months: number): string {
+  const years = Math.floor(months / 12)
+  const remainingMonths = months % 12
+
+  if (years === 0) {
+    return `${remainingMonths} month${remainingMonths !== 1 ? 's' : ''}`
+  }
+  if (remainingMonths === 0) {
+    return `${years} year${years !== 1 ? 's' : ''}`
+  }
+  return `${years}y ${remainingMonths}m`
+}
+
+function getDebtPayoffOrder(debtData: IRepaymentSchedule, debts: IDebt[]): { debt: IDebt; month: number }[] {
+  const payoffOrder: { debt: IDebt; month: number }[] = []
+
+  for (const debt of debts) {
+    for (let i = 1; i < debtData.months.length; i++) {
+      const prevBalance = debtData.months[i - 1]?.values[debt.id]?.remainingBalance ?? 0
+      const currBalance = debtData.months[i]?.values[debt.id]?.remainingBalance ?? 0
+
+      if (prevBalance > 0 && currBalance === 0) {
+        payoffOrder.push({ debt, month: debtData.months[i].month })
+        break
+      }
+    }
+  }
+
+  return payoffOrder.sort((a, b) => a.month - b.month)
+}
+
+interface ScenarioCardProps {
+  title: string
+  highlight?: boolean
+  payoffDate: Date
+  totalInterest: number
+  months: number
+  monthsSaved?: number
+  interestSaved?: number
+}
+
+function ScenarioCard({
+  title,
+  highlight,
+  payoffDate,
+  totalInterest,
+  months,
+  monthsSaved,
+  interestSaved
+}: ScenarioCardProps) {
+  return (
+    <div
+      className={`rounded-lg p-4 ${
+        highlight
+          ? 'bg-green-500/10 border-2 border-green-500/30'
+          : 'bg-muted/50 border border-border'
+      }`}
+    >
+      <h3 className={`font-semibold mb-3 ${highlight ? 'text-green-600 dark:text-green-400' : ''}`}>
+        {title}
+      </h3>
+
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-muted-foreground" />
+          <div>
+            <div className="text-sm text-muted-foreground">Debt free by</div>
+            <div className="font-medium">{formatDate(payoffDate)}</div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <DollarSign className="h-4 w-4 text-muted-foreground" />
+          <div>
+            <div className="text-sm text-muted-foreground">Total interest</div>
+            <div className="font-medium">${totalInterest.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Zap className="h-4 w-4 text-muted-foreground" />
+          <div>
+            <div className="text-sm text-muted-foreground">Time to freedom</div>
+            <div className="font-medium">{formatMonthsAsTime(months)}</div>
+          </div>
+        </div>
+
+        {(monthsSaved !== undefined && monthsSaved > 0) && (
+          <div className="pt-2 border-t border-border/50">
+            <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+              <TrendingDown className="h-4 w-4" />
+              <span className="text-sm font-medium">
+                Save {formatMonthsAsTime(monthsSaved)} & ${interestSaved?.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -49,50 +149,128 @@ export default function Insights({
   extraContributions,
   debtPayoffMethod
 }: InsightsProps) {
+  const currentExtra = parseInt(extraContributions, 10) || 0
+
   const fiftyExtraScenario = useMemo(
     () =>
       calculateDebts({
         debtMethod: debtPayoffMethod,
-        extraContributions: parseInt(extraContributions, 10) + 50,
+        extraContributions: currentExtra + 50,
         debts
       }),
-    [debtPayoffMethod, extraContributions, debts]
+    [debtPayoffMethod, currentExtra, debts]
   )
 
   const oneHundredFiftyExtraScenario = useMemo(
     () =>
       calculateDebts({
         debtMethod: debtPayoffMethod,
-        extraContributions: parseInt(extraContributions, 10) + 150,
+        extraContributions: currentExtra + 150,
         debts
       }),
-    [debtPayoffMethod, extraContributions, debts]
+    [debtPayoffMethod, currentExtra, debts]
   )
 
+  const currentMonths = getPayoffMonths(debtData)
+  const currentInterest = getTotalInterestPaid(debtData)
+  const payoffOrder = getDebtPayoffOrder(debtData, debts)
+
+  const fiftyMonths = getPayoffMonths(fiftyExtraScenario)
+  const fiftyInterest = getTotalInterestPaid(fiftyExtraScenario)
+
+  const oneHundredFiftyMonths = getPayoffMonths(oneHundredFiftyExtraScenario)
+  const oneHundredFiftyInterest = getTotalInterestPaid(oneHundredFiftyExtraScenario)
+
+  if (debts.length === 0 || currentMonths === 0) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        Add some debts to see insights
+      </div>
+    )
+  }
+
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead />
-          <TableHead>Current scenario</TableHead>
-          <TableHead>Extra $50 a month</TableHead>
-          <TableHead>Extra $150 a month</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        <TableRow>
-          <TableCell className="font-medium">Pay off date</TableCell>
-          <TableCell>{getDebtPayoffDate(debtData)}</TableCell>
-          <TableCell>{getDebtPayoffDate(fiftyExtraScenario)}</TableCell>
-          <TableCell>{getDebtPayoffDate(oneHundredFiftyExtraScenario)}</TableCell>
-        </TableRow>
-        <TableRow>
-          <TableCell className="font-medium">Total interest paid</TableCell>
-          <TableCell>${getTotalInterestPaid(debtData).toFixed(2)}</TableCell>
-          <TableCell>${getTotalInterestPaid(fiftyExtraScenario).toFixed(2)}</TableCell>
-          <TableCell>${getTotalInterestPaid(oneHundredFiftyExtraScenario).toFixed(2)}</TableCell>
-        </TableRow>
-      </TableBody>
-    </Table>
+    <div className="space-y-6">
+      {/* Key stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-muted/50 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold">{debts.length}</div>
+          <div className="text-sm text-muted-foreground">Debts to crush</div>
+        </div>
+        <div className="bg-muted/50 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold">{formatMonthsAsTime(currentMonths)}</div>
+          <div className="text-sm text-muted-foreground">Until freedom</div>
+        </div>
+        <div className="bg-red-500/10 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-red-500">
+            ${currentInterest.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          </div>
+          <div className="text-sm text-muted-foreground">Interest to pay</div>
+        </div>
+        <div className="bg-green-500/10 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-green-500">{formatDate(getDebtPayoffDate(debtData))}</div>
+          <div className="text-sm text-muted-foreground">Freedom date</div>
+        </div>
+      </div>
+
+      {/* Payoff order */}
+      {payoffOrder.length > 1 && (
+        <div className="bg-muted/30 rounded-lg p-4">
+          <h3 className="font-semibold mb-3">Payoff order</h3>
+          <div className="flex flex-wrap gap-2">
+            {payoffOrder.map(({ debt, month }, index) => (
+              <div
+                key={debt.id}
+                className="flex items-center gap-2 bg-background rounded-full px-3 py-1 text-sm border"
+              >
+                <span className="font-medium text-muted-foreground">{index + 1}.</span>
+                <span>{debt.name}</span>
+                <span className="text-muted-foreground">({formatMonthsAsTime(month)})</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Scenario comparison */}
+      <div>
+        <h3 className="font-semibold mb-3">What if you paid more?</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <ScenarioCard
+            title="Current plan"
+            payoffDate={getDebtPayoffDate(debtData)}
+            totalInterest={currentInterest}
+            months={currentMonths}
+          />
+          <ScenarioCard
+            title="+$50/month"
+            payoffDate={getDebtPayoffDate(fiftyExtraScenario)}
+            totalInterest={fiftyInterest}
+            months={fiftyMonths}
+            monthsSaved={currentMonths - fiftyMonths}
+            interestSaved={currentInterest - fiftyInterest}
+          />
+          <ScenarioCard
+            title="+$150/month"
+            highlight
+            payoffDate={getDebtPayoffDate(oneHundredFiftyExtraScenario)}
+            totalInterest={oneHundredFiftyInterest}
+            months={oneHundredFiftyMonths}
+            monthsSaved={currentMonths - oneHundredFiftyMonths}
+            interestSaved={currentInterest - oneHundredFiftyInterest}
+          />
+        </div>
+      </div>
+
+      {/* Motivational nudge */}
+      {currentMonths - oneHundredFiftyMonths > 6 && (
+        <div className="bg-green-500/5 border border-green-500/20 rounded-lg p-4 text-center">
+          <p className="text-lg font-medium text-green-600 dark:text-green-400">
+            An extra $150/month gets you debt-free {formatMonthsAsTime(currentMonths - oneHundredFiftyMonths)} sooner
+            and saves ${(currentInterest - oneHundredFiftyInterest).toLocaleString(undefined, { maximumFractionDigits: 0 })} in interest!
+          </p>
+        </div>
+      )}
+    </div>
   )
 }

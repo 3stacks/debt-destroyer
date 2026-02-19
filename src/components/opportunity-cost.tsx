@@ -226,9 +226,16 @@ export default function OpportunityCost({ debtData, debts, width }: OpportunityC
     )
   }
 
-  const finalOpportunityCost = opportunityCostData[opportunityCostData.length - 1]?.investedValue || 0
   const finalFutureWealth = futureWealthData[futureWealthData.length - 1]?.investedValue || 0
-  const debtGap = finalOpportunityCost - finalFutureWealth // What debt costs you over your lifetime
+
+  // "If you never had debt" = investing the same monthly amount from day one for the full period
+  // That's debt payoff months + 30 years of continuous investing
+  const noDebtScenario = calculatePostDebtInvesting(
+    averageMonthlyPayment,
+    debtPayoffMonths + 30 * 12,
+    annualReturn
+  )
+  const debtGap = noDebtScenario - finalFutureWealth // What debt costs you over your lifetime
   const breakEvenRate = weightedAvgRate
 
   return (
@@ -381,7 +388,7 @@ export default function OpportunityCost({ debtData, debts, width }: OpportunityC
           </div>
           <div className="bg-purple-500/10 rounded-lg p-4 text-center">
             <div className="text-2xl font-bold text-purple-500">
-              ${finalOpportunityCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              ${noDebtScenario.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </div>
             <div className="text-sm text-muted-foreground">If you never had debt</div>
             <div className="text-xs text-muted-foreground mt-1">Investing from day one</div>

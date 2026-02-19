@@ -14,6 +14,7 @@ import SnowballDialog from '../snowball-dialog'
 import DebtTable from '../debt-table/debt-table'
 import StackedBarChart from '../stacked-bar-chart'
 import Insights from '../insights'
+import OpportunityCost from '../opportunity-cost'
 import {
   calculateDebts,
   IRepaymentSchedule,
@@ -216,6 +217,7 @@ export default function App() {
                 <TabsList className="mb-4">
                   <TabsTrigger value="chart">Chart</TabsTrigger>
                   <TabsTrigger value="insights">Insights</TabsTrigger>
+                  <TabsTrigger value="opportunity-cost">Opportunity Cost</TabsTrigger>
                 </TabsList>
                 <TabsContent value="chart">
                   <StackedBarChart
@@ -230,6 +232,13 @@ export default function App() {
                     debtPayoffMethod={debtPayoffMethod}
                     debtData={debtData}
                     debts={debts}
+                  />
+                </TabsContent>
+                <TabsContent value="opportunity-cost">
+                  <OpportunityCost
+                    debtData={debtData}
+                    debts={debts}
+                    width={wrapperWidth}
                   />
                 </TabsContent>
               </CardContent>

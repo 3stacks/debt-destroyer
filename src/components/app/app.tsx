@@ -15,6 +15,7 @@ import DebtTable from '../debt-table/debt-table'
 import StackedBarChart from '../stacked-bar-chart'
 import Insights from '../insights'
 import OpportunityCost from '../opportunity-cost'
+import ViceSimulator from '../vice-simulator'
 import {
   calculateDebts,
   IRepaymentSchedule,
@@ -218,6 +219,7 @@ export default function App() {
                   <TabsTrigger value="chart">Chart</TabsTrigger>
                   <TabsTrigger value="insights">Insights</TabsTrigger>
                   <TabsTrigger value="opportunity-cost">Opportunity Cost</TabsTrigger>
+                  <TabsTrigger value="vices">Quit a Vice</TabsTrigger>
                 </TabsList>
                 <TabsContent value="chart">
                   <StackedBarChart
@@ -239,6 +241,14 @@ export default function App() {
                     debtData={debtData}
                     debts={debts}
                     width={wrapperWidth}
+                  />
+                </TabsContent>
+                <TabsContent value="vices">
+                  <ViceSimulator
+                    debtData={debtData}
+                    debts={debts}
+                    extraContributions={extraContributions}
+                    debtPayoffMethod={debtPayoffMethod}
                   />
                 </TabsContent>
               </CardContent>

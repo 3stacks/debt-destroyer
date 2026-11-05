@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import throttle from 'lodash/throttle'
 import debounce from 'lodash/debounce'
-import { HelpCircle } from 'lucide-react'
+import { Coffee, HelpCircle } from 'lucide-react'
 import queryString from 'query-string'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -149,7 +149,22 @@ export default function App() {
   return (
     <div className="min-h-screen">
       <header className="bg-primary text-primary-foreground py-4 px-6 flex items-center justify-between">
-        <div className="w-10" />
+        <Button
+          asChild
+          variant="ghost"
+          size="icon"
+          className="text-primary-foreground hover:bg-primary/90"
+        >
+          <a
+            href="https://ko-fi.com/lukeboyle"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Support me on Ko-fi"
+            title="Support me on Ko-fi"
+          >
+            <Coffee className="h-5 w-5" />
+          </a>
+        </Button>
         <h1 className="text-xl font-semibold">Debt Destroyer</h1>
         <Button
           variant="ghost"

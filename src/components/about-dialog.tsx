@@ -68,6 +68,18 @@ export default function AboutDialog({
             are larger, hidden expenses like unused gym memberships, smoking
             habits, a plethora of streaming service subscriptions.
           </p>
+          <p>
+            Debt Destroyer is free. If it helps you, you can support it on{' '}
+            <a
+              href="https://ko-fi.com/lukeboyle"
+              className="text-primary hover:underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Ko-fi
+            </a>
+            .
+          </p>
         </div>
         <DialogFooter>
           <Button onClick={onCloseRequested}>OK</Button>

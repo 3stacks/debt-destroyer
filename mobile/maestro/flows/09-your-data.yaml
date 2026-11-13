@@ -1,0 +1,22 @@
+appId: ${APP_ID}
+name: Show the backup and restore actions
+tags: [data]
+---
+# A fresh install offers to restore a backup on the setup screen.
+- runFlow:
+    file: ../common/seed.yaml
+    env:
+      SCENARIO: empty
+- assertVisible: { id: backup-restore }
+# With a plan, the About screen can save a backup and import one.
+- runFlow:
+    file: ../common/seed.yaml
+    env:
+      SCENARIO: started
+- tapOn: { id: about-button }
+- scrollUntilVisible:
+    element: { id: backup-import }
+- assertVisible: { id: backup-export }
+- assertVisible: { id: backup-import }
+- assertVisible: "The backup is a JSON file.*"
+- takeScreenshot: 09-your-data

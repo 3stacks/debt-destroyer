@@ -36,7 +36,13 @@ export function About() {
             <p className="mt-4 text-lg tracking-tight text-slate-700">
               Debt Destroyer never asks for your bank details, and it never
               sends your numbers to a server. The phone app keeps your plan on
-              your phone. The web app keeps it in the link.
+              your phone. The web app keeps it in the link. The phone app can
+              save a backup file, and import it on a new phone.
+            </p>
+            <p className="mt-4 text-lg tracking-tight text-slate-700">
+              To count its users, the phone app sends one anonymous count on
+              each day that you open it. The count has no ID and none of your
+              numbers. You can turn it off in the app.
             </p>
             <p className="mt-4 text-lg tracking-tight text-slate-700">
               <a href={AUTHOR_URL} className="font-medium text-brand-600 hover:text-brand-800">

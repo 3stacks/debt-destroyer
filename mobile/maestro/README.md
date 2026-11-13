@@ -14,6 +14,7 @@ same flows on both platforms.
 | `06-countdown` | Show the countdown near the end of the plan |
 | `07-payoff-journey` | Finish the plan, play the journey and share it |
 | `08-creator-share` | Make a share card, and a clean replay for a screen recording |
+| `09-your-data` | Show the backup and restore actions |
 
 ## Scenarios
 

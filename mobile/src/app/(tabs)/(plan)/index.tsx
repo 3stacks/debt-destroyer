@@ -4,6 +4,7 @@ import { StyleSheet, Text } from 'react-native'
 import { HeaderActions, HeaderIcon } from '../../../components/HeaderButton'
 import { PlanSetup, useAddDebt } from '../../../components/PlanSetup'
 import { TrackView } from '../../../components/TrackView'
+import { useBackup } from '../../../components/useBackup'
 import { Body, Button, Callout, Card, Screen, Segmented } from '../../../components/ui'
 import { formatMonthsAsTime, getPayoffMonths, getTotalInterestPaid, money, payoffDate } from '../../../lib/metrics'
 import { usePlan } from '../../../lib/plan'
@@ -14,6 +15,7 @@ function SetupScreen() {
   const c = useColors()
   const { draftResult: result, startPlan, today } = usePlan()
   const addDebt = useAddDebt()
+  const { importBackup, hasData } = useBackup()
   const [firstMonth, setFirstMonth] = useState(today)
   const months = [today, shiftMonth(today, 1)].map(m => ({ value: m, label: monthName(m).split(' ')[0] }))
 
@@ -23,7 +25,7 @@ function SetupScreen() {
         options={{
           headerRight: () => (
             <HeaderActions>
-              <HeaderIcon onPress={() => router.push('/about')} ios="info.circle" android="info" label="About" />
+              <HeaderIcon onPress={() => router.push('/about')} ios="info.circle" android="info" label="About" testID="about-button" />
               <HeaderIcon onPress={addDebt} ios="plus" android="add" label="Add debt" />
             </HeaderActions>
           ),
@@ -53,6 +55,10 @@ function SetupScreen() {
           <Segmented value={firstMonth} options={months} onChange={setFirstMonth} />
           <Button testID="plan-start" title={`Start in ${monthName(firstMonth)}`} onPress={() => startPlan(firstMonth)} />
         </Card>
+      ) : null}
+
+      {!hasData ? (
+        <Button testID="backup-restore" title="Restore from a backup" variant="plain" onPress={importBackup} />
       ) : null}
     </Screen>
   )

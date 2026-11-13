@@ -49,6 +49,35 @@ While a plan is active, the other tabs show the forecast from your actual balanc
 
 The logic is in `src/lib/tracking.ts`. Its tests are in `src/lib/tracking.test.ts`.
 
+## Your data
+
+The plan stays on the device. The About screen can save a backup and import a backup:
+
+- **Save a backup** writes a JSON file, and opens the share sheet. Save the file to Files or
+  Google Drive, or send it to another device.
+- **Import a backup** opens the file picker. The app shows what the file holds, and asks before it
+  replaces the plan. A fresh install also shows **Restore from a backup** on the setup screen.
+
+The format is in `src/lib/backup.ts`. The checks that clean an imported file are in
+`src/lib/stored.ts`. The app runs the same checks when it loads its state.
+
+## Usage counts
+
+The app sends anonymous counts to the analytics proxy of the website. The proxy sends them to
+Umami. There are two events:
+
+- `install`: once, the first time that the app opens.
+- `daily-open`: once on each day that the app opens. The count of these events on a day is the
+  number of daily users.
+
+Each event has the platform, the app version, the language, the screen size, and the plan stage
+(`none`, `draft` or `tracking`). It has no ID and no debt data. Umami finds the country from the
+IP address. The person can turn the counts off in the About screen. Development builds, test
+builds and the web build send nothing. The code is in `src/lib/usage.ts`.
+
+For the store privacy forms, declare "Usage data" and "Coarse location". Both are not linked to
+the person, and the app does not use them for tracking.
+
 ## Requirements
 
 - Node 24 or later.

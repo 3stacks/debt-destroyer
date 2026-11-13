@@ -4,6 +4,7 @@
   "description": "Debt Destroyer for iOS and Android. It uses the payoff engine in ../src/utils.",
   "main": "expo-router/entry",
   "private": true,
+  "license": "AGPL-3.0-only",
   "scripts": {
     "start": "expo start",
     "ios": "expo run:ios",

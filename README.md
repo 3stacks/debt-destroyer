@@ -49,3 +49,15 @@ needs the permission Account > Cloudflare Pages > Edit.
 Analytics goes through a proxy in `functions/`. Set `ANALYTICS_FORWARDING_URL` and
 `ANALYTICS_WEBSITE_ID` in the Pages project to turn it on. Add a custom domain to
 `ANALYTICS_HOSTS`.
+
+## Licence
+
+Copyright © 2017–2026 Luke Boyle.
+
+Debt Destroyer is under the **GNU Affero General Public License v3.0** (AGPLv3). See
+[LICENSE](LICENSE). You can use, host, study, change and share Debt Destroyer. If you run a changed
+version as a network service, you must give its users the matching source. See section 13 of the
+AGPL.
+
+The homepage design in `site/` comes from the Primer template of Tailwind Plus. The AGPL does not
+apply to the parts of that template. [site/LICENSE.md](site/LICENSE.md) holds their licence.

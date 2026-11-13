@@ -1,7 +1,7 @@
 import { router, Stack } from 'expo-router'
 import { useState } from 'react'
 import { StyleSheet, Text } from 'react-native'
-import { HeaderIcon } from '../../../components/HeaderButton'
+import { HeaderActions, HeaderIcon } from '../../../components/HeaderButton'
 import { PlanSetup, useAddDebt } from '../../../components/PlanSetup'
 import { TrackView } from '../../../components/TrackView'
 import { Body, Button, Callout, Card, Screen, Segmented } from '../../../components/ui'
@@ -21,8 +21,12 @@ function SetupScreen() {
     <Screen>
       <Stack.Screen
         options={{
-          headerLeft: () => <HeaderIcon onPress={() => router.push('/about')} ios="info.circle" android="info" label="About" />,
-          headerRight: () => <HeaderIcon onPress={addDebt} ios="plus" android="add" label="Add debt" />,
+          headerRight: () => (
+            <HeaderActions>
+              <HeaderIcon onPress={() => router.push('/about')} ios="info.circle" android="info" label="About" />
+              <HeaderIcon onPress={addDebt} ios="plus" android="add" label="Add debt" />
+            </HeaderActions>
+          ),
         }}
       />
 

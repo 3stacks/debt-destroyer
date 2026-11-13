@@ -6,7 +6,7 @@ import { money } from '../lib/metrics'
 import { usePlan } from '../lib/plan'
 import { space, useColors } from '../lib/theme'
 import { Analysis, monthName, monthShort, planFor, plannedMonth } from '../lib/tracking'
-import { HeaderIcon } from './HeaderButton'
+import { HeaderActions, HeaderIcon } from './HeaderButton'
 import { Body, Button, Callout, Card, Divider, Row, Screen, SectionHeader, Stat, StatGrid } from './ui'
 
 function signedMoney(v: number): string {
@@ -63,8 +63,11 @@ export function TrackView({ analysis: a }: { analysis: Analysis }) {
     <Screen>
       <Stack.Screen
         options={{
-          headerLeft: () => <HeaderIcon onPress={() => router.push('/about')} ios="info.circle" android="info" label="About" />,
-          headerRight: undefined,
+          headerRight: () => (
+            <HeaderActions>
+              <HeaderIcon onPress={() => router.push('/about')} ios="info.circle" android="info" label="About" />
+            </HeaderActions>
+          ),
         }}
       />
 

@@ -67,7 +67,8 @@ export default function ReconcileSheet() {
       <Stack.Screen
         options={{
           title: monthName(month),
-          headerLeft: () => <HeaderText title="Cancel" onPress={() => router.back()} />,
+          // Android has a back button, and a left button there touches the title.
+          headerLeft: process.env.EXPO_OS === 'ios' ? () => <HeaderText title="Cancel" onPress={() => router.back()} /> : undefined,
           headerRight: () => <HeaderText title="Save" bold onPress={save} />,
         }}
       />

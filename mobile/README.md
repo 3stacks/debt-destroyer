@@ -19,8 +19,8 @@ app does not send data to a server.
 ## Track a plan
 
 1. Make the plan on the Plan tab.
-2. Tap **Start this plan**. The app saves the plan as version 1. The first payment month is next
-   month.
+2. Choose the first payment month: this month or next month. Then tap **Start**. The app saves the
+   plan as version 1.
 3. At the end of each month, tap **Reconcile**. Enter what you paid on each debt. Each field starts
    at the planned amount. If the statement shows a different balance, enter that statement balance.
 4. The Plan tab then shows the difference from the plan for each month and in total. It also shows

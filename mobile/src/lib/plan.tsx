@@ -18,7 +18,7 @@ import {
   useState,
 } from 'react'
 import { Debt, DEBT_PAYOFF_METHODS, Frequency, parseMoney, PlanResult, runPlan } from './metrics'
-import { analyse, Analysis, DebtEntry, monthKey, PlanVersion, revisionStart, shiftMonth, Tracking } from './tracking'
+import { analyse, Analysis, DebtEntry, monthKey, PlanVersion, revisionStart, Tracking } from './tracking'
 
 const LEGACY_KEY = 'debt-destroyer:plan:v1'
 const STORAGE_KEY = 'debt-destroyer:state:v2'
@@ -53,7 +53,7 @@ interface PlanContextValue extends StoredPlan {
   tracking: Tracking | null
   analysis: Analysis | null
   today: string
-  startPlan: () => void
+  startPlan: (firstMonth: string) => void
   saveReconciliation: (month: string, entries: Record<string, DebtEntry>) => void
   deleteReconciliation: (month: string) => void
   beginRevision: () => void
@@ -202,11 +202,13 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     [plan],
   )
 
-  // The first payment is next month. This matches the dates on the other tabs
-  // and in the web app, which count month 1 from next month.
-  const startPlan = useCallback(() => {
-    setTracking({ versions: [versionFromDraft(shiftMonth(today, 1))], recs: {} })
-  }, [versionFromDraft, today])
+  // The user chooses the first payment month: this month or next month.
+  const startPlan = useCallback(
+    (firstMonth: string) => {
+      setTracking({ versions: [versionFromDraft(firstMonth)], recs: {} })
+    },
+    [versionFromDraft],
+  )
 
   const saveReconciliation = useCallback((month: string, entries: Record<string, DebtEntry>) => {
     setTracking(t => (t ? { ...t, recs: { ...t.recs, [month]: { month, entries, savedAt: new Date().toISOString() } } } : t))

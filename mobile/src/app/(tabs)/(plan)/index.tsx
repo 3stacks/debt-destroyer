@@ -1,17 +1,21 @@
 import { router, Stack } from 'expo-router'
+import { useState } from 'react'
 import { StyleSheet, Text } from 'react-native'
 import { HeaderIcon } from '../../../components/HeaderButton'
 import { PlanSetup, useAddDebt } from '../../../components/PlanSetup'
 import { TrackView } from '../../../components/TrackView'
-import { Body, Button, Callout, Card, Screen } from '../../../components/ui'
+import { Body, Button, Callout, Card, Screen, Segmented } from '../../../components/ui'
 import { formatMonthsAsTime, getPayoffMonths, getTotalInterestPaid, money, payoffDate } from '../../../lib/metrics'
 import { usePlan } from '../../../lib/plan'
+import { monthName, shiftMonth } from '../../../lib/tracking'
 import { space, useColors } from '../../../lib/theme'
 
 function SetupScreen() {
   const c = useColors()
-  const { draftResult: result, startPlan } = usePlan()
+  const { draftResult: result, startPlan, today } = usePlan()
   const addDebt = useAddDebt()
+  const [firstMonth, setFirstMonth] = useState(today)
+  const months = [today, shiftMonth(today, 1)].map(m => ({ value: m, label: monthName(m).split(' ')[0] }))
 
   return (
     <Screen>
@@ -40,11 +44,10 @@ function SetupScreen() {
 
       {result.ok ? (
         <Card>
-          <Body>
-            Start the plan to record what you pay each month, from next month. The app then shows how far you are from
-            the plan.
-          </Body>
-          <Button title="Start this plan" onPress={startPlan} />
+          <Body>Start the plan to record what you pay each month. The app then shows how far you are from the plan.</Body>
+          <Text style={{ color: c.muted, fontSize: 13, fontWeight: '500' }}>First payment month</Text>
+          <Segmented value={firstMonth} options={months} onChange={setFirstMonth} />
+          <Button title={`Start in ${monthName(firstMonth)}`} onPress={() => startPlan(firstMonth)} />
         </Card>
       ) : null}
     </Screen>

@@ -24,6 +24,11 @@ tags: [revision]
 - tapOn:
     id: consolidate-rate
 - inputText: "9.9"
+# On a phone, the keyboard covers the next field.
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: consolidate-repayment
 - tapOn:
     id: consolidate-repayment
 - inputText: "220"

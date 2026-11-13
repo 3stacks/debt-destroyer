@@ -10,4 +10,11 @@ appId: ${APP_ID}
     visible: { id: about-button }
     timeout: 30000
 - openLink: ${LINK}e2e/seed?scenario=${SCENARIO}
+# iOS asks before it opens a link in the app. The question stays on the
+# screen, and covers the app in the next flow too.
+- runFlow:
+    when:
+      visible: 'Open in .*'
+    commands:
+      - tapOn: 'Open'
 - waitForAnimationToEnd

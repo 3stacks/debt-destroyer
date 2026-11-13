@@ -43,5 +43,9 @@ tags: [tracking]
     element:
       text: "November 2026"
 - assertVisible: "Paid .* of .* planned"
-- assertVisible: "Under the plan"
+# The totals are at the top. On a phone, the list scrolls them off the screen.
+- scrollUntilVisible:
+    element:
+      text: "Under the plan"
+    direction: UP
 - takeScreenshot: 02-reconciled

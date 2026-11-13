@@ -97,6 +97,12 @@ async function run(page, steps, env, dir, dialogs, log) {
         await page.waitForTimeout(900)
         break
       case 'runFlow': {
+        // A condition, for example an iOS system question. Skip the flow if it is not met.
+        if (arg.when?.visible !== undefined && !(await visible(page, arg.when.visible))) break
+        if (arg.commands) {
+          await run(page, arg.commands, { ...env, ...(arg.env ?? {}) }, dir, dialogs, log)
+          break
+        }
         const file = resolve(dir, arg.file)
         const sub = loadFlow(file)
         await run(page, sub.steps, { ...env, ...(arg.env ?? {}) }, dirname(file), dialogs, log)

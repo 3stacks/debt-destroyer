@@ -18,6 +18,9 @@ tags: [share]
 - takeScreenshot: 08-card-amounts
 
 # The replay for a recording waits for a tap, and hides the controls.
+- scrollUntilVisible:
+    element:
+      id: share-record
 - tapOn:
     id: share-record
 - assertVisible: "Start your screen recording, then tap to play"

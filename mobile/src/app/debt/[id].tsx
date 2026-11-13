@@ -1,7 +1,7 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router'
 import { useEffect, useRef } from 'react'
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native'
-import { Body, Button, Field } from '../../components/ui'
+import { Alert, Pressable, Text, View } from 'react-native'
+import { Body, Button, Field, Screen } from '../../components/ui'
 import { calculateMinimumMonthlyRepayment } from '../../../../src/utils'
 import { money } from '../../lib/metrics'
 import { Debt } from '../../lib/metrics'
@@ -68,12 +68,7 @@ export default function DebtSheet() {
   }
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: c.bg }}
-      contentContainerStyle={{ padding: space.lg, gap: space.lg }}
-      keyboardShouldPersistTaps="handled"
-      contentInsetAdjustmentBehavior="automatic"
-      automaticallyAdjustKeyboardInsets>
+    <Screen>
       <Stack.Screen
         options={{
           title: isNew ? 'New debt' : debt.name || 'Debt',
@@ -141,6 +136,6 @@ export default function DebtSheet() {
       ) : (
         <Button title="Delete debt" variant="destructive" onPress={confirmDelete} />
       )}
-    </ScrollView>
+    </Screen>
   )
 }

@@ -1,8 +1,8 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router'
 import { useMemo, useState } from 'react'
-import { Alert, ScrollView, Text, View } from 'react-native'
+import { Alert, Text, View } from 'react-native'
 import { HeaderText } from '../../components/HeaderButton'
-import { Body, Button, Card, Divider, Field, Row } from '../../components/ui'
+import { Body, Button, Card, Divider, Field, Row, Screen } from '../../components/ui'
 import { money } from '../../lib/metrics'
 import { usePlan } from '../../lib/plan'
 import { space, useColors } from '../../lib/theme'
@@ -63,13 +63,7 @@ export default function ReconcileSheet() {
     ])
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: c.bg }}
-      contentContainerStyle={{ padding: space.lg, gap: space.lg }}
-      keyboardShouldPersistTaps="handled"
-      contentInsetAdjustmentBehavior="automatic"
-      automaticallyAdjustKeyboardInsets
-      keyboardDismissMode="interactive">
+    <Screen>
       <Stack.Screen
         options={{
           title: monthName(month),
@@ -136,6 +130,6 @@ export default function ReconcileSheet() {
 
       <Button title="Save" onPress={save} />
       {existing ? <Button title="Delete reconciliation" variant="destructive" onPress={remove} /> : null}
-    </ScrollView>
+    </Screen>
   )
 }

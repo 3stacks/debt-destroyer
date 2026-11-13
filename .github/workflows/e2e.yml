@@ -89,7 +89,11 @@ jobs:
           profile: pixel_7
           disable-animations: true
           working-directory: mobile
+          # A slow emulator can show "Pixel Launcher isn't responding" over the
+          # app. Hide such dialogs, so that Maestro sees the app.
           script: |
+            adb shell settings put global hide_error_dialogs 1
+            adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS
             adb install android/app/build/outputs/apk/release/app-release.apk
             maestro test -e APP_ID=$APP_ID -e LINK=debtdestroyer:// --format junit --output maestro-output/android.xml --test-output-dir maestro-output/android maestro
       - uses: actions/upload-artifact@v4
@@ -113,6 +117,14 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+      # A Swift package of the app needs Swift 6.2, so Xcode 26 or later. The
+      # default Xcode of the runner can be older.
+      - name: Use the newest Xcode
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_*.app | grep -vi beta | sort -V | tail -1)
+          echo "Using $XCODE"
+          sudo xcode-select -s "$XCODE"
+          xcrun swift --version
       - run: npm ci
       - run: npx expo prebuild --platform ios
       - name: Build the release app for the simulator

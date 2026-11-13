@@ -9,15 +9,18 @@ import { usePlan } from '../../lib/plan'
 // works in a build for the end-to-end tests (EXPO_PUBLIC_E2E=1).
 export default function Seed() {
   const { scenario } = useLocalSearchParams<{ scenario?: string }>()
-  const { loadScenario } = usePlan()
+  const { loadScenario, ready } = usePlan()
   const make = scenario ? SCENARIOS[scenario] : undefined
 
+  // Wait until the app has read its saved state. Otherwise that read can end
+  // after the scenario loads, and replace it. A cold start on a slow emulator
+  // shows this.
   useEffect(() => {
-    if (!E2E || !make) return
+    if (!E2E || !make || !ready) return
     loadScenario(make(), TODAY)
     if (router.canDismiss()) router.dismissAll()
     router.replace('/')
-  }, [make, loadScenario])
+  }, [make, loadScenario, ready])
 
   return (
     <Screen>

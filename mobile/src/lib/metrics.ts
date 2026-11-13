@@ -10,7 +10,8 @@ import {
 } from '../../../src/utils'
 
 export type Schedule = IRepaymentSchedule
-export type Debt = IDebt
+// A debt can record the debts that it consolidates (see the consolidate screen).
+export type Debt = IDebt & { from?: string[] }
 export { DEBT_PAYOFF_METHODS }
 
 export type PlanResult =

@@ -66,6 +66,8 @@ interface PlanContextValue extends StoredPlan {
   addDebt: () => string
   updateDebt: (id: string, patch: Partial<Debt>) => void
   removeDebt: (id: string) => void
+  // Replace debts in the draft with one new loan that records them.
+  consolidate: (ids: string[], loan: Omit<Debt, 'id' | 'from'>) => void
   addVice: (v?: Partial<Omit<Vice, 'id'>>) => void
   updateVice: (id: string, patch: Partial<Vice>) => void
   removeVice: (id: string) => void
@@ -177,6 +179,13 @@ export function PlanProvider({ children }: { children: ReactNode }) {
   }, [])
   const removeDebt = useCallback((id: string) => {
     setPlan(p => ({ ...p, debts: p.debts.filter(d => d.id !== id) }))
+  }, [])
+
+  const consolidate = useCallback((ids: string[], loan: Omit<Debt, 'id' | 'from'>) => {
+    setPlan(p => ({
+      ...p,
+      debts: [...p.debts.filter(d => !ids.includes(d.id)), { ...loan, id: nanoid(), from: ids }],
+    }))
   }, [])
 
   const addVice = useCallback((v?: Partial<Omit<Vice, 'id'>>) => {
@@ -291,6 +300,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
       addDebt,
       updateDebt,
       removeDebt,
+      consolidate,
       addVice,
       updateVice,
       removeVice,
@@ -303,7 +313,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
       saveRevision,
       endPlan,
     }),
-    [plan, ready, result, draftResult, calcMethod, extraAmount, tracking, analysis, today, setMethod, setExtra, addDebt, updateDebt, removeDebt, addVice, updateVice, removeVice, startPlan, saveReconciliation, deleteReconciliation, beginRevision, revisionMonth, setRevisionMonth, saveRevision, endPlan],
+    [plan, ready, result, draftResult, calcMethod, extraAmount, tracking, analysis, today, setMethod, setExtra, addDebt, updateDebt, removeDebt, consolidate, addVice, updateVice, removeVice, startPlan, saveReconciliation, deleteReconciliation, beginRevision, revisionMonth, setRevisionMonth, saveRevision, endPlan],
   )
 
   return <PlanContext.Provider value={value}>{children}</PlanContext.Provider>

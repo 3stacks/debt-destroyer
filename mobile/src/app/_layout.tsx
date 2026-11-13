@@ -34,6 +34,10 @@ function Root() {
         <Stack.Screen name="about" options={{ presentation: 'modal', title: 'About' }} />
         <Stack.Screen name="reconcile/[month]" options={{ presentation: 'modal', title: 'Reconcile' }} />
         <Stack.Screen name="revise" options={{ presentation: 'modal', title: 'Revise plan' }} />
+        <Stack.Screen name="consolidate" options={{ presentation: 'modal', title: 'Consolidate' }} />
+        <Stack.Screen name="history/[id]" options={{ presentation: 'modal', title: 'Debt' }} />
+        <Stack.Screen name="share" options={{ presentation: 'modal', title: 'Share' }} />
+        <Stack.Screen name="journey" options={{ presentation: 'fullScreenModal', headerShown: false, animation: 'fade' }} />
       </Stack>
     </>
   )

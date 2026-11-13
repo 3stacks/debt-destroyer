@@ -130,6 +130,9 @@ export interface Analysis {
   // The balances after each reconciled month, in a row from the start of its
   // version.
   balanceHistory: Record<string, Record<string, number>>
+  // The total debt at the start of the journey, plus each debt added later. A
+  // consolidation moves balances, so it does not add to this total.
+  startTotal: number
   totalPlannedPaid: number
   totalActualPaid: number
   totalVariance: number
@@ -223,6 +226,15 @@ export function analyse(t: Tracking, today: string): Analysis | null {
       ? lastReconciled
       : null
 
+  let startTotal = 0
+  const seen = new Set<string>()
+  for (const v of t.versions) {
+    for (const d of v.debts) {
+      if (!seen.has(d.id) && !d.from?.length) startTotal += Math.max(0, num(d.amount) || 0)
+      seen.add(d.id)
+    }
+  }
+
   const currentPlan = plans.get(current.id)!
   const plannedPayoff = payoffKey(current, currentPlan)
   let balanceGap: number | null = null
@@ -242,6 +254,7 @@ export function analyse(t: Tracking, today: string): Analysis | null {
     lastReconciled,
     balances: forecastBalances,
     balanceHistory,
+    startTotal,
     totalPlannedPaid,
     totalActualPaid,
     totalVariance: round2(totalActualPaid - totalPlannedPaid),
@@ -274,4 +287,132 @@ export function openingBalances(a: Analysis, start: string): Record<string, numb
     return Object.fromEntries(a.current.debts.map(d => [d.id, Math.max(0, num(d.amount) || 0)]))
   }
   return a.balanceHistory[shiftMonth(start, -1)] ?? a.balances
+}
+
+export interface DebtEvent {
+  month: string
+  kind: 'start' | 'added' | 'consolidates' | 'rate' | 'repayment' | 'consolidated' | 'removed' | 'paid-off'
+  text: string
+}
+
+export interface DebtMonth {
+  month: string
+  planned: number
+  paid: number | null
+  balance: number | null
+}
+
+export interface DebtHistory {
+  // The latest terms of the debt.
+  debt: Debt
+  inCurrentPlan: boolean
+  opening: number
+  balance: number
+  paidTotal: number
+  months: DebtMonth[]
+  events: DebtEvent[]
+  // The loan that took over this debt, and the debts that this loan took over.
+  mergedInto: Debt | null
+  mergedFrom: Debt[]
+}
+
+const money0 = (n: number) => `$${Math.round(n).toLocaleString()}`
+
+function findDebt(t: Tracking, id: string): Debt | undefined {
+  for (const v of t.versions) {
+    const d = v.debts.find(x => x.id === id)
+    if (d) return d
+  }
+  return undefined
+}
+
+// Everything that happened to one debt, across every plan version.
+export function debtHistory(t: Tracking, a: Analysis, id: string): DebtHistory | null {
+  const holding = t.versions.filter(v => v.debts.some(d => d.id === id))
+  if (holding.length === 0) return null
+  const debt = holding[holding.length - 1].debts.find(d => d.id === id)!
+  const first = holding[0].debts.find(d => d.id === id)!
+  const opening = Math.max(0, num(first.amount) || 0)
+  const plans = new Map(holding.map(v => [v.id, planFor(v)]))
+
+  const months: DebtMonth[] = []
+  for (const r of a.rows) {
+    if (!r.version.debts.some(d => d.id === id)) continue
+    const plan = plans.get(r.version.id)
+    const planned = plan?.ok ? (plannedMonth(r.version, plan.schedule, r.month)[id]?.paid ?? 0) : 0
+    const rec = t.recs[r.month]
+    const paid = rec ? num(rec.entries[id]?.paid) : NaN
+    months.push({
+      month: r.month,
+      planned,
+      paid: Number.isFinite(paid) ? paid : null,
+      balance: a.balanceHistory[r.month]?.[id] ?? null,
+    })
+  }
+
+  const events: DebtEvent[] = []
+  let started = false
+  t.versions.forEach((v, i) => {
+    const d = v.debts.find(x => x.id === id)
+    const prev = i > 0 ? t.versions[i - 1].debts.find(x => x.id === id) : undefined
+    if (d && !started) {
+      started = true
+      const amount = money0(num(d.amount) || 0)
+      if (d.from?.length) {
+        const names = [...new Set(d.from.map(f => findDebt(t, f)?.name || 'a debt'))]
+        events.push({ month: v.startMonth, kind: 'consolidates', text: `Consolidated ${names.join(' and ')} into one loan of ${amount} at ${d.rate}%` })
+      } else if (i === 0) {
+        events.push({ month: v.startMonth, kind: 'start', text: `Started at ${amount}, ${d.rate}% interest` })
+      } else {
+        events.push({ month: v.startMonth, kind: 'added', text: `Added at ${amount}, ${d.rate}% interest` })
+      }
+    } else if (d && prev) {
+      if (d.rate !== prev.rate) events.push({ month: v.startMonth, kind: 'rate', text: `Rate changed from ${prev.rate}% to ${d.rate}%` })
+      if (d.repayment !== prev.repayment) {
+        const from = money0(num(prev.repayment) || 0)
+        const to = money0(num(d.repayment) || 0)
+        events.push({ month: v.startMonth, kind: 'repayment', text: `Minimum repayment changed from ${from} to ${to}` })
+      }
+    } else if (!d && prev) {
+      const merged = v.debts.find(x => x.from?.includes(id))
+      if (merged) events.push({ month: v.startMonth, kind: 'consolidated', text: `Consolidated into ${merged.name || 'a new loan'}` })
+      else if (!months.some(m => m.balance === 0)) events.push({ month: v.startMonth, kind: 'removed', text: 'Removed from the plan' })
+    }
+  })
+  const paidOff = months.find(m => m.balance === 0)
+  if (paidOff) events.push({ month: paidOff.month, kind: 'paid-off', text: 'Paid off' })
+  events.sort((x, y) => (x.month < y.month ? -1 : x.month > y.month ? 1 : 0))
+
+  const inCurrentPlan = a.current.debts.some(d => d.id === id)
+  const known = [...months].reverse().find(m => m.balance !== null)?.balance
+  let mergedInto: Debt | null = null
+  for (const v of t.versions) {
+    const m = v.debts.find(x => x.from?.includes(id))
+    if (m) {
+      mergedInto = m
+      break
+    }
+  }
+  const balance = inCurrentPlan ? (a.balances[id] ?? opening) : mergedInto ? 0 : (known ?? opening)
+
+  return {
+    debt,
+    inCurrentPlan,
+    opening,
+    balance,
+    paidTotal: months.reduce((x, m) => x + (m.paid ?? 0), 0),
+    months,
+    events,
+    mergedInto,
+    mergedFrom: (debt.from ?? []).map(f => findDebt(t, f)).filter((x): x is Debt => !!x),
+  }
+}
+
+// Debts from earlier versions that the current version no longer has: paid
+// off, consolidated or removed.
+export function closedDebts(t: Tracking, a: Analysis): Debt[] {
+  const current = new Set(a.current.debts.map(d => d.id))
+  const out = new Map<string, Debt>()
+  for (const v of t.versions) for (const d of v.debts) if (!current.has(d.id)) out.set(d.id, d)
+  return [...out.values()]
 }

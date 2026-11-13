@@ -33,6 +33,20 @@ app does not send data to a server.
 
 While a plan is active, the other tabs show the forecast from your actual balances.
 
+### More for a started plan
+
+- Tap a debt to see its details: the balance, the rate, each month and a timeline.
+- Refinanced a debt? Revise the plan and change the rate of the debt. The months before the revision
+  keep the old rate.
+- Rolled debts into one loan? Revise the plan and tap **Consolidate debts**. The old debts keep
+  their history, and the new loan links to them.
+- In the last 12 payments, a countdown shows the payments to go.
+- **Play the journey** replays each month of the plan. When the plan is finished, the replay ends
+  with confetti.
+- **Share progress** makes an image to share. It shows percentages, unless you choose dollar
+  amounts. For TikTok, Reels or Shorts, play the journey for a recording. The controls stay hidden
+  until the end.
+
 The logic is in `src/lib/tracking.ts`. Its tests are in `src/lib/tracking.test.ts`.
 
 ## Requirements

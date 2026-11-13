@@ -90,6 +90,15 @@ export default function Revise() {
 
       <PlanSetup />
 
+      <Card>
+        <Text style={{ color: c.text, fontSize: 17, fontWeight: '700' }}>Refinanced or consolidated?</Text>
+        <Body muted>
+          Refinanced a debt? Tap it above and change its rate or its repayment. Rolled debts into one new loan? Use
+          Consolidate. Your history stays with the old debts.
+        </Body>
+        <Button title="Consolidate debts" variant="secondary" onPress={() => router.push('/consolidate')} />
+      </Card>
+
       {draftResult.ok ? <Button title="Save revision" onPress={save} /> : null}
     </Screen>
   )

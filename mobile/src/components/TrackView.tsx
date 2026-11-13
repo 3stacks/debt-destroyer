@@ -2,10 +2,10 @@ import { router, Stack } from 'expo-router'
 import { SymbolView } from 'expo-symbols'
 import { Fragment, useMemo } from 'react'
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native'
-import { money } from '../lib/metrics'
+import { getDebtPayoffOrder, money } from '../lib/metrics'
 import { usePlan } from '../lib/plan'
 import { space, useColors } from '../lib/theme'
-import { Analysis, monthName, monthShort, planFor, plannedMonth } from '../lib/tracking'
+import { Analysis, closedDebts, monthDiff, monthName, monthShort, planFor, plannedMonth, shiftMonth } from '../lib/tracking'
 import { HeaderActions, HeaderIcon } from './HeaderButton'
 import { Body, Button, Callout, Card, Divider, Row, Screen, SectionHeader, Stat, StatGrid } from './ui'
 
@@ -43,6 +43,15 @@ export function TrackView({ analysis: a }: { analysis: Analysis }) {
   const due = a.dueMonths
   const toCheck = a.rows.filter(r => r.version === a.current && r.reconciled && r.missing.length > 0).map(r => r.month)
   const revised = (tracking?.versions.length ?? 0) > 1
+  const closed = tracking ? closedDebts(tracking, a) : []
+
+  // Progress and the countdown. Payments to go count from the month after the
+  // last reconciled month to the projected payoff month.
+  const progress = a.startTotal > 0 ? Math.max(0, Math.min(1, 1 - balanceNow / a.startTotal)) : 0
+  const after = a.lastReconciled ?? shiftMonth(a.current.startMonth, -1)
+  const paymentsLeft = a.projectedPayoff ? Math.max(0, monthDiff(after, a.projectedPayoff)) : null
+  const next = a.forecast.ok ? getDebtPayoffOrder(a.forecast.schedule, a.forecastDebts)[0] : undefined
+  const countdown = !debtFree && paymentsLeft !== null && paymentsLeft <= 12
 
   const revise = () => {
     beginRevision()
@@ -77,6 +86,12 @@ export function TrackView({ analysis: a }: { analysis: Analysis }) {
           <>
             <Text style={styles.heroValue}>Debt free!</Text>
             <Text style={styles.heroLabel}>You paid off every debt in this plan.</Text>
+            <Pressable
+              onPress={() => router.push('/journey')}
+              style={({ pressed }) => [styles.heroButton, pressed && { opacity: 0.8 }]}
+              accessibilityRole="button">
+              <Text style={styles.heroButtonText}>Play your journey</Text>
+            </Pressable>
           </>
         ) : a.projectedPayoff ? (
           <>
@@ -98,6 +113,42 @@ export function TrackView({ analysis: a }: { analysis: Analysis }) {
           </>
         )}
       </Card>
+
+      {!debtFree ? (
+        <Card style={{ gap: space.sm }}>
+          <View style={styles.between}>
+            <Text style={{ color: c.text, fontSize: 17, fontWeight: '700' }}>{Math.round(progress * 100)}% paid off</Text>
+            <Text style={{ color: c.muted, fontSize: 15 }}>{money(balanceNow)} to go</Text>
+          </View>
+          <View style={{ height: 12, borderRadius: 6, backgroundColor: c.surface2, overflow: 'hidden' }}>
+            <View style={{ width: `${progress * 100}%`, height: '100%', backgroundColor: c.good }} />
+          </View>
+        </Card>
+      ) : null}
+
+      {countdown ? (
+        <Card style={{ backgroundColor: c.accent, alignItems: 'center', gap: 2 }}>
+          <Text style={{ color: c.accentInk, fontSize: 15, opacity: 0.9 }}>The finish line is close</Text>
+          <Text style={{ color: c.accentInk, fontSize: 56, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{paymentsLeft}</Text>
+          <Text style={{ color: c.accentInk, fontSize: 17, fontWeight: '600' }}>
+            {paymentsLeft === 1 ? 'payment to go' : 'payments to go'}
+          </Text>
+          {next && next.month > 0 && a.forecastDebts.length > 1 ? (
+            <Text style={{ color: c.accentInk, fontSize: 14, opacity: 0.9, marginTop: space.xs, textAlign: 'center' }}>
+              Next to fall: {next.debt.name || 'a debt'}, in {next.month} {next.month === 1 ? 'payment' : 'payments'}
+            </Text>
+          ) : null}
+        </Card>
+      ) : null}
+
+      <View style={{ flexDirection: 'row', gap: space.md }}>
+        <View style={{ flex: 1 }}>
+          <Button small variant="secondary" title="Play the journey" onPress={() => router.push('/journey')} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Button small variant="secondary" title="Share progress" onPress={() => router.push('/share')} />
+        </View>
+      </View>
 
       {toCheck.length > 0 ? (
         <Card>
@@ -143,7 +194,10 @@ export function TrackView({ analysis: a }: { analysis: Analysis }) {
           return (
             <Fragment key={d.id}>
               {i > 0 ? <Divider /> : null}
-              <View style={{ gap: 2 }}>
+              <Pressable
+                onPress={() => router.push({ pathname: '/history/[id]', params: { id: d.id } })}
+                style={({ pressed }) => [{ gap: 2 }, pressed && { opacity: 0.6 }]}
+                accessibilityRole="button">
                 <View style={styles.between}>
                   <Text style={{ color: c.text, fontSize: 16, fontWeight: '600', flex: 1 }} numberOfLines={1}>
                     {d.name || 'Unnamed debt'}
@@ -151,6 +205,11 @@ export function TrackView({ analysis: a }: { analysis: Analysis }) {
                   <Text style={{ color: actual <= 0 ? c.good : c.text, fontSize: 16, fontWeight: '600' }}>
                     {actual <= 0 ? 'Paid off' : money(actual)}
                   </Text>
+                  <SymbolView
+                    name={{ ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' }}
+                    tintColor={c.muted}
+                    size={14}
+                  />
                 </View>
                 {diff !== null && planned !== undefined ? (
                   <Text style={{ color: Math.round(diff) > 0 ? c.bad : Math.round(diff) < 0 ? c.good : c.muted, fontSize: 13 }}>
@@ -158,11 +217,38 @@ export function TrackView({ analysis: a }: { analysis: Analysis }) {
                     {Math.round(diff) === 0 ? ' · on plan' : ` · ${signedMoney(diff)} ${diff > 0 ? 'behind' : 'ahead'}`}
                   </Text>
                 ) : null}
-              </View>
+              </Pressable>
             </Fragment>
           )
         })}
       </Card>
+
+      {closed.length > 0 ? (
+        <>
+          <SectionHeader title="Closed and consolidated debts" />
+          <Card style={{ paddingVertical: space.xs, gap: 0 }}>
+            {closed.map((d, i) => (
+              <Fragment key={d.id}>
+                {i > 0 ? <Divider /> : null}
+                <Pressable
+                  onPress={() => router.push({ pathname: '/history/[id]', params: { id: d.id } })}
+                  style={({ pressed }) => [styles.monthRow, pressed && { opacity: 0.6 }]}
+                  accessibilityRole="button">
+                  <Text style={{ color: c.text, fontSize: 16, flex: 1 }} numberOfLines={1}>
+                    {d.name || 'Unnamed debt'}
+                  </Text>
+                  <Text style={{ color: c.muted, fontSize: 13 }}>View history</Text>
+                  <SymbolView
+                    name={{ ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' }}
+                    tintColor={c.muted}
+                    size={14}
+                  />
+                </Pressable>
+              </Fragment>
+            ))}
+          </Card>
+        </>
+      ) : null}
 
       <SectionHeader title="Months" />
       <Card style={{ paddingVertical: space.xs, gap: 0 }}>
@@ -243,5 +329,14 @@ const styles = StyleSheet.create({
   heroLabel: { color: '#ffffff', fontSize: 15, opacity: 0.92 },
   heroValue: { color: '#ffffff', fontSize: 34, fontWeight: '800' },
   between: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space.md },
+  heroButton: {
+    marginTop: space.sm,
+    alignSelf: 'flex-start',
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: space.lg,
+  },
+  heroButtonText: { color: '#15803d', fontSize: 15, fontWeight: '700' },
   monthRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md },
 })

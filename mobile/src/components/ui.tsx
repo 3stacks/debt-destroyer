@@ -81,12 +81,19 @@ function toneColors(c: Colors, tone: Tone): { fg: string; bg: string } {
   }
 }
 
+// iOS and Android shrink a long value with adjustsFontSizeToFit. The web
+// ignores that prop and cuts the text, so make the font smaller there.
+function fitOnWeb(value: string) {
+  if (Platform.OS !== 'web' || value.length <= 8) return null
+  return { fontSize: Math.max(14, Math.floor((22 * 8) / value.length)) }
+}
+
 export function Stat({ value, label, tone = 'neutral', note }: { value: string; label: string; tone?: Tone; note?: string }) {
   const c = useColors()
   const t = toneColors(c, tone)
   return (
     <View style={[styles.stat, { backgroundColor: t.bg }]}>
-      <Text style={[styles.statValue, { color: t.fg }]} adjustsFontSizeToFit numberOfLines={1}>
+      <Text style={[styles.statValue, { color: t.fg }, fitOnWeb(value)]} adjustsFontSizeToFit numberOfLines={1}>
         {value}
       </Text>
       <Text style={[styles.statLabel, { color: c.muted }]}>{label}</Text>

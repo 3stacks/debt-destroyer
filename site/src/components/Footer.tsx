@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 import { GridPattern } from '@/components/GridPattern'
-import { APP_STORE_URL, APP_URL, KOFI_URL, PLAY_STORE_URL, REPO_URL } from '@/lib/site'
+import { APP_STORE_URL, APP_URL, AUTHOR_URL, KOFI_URL, PLAY_STORE_URL, REPO_URL } from '@/lib/site'
 
 export function Footer() {
   return (
@@ -18,7 +18,12 @@ export function Footer() {
           <Link href={REPO_URL}>GitHub</Link>
           <Link href={KOFI_URL}>Ko-fi</Link>
         </nav>
-        <p>Made by Luke Boyle. Free to use. This app is not financial advice.</p>
+        <p>
+          Made by{' '}
+          <a href={AUTHOR_URL} className="underline hover:text-slate-900">
+            Luke Boyle
+          </a>
+          . Free to use. This app is not financial advice.</p>
       </div>
     </footer>
   )

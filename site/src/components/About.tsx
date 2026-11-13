@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 import { GridPattern } from '@/components/GridPattern'
 import { SectionHeading } from '@/components/SectionHeading'
-import { KOFI_URL, REPO_URL } from '@/lib/site'
+import { AUTHOR_URL, KOFI_URL, REPO_URL } from '@/lib/site'
 
 function CupIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
@@ -39,7 +39,10 @@ export function About() {
               your phone. The web app keeps it in the link.
             </p>
             <p className="mt-4 text-lg tracking-tight text-slate-700">
-              Luke Boyle makes Debt Destroyer. It is free for anyone to use.
+              <a href={AUTHOR_URL} className="font-medium text-brand-600 hover:text-brand-800">
+                Luke Boyle
+              </a>{' '}
+              makes Debt Destroyer. It is free for anyone to use.
               The source code is on GitHub, at{' '}
               <Link href={REPO_URL} className="font-medium text-brand-600 hover:text-brand-800">
                 github.com/3stacks/debt-destroyer

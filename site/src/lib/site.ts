@@ -1,5 +1,6 @@
 export const APP_URL = '/app/'
 export const REPO_URL = 'https://github.com/3stacks/debt-destroyer'
+export const AUTHOR_URL = 'https://lukeboyle.com'
 export const KOFI_URL = 'https://ko-fi.com/lukeboyle'
 
 /**

@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/cf-pages.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "site": "npm run build && npm --prefix site run build && node scripts/merge-site.mjs"

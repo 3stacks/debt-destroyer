@@ -4,5 +4,10 @@ appId: ${APP_ID}
 ---
 - launchApp:
     stopApp: true
+# Wait for the first screen. On Android, a link that comes before the app
+# loads its JavaScript is lost.
+- extendedWaitUntil:
+    visible: { id: about-button }
+    timeout: 30000
 - openLink: ${LINK}e2e/seed?scenario=${SCENARIO}
 - waitForAnimationToEnd

@@ -104,7 +104,8 @@ jobs:
 
   ios:
     needs: web
-    runs-on: macos-15
+    # Expo SDK 58 builds with Xcode 27, which macos-15 does not have.
+    runs-on: macos-26
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
@@ -117,8 +118,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      # A Swift package of the app needs Swift 6.2, so Xcode 26 or later. The
-      # default Xcode of the runner can be older.
+      # The default Xcode of the runner can be older than the newest one.
       - name: Use the newest Xcode
         run: |
           XCODE=$(ls -d /Applications/Xcode_*.app | grep -vi beta | sort -V | tail -1)

@@ -1,44 +1,51 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Debt Destroyer
 
-## Available Scripts
+Debt Destroyer shows the month that you become debt free. It compares the snowball method and the
+avalanche method. The phone app also tracks a plan month by month.
 
-In the project directory, you can run:
+If Debt Destroyer helps you, you can support it on [Ko-fi](https://ko-fi.com/lukeboyle).
 
-### `npm start`
+## Parts
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+| Folder | Content | Address |
+|---|---|---|
+| `site/` | The homepage, made with Next.js | `/` |
+| `src/` | The web app, made with Vite and React | `/app/` |
+| `mobile/` | The iOS and Android app, made with Expo | App Store and Google Play |
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+The web app and the mobile app use the same payoff engine in `src/utils`.
 
-### `npm test`
+## Run
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Use Node 24 or later.
 
-### `npm run build`
+```bash
+npm install
+npm run dev        # the web app on http://localhost:5173/app/
+npm test
+npm run site       # the homepage and the web app in site/out/
+```
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Read [site/README.md](site/README.md) for the homepage. Read [mobile/README.md](mobile/README.md)
+for the mobile app.
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+## Old links
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+The web app was at the root before the homepage. A shared link in the old form `/?debts=...` still
+works. The homepage sends it to `/app/` with the plan.
 
-### `npm run eject`
+## Publish the site
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+The site is on Cloudflare Pages, in the project `debt-destroyer`. The workflows are the same as
+the workflows of Hearers:
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+1. The Website workflow tests and builds `site/out/` for each push and each `pull request`.
+2. A `pull request` gets a preview address.
+3. After the Website workflow passes on `master`, the Deploy workflow deploys the same build.
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+Add the secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` to the repository. The token
+needs the permission Account > Cloudflare Pages > Edit.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+Analytics goes through a proxy in `functions/`. Set `ANALYTICS_FORWARDING_URL` and
+`ANALYTICS_WEBSITE_ID` in the Pages project to turn it on. Add a custom domain to
+`ANALYTICS_HOSTS`.

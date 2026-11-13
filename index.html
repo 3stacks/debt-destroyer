@@ -7,6 +7,8 @@
     <meta name="theme-color" content="#3f51b5" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <title>Debt Destroyer</title>
+    <!-- Analytics: a copy of shared/analytics-loader.ts. /a/boot.js is empty on a preview and on localhost. -->
+    <script>window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)};(function(){var loaded=false;function load(){if(loaded)return;loaded=true;var s=document.createElement("script");s.src="/a/boot.js";s.async=true;document.head.appendChild(s)}["pointerdown","keydown","scroll","touchstart"].forEach(function(e){window.addEventListener(e,load,{once:true,passive:true})});document.addEventListener("click",function(e){var el=e.target&&e.target.closest&&e.target.closest("[data-event]");if(!el)return;var props={path:location.pathname};if(el.dataset.eventLabel)props.label=el.dataset.eventLabel;window.plausible(el.dataset.event,{props:props})},true)})();</script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import throttle from 'lodash/throttle'
 import debounce from 'lodash/debounce'
-import { Coffee, HelpCircle } from 'lucide-react'
+import { Coffee, HelpCircle, Smartphone } from 'lucide-react'
 import queryString from 'query-string'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -61,7 +61,7 @@ export default function App() {
       debts: JSON.stringify(debts),
       debtPayoffMethod
     })
-    window.history.pushState({}, '', `/?${query}`)
+    window.history.replaceState({}, '', `${window.location.pathname}?${query}`)
   }, [extraContributions, debts, debtPayoffMethod])
 
   const calculate = useCallback(
@@ -165,7 +165,26 @@ export default function App() {
             <Coffee className="h-5 w-5" />
           </a>
         </Button>
-        <h1 className="text-xl font-semibold">Debt Destroyer</h1>
+        <h1 className="text-xl font-semibold">
+          <a href="/?home">Debt Destroyer</a>
+        </h1>
+        <div className="flex items-center">
+        <Button
+          asChild
+          variant="ghost"
+          size="icon"
+          className="text-primary-foreground hover:bg-primary/90"
+        >
+          <a
+            href="/?home#download"
+            aria-label="Get the iPhone and Android app"
+            title="Get the iPhone and Android app"
+            data-event="Get the app"
+            data-event-label="web app header"
+          >
+            <Smartphone className="h-5 w-5" />
+          </a>
+        </Button>
         <Button
           variant="ghost"
           size="icon"
@@ -174,6 +193,7 @@ export default function App() {
         >
           <HelpCircle className="h-5 w-5" />
         </Button>
+        </div>
       </header>
 
       <main className="max-w-4xl mx-auto p-6 space-y-6" ref={wrapperRef}>

@@ -18,9 +18,12 @@ import {
   useState,
 } from 'react'
 import { Debt, DEBT_PAYOFF_METHODS, Frequency, parseMoney, PlanResult, runPlan } from './metrics'
+import { E2E, now, setClock } from './clock'
 import { analyse, Analysis, DebtEntry, monthKey, openingBalances, PlanVersion, revisionStarts, Tracking } from './tracking'
 
 const LEGACY_KEY = 'debt-destroyer:plan:v1'
+// The fixed month of an end-to-end test. Only an E2E build reads it.
+const CLOCK_KEY = 'debt-destroyer:e2e-clock'
 const STORAGE_KEY = 'debt-destroyer:state:v2'
 
 export interface Vice {
@@ -37,7 +40,7 @@ interface StoredPlan {
   vices: Vice[]
 }
 
-interface Stored {
+export interface Stored {
   draft: StoredPlan
   tracking: Tracking | null
 }
@@ -61,6 +64,8 @@ interface PlanContextValue extends StoredPlan {
   setRevisionMonth: (month: string) => void
   saveRevision: () => void
   endPlan: () => void
+  // End-to-end tests only: replace the whole state, and fix the clock.
+  loadScenario: (state: Stored, month: string) => void
   setMethod: (m: DEBT_PAYOFF_METHODS) => void
   setExtra: (v: string) => void
   addDebt: () => string
@@ -132,11 +137,19 @@ function parseStored(raw: string | null): StoredPlan {
 
 export function PlanProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false)
+  const [clockTick, setClockTick] = useState(0)
   const [plan, setPlan] = useState<StoredPlan>(EMPTY)
   const [tracking, setTracking] = useState<Tracking | null>(null)
 
   useEffect(() => {
-    load()
+    const clock = E2E
+      ? AsyncStorage.getItem(CLOCK_KEY).then(m => {
+          setClock(m)
+          setClockTick(t => t + 1)
+        })
+      : Promise.resolve()
+    clock
+      .then(() => load())
       .then(s => {
         setPlan(s.draft)
         setTracking(s.tracking)
@@ -151,7 +164,8 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(stored)).catch(() => {})
   }, [plan, tracking, ready])
 
-  const today = monthKey(new Date())
+  // clockTick changes when a test fixes the clock, so that "today" follows it.
+  const today = useMemo(() => monthKey(now()), [clockTick])
   const analysis = useMemo(() => (tracking ? analyse(tracking, today) : null), [tracking, today])
 
   // Typing must stay smooth, so the schedule follows the inputs at a lower
@@ -205,7 +219,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     (startMonth: string): PlanVersion => ({
       id: nanoid(),
       startMonth,
-      createdAt: new Date().toISOString(),
+      createdAt: now().toISOString(),
       method: plan.method,
       extra: plan.extra,
       debts: plan.debts.filter(d => parseMoney(d.amount) > 0),
@@ -222,7 +236,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
   )
 
   const saveReconciliation = useCallback((month: string, entries: Record<string, DebtEntry>) => {
-    setTracking(t => (t ? { ...t, recs: { ...t.recs, [month]: { month, entries, savedAt: new Date().toISOString() } } } : t))
+    setTracking(t => (t ? { ...t, recs: { ...t.recs, [month]: { month, entries, savedAt: now().toISOString() } } } : t))
   }, [])
   const deleteReconciliation = useCallback((month: string) => {
     setTracking(t => {
@@ -284,6 +298,15 @@ export function PlanProvider({ children }: { children: ReactNode }) {
 
   const endPlan = useCallback(() => setTracking(null), [])
 
+  const loadScenario = useCallback((state: Stored, month: string) => {
+    if (!E2E) return
+    setClock(month)
+    AsyncStorage.setItem(CLOCK_KEY, month).catch(() => {})
+    setClockTick(t => t + 1)
+    setPlan(state.draft)
+    setTracking(state.tracking)
+  }, [])
+
   const value = useMemo<PlanContextValue>(
     () => ({
       ...plan,
@@ -312,8 +335,9 @@ export function PlanProvider({ children }: { children: ReactNode }) {
       setRevisionMonth,
       saveRevision,
       endPlan,
+      loadScenario,
     }),
-    [plan, ready, result, draftResult, calcMethod, extraAmount, tracking, analysis, today, setMethod, setExtra, addDebt, updateDebt, removeDebt, consolidate, addVice, updateVice, removeVice, startPlan, saveReconciliation, deleteReconciliation, beginRevision, revisionMonth, setRevisionMonth, saveRevision, endPlan],
+    [plan, ready, result, draftResult, calcMethod, extraAmount, tracking, analysis, today, setMethod, setExtra, addDebt, updateDebt, removeDebt, consolidate, addVice, updateVice, removeVice, startPlan, saveReconciliation, deleteReconciliation, beginRevision, revisionMonth, setRevisionMonth, saveRevision, endPlan, loadScenario],
   )
 
   return <PlanContext.Provider value={value}>{children}</PlanContext.Provider>

@@ -1,0 +1,44 @@
+appId: ${APP_ID}
+name: Refinance a debt after three months, and keep its history
+tags: [revision]
+---
+- runFlow:
+    file: ../common/seed.yaml
+    env:
+      SCENARIO: three-months
+- scrollUntilVisible:
+    element:
+      id: track-revise
+- tapOn:
+    id: track-revise
+- assertVisible: "Start the revision in"
+
+# Refinance the credit card to 9.9%.
+- tapOn:
+    id: setup-debt-card
+- tapOn:
+    id: debt-rate
+- eraseText
+- inputText: "9.9"
+- hideKeyboard
+- tapOn:
+    id: debt-done
+- assertVisible: "9.9% .*"
+- scrollUntilVisible:
+    element:
+      id: revise-save
+- tapOn:
+    id: revise-save
+
+# The debt shows the new rate, and the months before the revision.
+- scrollUntilVisible:
+    element:
+      id: debt-row-card
+- tapOn:
+    id: debt-row-card
+- assertVisible: "Rate changed from 19.9% to 9.9%"
+- assertVisible: "9.9%"
+- scrollUntilVisible:
+    element:
+      text: "Paid .* of .* planned"
+- takeScreenshot: 03-refinanced

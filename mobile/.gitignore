@@ -11,3 +11,5 @@ android/
 *.key
 *.mobileprovision
 .DS_Store
+maestro-output/
+dist-e2e/

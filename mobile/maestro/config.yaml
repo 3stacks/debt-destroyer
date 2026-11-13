@@ -1,0 +1,3 @@
+# Maestro runs every flow in flows/. See README.md.
+flows:
+  - "flows/*"

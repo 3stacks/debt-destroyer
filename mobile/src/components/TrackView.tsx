@@ -1,7 +1,8 @@
 import { router, Stack } from 'expo-router'
 import { SymbolView } from 'expo-symbols'
 import { Fragment, useMemo } from 'react'
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { showAlert } from '../lib/alert'
 import { getDebtPayoffOrder, money } from '../lib/metrics'
 import { usePlan } from '../lib/plan'
 import { space, useColors } from '../lib/theme'
@@ -58,7 +59,7 @@ export function TrackView({ analysis: a }: { analysis: Analysis }) {
     router.push('/revise')
   }
   const confirmEnd = () =>
-    Alert.alert(
+    showAlert(
       'End this plan?',
       'This deletes the plan versions and every reconciled month. Your debts stay, so you can start a new plan.',
       [
@@ -143,10 +144,10 @@ export function TrackView({ analysis: a }: { analysis: Analysis }) {
 
       <View style={{ flexDirection: 'row', gap: space.md }}>
         <View style={{ flex: 1 }}>
-          <Button small variant="secondary" title="Play the journey" onPress={() => router.push('/journey')} />
+          <Button testID="track-journey" small variant="secondary" title="Play the journey" onPress={() => router.push('/journey')} />
         </View>
         <View style={{ flex: 1 }}>
-          <Button small variant="secondary" title="Share progress" onPress={() => router.push('/share')} />
+          <Button testID="track-share" small variant="secondary" title="Share progress" onPress={() => router.push('/share')} />
         </View>
       </View>
 
@@ -168,6 +169,7 @@ export function TrackView({ analysis: a }: { analysis: Analysis }) {
           </Text>
           <Body muted>Enter the amount that you actually paid on each debt.</Body>
           <Button
+            testID="track-reconcile"
             title={`Reconcile ${monthName(due[0])}`}
             onPress={() => router.push({ pathname: '/reconcile/[month]', params: { month: due[0] } })}
           />
@@ -195,6 +197,7 @@ export function TrackView({ analysis: a }: { analysis: Analysis }) {
             <Fragment key={d.id}>
               {i > 0 ? <Divider /> : null}
               <Pressable
+                testID={`debt-row-${d.id}`}
                 onPress={() => router.push({ pathname: '/history/[id]', params: { id: d.id } })}
                 style={({ pressed }) => [{ gap: 2 }, pressed && { opacity: 0.6 }]}
                 accessibilityRole="button">
@@ -231,6 +234,7 @@ export function TrackView({ analysis: a }: { analysis: Analysis }) {
               <Fragment key={d.id}>
                 {i > 0 ? <Divider /> : null}
                 <Pressable
+                  testID={`closed-row-${d.id}`}
                   onPress={() => router.push({ pathname: '/history/[id]', params: { id: d.id } })}
                   style={({ pressed }) => [styles.monthRow, pressed && { opacity: 0.6 }]}
                   accessibilityRole="button">
@@ -319,7 +323,7 @@ export function TrackView({ analysis: a }: { analysis: Analysis }) {
         </Callout>
       ) : null}
 
-      <Button title="Revise plan" variant="secondary" onPress={revise} />
+      <Button testID="track-revise" title="Revise plan" variant="secondary" onPress={revise} />
       <Button title="End plan" variant="plain" onPress={confirmEnd} />
     </Screen>
   )

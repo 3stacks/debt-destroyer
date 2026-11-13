@@ -51,7 +51,7 @@ function SetupScreen() {
           <Body>Start the plan to record what you pay each month. The app then shows how far you are from the plan.</Body>
           <Text style={{ color: c.muted, fontSize: 13, fontWeight: '500' }}>First payment month</Text>
           <Segmented value={firstMonth} options={months} onChange={setFirstMonth} />
-          <Button title={`Start in ${monthName(firstMonth)}`} onPress={() => startPlan(firstMonth)} />
+          <Button testID="plan-start" title={`Start in ${monthName(firstMonth)}`} onPress={() => startPlan(firstMonth)} />
         </Card>
       ) : null}
     </Screen>

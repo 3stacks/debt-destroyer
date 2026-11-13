@@ -1,6 +1,7 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router'
 import { useMemo, useState } from 'react'
-import { Alert, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
+import { showAlert } from '../../lib/alert'
 import { HeaderText } from '../../components/HeaderButton'
 import { Body, Button, Card, Divider, Field, Row, Screen } from '../../components/ui'
 import { money } from '../../lib/metrics'
@@ -52,7 +53,7 @@ export default function ReconcileSheet() {
 
   const save = () => {
     if (missing.length > 0) {
-      Alert.alert(
+      showAlert(
         'Enter what you paid',
         `Enter the amount that you actually paid on ${missing.map(d => d.name || 'each debt').join(', ')}. Enter 0 if you paid nothing.`,
       )
@@ -62,7 +63,7 @@ export default function ReconcileSheet() {
     router.back()
   }
   const remove = () =>
-    Alert.alert('Delete this reconciliation?', monthName(month), [
+    showAlert('Delete this reconciliation?', monthName(month), [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',
@@ -88,7 +89,7 @@ export default function ReconcileSheet() {
         How much did you actually pay on each debt in {monthName(month)}? Check your bank or your statements, and enter the
         real amounts.
       </Body>
-      <Button title="I paid the planned amounts" variant="secondary" onPress={fillPlanned} />
+      <Button testID="reconcile-planned" title="I paid the planned amounts" variant="secondary" onPress={fillPlanned} />
 
       {version.debts.map(d => {
         const p = planned[d.id]
@@ -106,6 +107,7 @@ export default function ReconcileSheet() {
               <View style={{ flex: 1 }}>
                 <Field
                   label="Actually paid"
+                  testID={`paid-${d.id}`}
                   prefix="$"
                   value={entry.paid}
                   placeholder="Amount"
@@ -117,6 +119,7 @@ export default function ReconcileSheet() {
               <View style={{ flex: 1 }}>
                 <Field
                   label="Statement balance"
+                  testID={`statement-${d.id}`}
                   prefix="$"
                   value={entry.balance ?? ''}
                   placeholder="Optional"
@@ -144,7 +147,7 @@ export default function ReconcileSheet() {
         statement shows a different balance, for example after fees or new purchases.
       </Body>
 
-      <Button title="Save" onPress={save} />
+      <Button testID="reconcile-save" title="Save" onPress={save} />
       {existing ? <Button title="Delete reconciliation" variant="destructive" onPress={remove} /> : null}
     </Screen>
   )

@@ -1,0 +1,18 @@
+appId: ${APP_ID}
+name: Finish the plan, play the journey and share it
+tags: [motivation, share]
+---
+- runFlow:
+    file: ../common/seed.yaml
+    env:
+      SCENARIO: finished
+- assertVisible: "Debt free!"
+- tapOn: "Play your journey"
+- extendedWaitUntil:
+    visible: "Replay"
+    timeout: 30000
+- assertVisible: "Debt free!"
+- takeScreenshot: 07-journey-finished
+- tapOn: "Share"
+- assertVisible: "I'm debt free!"
+- takeScreenshot: 07-share-card

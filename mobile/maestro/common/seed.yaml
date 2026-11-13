@@ -1,0 +1,8 @@
+# Start the app, and load a test scenario (src/e2e/scenarios.ts).
+# Each scenario also fixes the clock to November 2026.
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- openLink: ${LINK}e2e/seed?scenario=${SCENARIO}
+- waitForAnimationToEnd

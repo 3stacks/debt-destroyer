@@ -182,11 +182,13 @@ export function Button({
   onPress,
   variant = 'primary',
   small,
+  testID,
 }: {
   title: string
   onPress: () => void
   variant?: 'primary' | 'secondary' | 'destructive' | 'plain'
   small?: boolean
+  testID?: string
 }) {
   const c = useColors()
   const bg =
@@ -195,6 +197,7 @@ export function Button({
   return (
     <Pressable
       accessibilityRole="button"
+      testID={testID}
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,

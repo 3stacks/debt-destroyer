@@ -96,10 +96,10 @@ export default function Revise() {
           Refinanced a debt? Tap it above and change its rate or its repayment. Rolled debts into one new loan? Use
           Consolidate. Your history stays with the old debts.
         </Body>
-        <Button title="Consolidate debts" variant="secondary" onPress={() => router.push('/consolidate')} />
+        <Button testID="revise-consolidate" title="Consolidate debts" variant="secondary" onPress={() => router.push('/consolidate')} />
       </Card>
 
-      {draftResult.ok ? <Button title="Save revision" onPress={save} /> : null}
+      {draftResult.ok ? <Button testID="revise-save" title="Save revision" onPress={save} /> : null}
     </Screen>
   )
 }

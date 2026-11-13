@@ -1,0 +1,47 @@
+appId: ${APP_ID}
+name: Reconcile a month with the actual payments
+tags: [tracking]
+---
+- runFlow:
+    file: ../common/seed.yaml
+    env:
+      SCENARIO: started
+- assertVisible: "November 2026 is ready to reconcile"
+- tapOn:
+    id: track-reconcile
+- assertVisible: "How much did you actually pay.*"
+
+# An empty field stops the save.
+- scrollUntilVisible:
+    element:
+      id: reconcile-save
+- tapOn:
+    id: reconcile-save
+- assertVisible: "Enter what you paid"
+- tapOn: "OK"
+
+# Pay as planned, then pay less on the car loan.
+- scrollUntilVisible:
+    element:
+      id: reconcile-planned
+    direction: UP
+- tapOn:
+    id: reconcile-planned
+- tapOn:
+    id: paid-car
+- eraseText
+- inputText: "200"
+- hideKeyboard
+- assertVisible: "Under the plan"
+- scrollUntilVisible:
+    element:
+      id: reconcile-save
+- tapOn:
+    id: reconcile-save
+
+- scrollUntilVisible:
+    element:
+      text: "November 2026"
+- assertVisible: "Paid .* of .* planned"
+- assertVisible: "Under the plan"
+- takeScreenshot: 02-reconciled

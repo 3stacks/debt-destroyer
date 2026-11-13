@@ -1,0 +1,29 @@
+appId: ${APP_ID}
+name: Make a share card and a clean replay for a recording
+tags: [share]
+---
+- runFlow:
+    file: ../common/seed.yaml
+    env:
+      SCENARIO: started
+- tapOn:
+    id: track-share
+- assertVisible: ".*% paid off"
+- assertVisible: ".* months in .*"
+- takeScreenshot: 08-card-percent
+
+# Dollar amounts are a choice.
+- tapOn: "Dollar amounts"
+- assertVisible: "\\$.* paid .*"
+- takeScreenshot: 08-card-amounts
+
+# The replay for a recording waits for a tap, and hides the controls.
+- tapOn:
+    id: share-record
+- assertVisible: "Start your screen recording, then tap to play"
+- assertNotVisible: "Replay"
+- tapOn: "Start your screen recording, then tap to play"
+- extendedWaitUntil:
+    visible: "Replay"
+    timeout: 30000
+- takeScreenshot: 08-recording-finished

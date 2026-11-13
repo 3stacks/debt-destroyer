@@ -1,6 +1,7 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router'
 import { useEffect, useRef } from 'react'
-import { Alert, Pressable, Text, View } from 'react-native'
+import { Pressable, Text, View } from 'react-native'
+import { showAlert } from '../../lib/alert'
 import { Body, Button, Field, Screen } from '../../components/ui'
 import { calculateMinimumMonthlyRepayment } from '../../../../src/utils'
 import { money } from '../../lib/metrics'
@@ -54,7 +55,7 @@ export default function DebtSheet() {
   const tooLow = debt.repayment.trim() !== '' && interest > 0 && repayment <= interest
 
   const confirmDelete = () => {
-    Alert.alert('Delete this debt?', debt.name || undefined, [
+    showAlert('Delete this debt?', debt.name || undefined, [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',
@@ -81,6 +82,7 @@ export default function DebtSheet() {
       />
       <Field
         label="Name"
+        testID="debt-name"
         value={debt.name}
         placeholder="e.g. Credit card"
         onChangeText={name => set({ name })}
@@ -89,6 +91,7 @@ export default function DebtSheet() {
       />
       <Field
         label="Balance"
+        testID="debt-balance"
         prefix="$"
         value={debt.amount}
         placeholder="0"
@@ -98,6 +101,7 @@ export default function DebtSheet() {
       />
       <Field
         label="Interest rate"
+        testID="debt-rate"
         suffix="% p.a."
         value={debt.rate}
         placeholder="0"
@@ -107,6 +111,7 @@ export default function DebtSheet() {
       />
       <Field
         label="Minimum monthly repayment"
+        testID="debt-repayment"
         prefix="$"
         value={debt.repayment}
         placeholder="0"
@@ -123,7 +128,7 @@ export default function DebtSheet() {
       ) : null}
       <View style={{ height: space.md }} />
       {/* A visible button: the header button is easy to miss, and Android can hide it. */}
-      <Button title={isNew ? 'Add debt' : 'Done'} onPress={() => router.back()} />
+      <Button testID="debt-done" title={isNew ? 'Add debt' : 'Done'} onPress={() => router.back()} />
       {isNew ? (
         <Button
           title="Discard"

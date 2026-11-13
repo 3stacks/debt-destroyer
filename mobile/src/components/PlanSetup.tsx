@@ -46,6 +46,7 @@ export function PlanSetup() {
               <Fragment key={d.id}>
                 {i > 0 ? <Divider /> : null}
                 <Pressable
+                  testID={`setup-debt-${d.id}`}
                   onPress={() => router.push({ pathname: '/debt/[id]', params: { id: d.id } })}
                   style={({ pressed }) => [styles.row, pressed && { opacity: 0.6 }]}
                   accessibilityRole="button">
@@ -71,7 +72,7 @@ export function PlanSetup() {
           })
         )}
       </Card>
-      <Button title="Add debt" variant="secondary" onPress={addDebt} />
+      <Button testID="plan-add-debt" title="Add debt" variant="secondary" onPress={addDebt} />
 
       <SectionHeader title="Payoff method" />
       <Card>
@@ -90,6 +91,7 @@ export function PlanSetup() {
       <Card>
         <Field
           label="Extra contribution"
+          testID="plan-extra"
           prefix="$"
           value={extra === '0' ? '' : extra}
           placeholder="0"

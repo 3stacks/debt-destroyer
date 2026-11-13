@@ -1,0 +1,13 @@
+appId: ${APP_ID}
+name: Show the countdown near the end
+tags: [motivation]
+---
+- runFlow:
+    file: ../common/seed.yaml
+    env:
+      SCENARIO: near-finish
+- assertVisible: "The finish line is close"
+- assertVisible: "payments? to go"
+- assertVisible: "Next to fall: .*"
+- assertVisible: ".*% paid off"
+- takeScreenshot: 06-countdown

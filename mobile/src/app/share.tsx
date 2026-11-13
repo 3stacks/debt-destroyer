@@ -2,7 +2,8 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { router } from 'expo-router'
 import * as Sharing from 'expo-sharing'
 import { type ComponentRef, useMemo, useRef, useState } from 'react'
-import { Alert, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
+import { StyleSheet, Text, useWindowDimensions, View } from 'react-native'
+import { showAlert } from '../lib/alert'
 import { captureRef } from 'react-native-view-shot'
 import { Body, Button, Screen, Segmented } from '../components/ui'
 import { money } from '../lib/metrics'
@@ -58,12 +59,12 @@ export default function ShareScreen() {
       // React Native 0.88 types a View ref as an element, which view-shot's types do not know yet.
       const uri = await captureRef(card as unknown as Parameters<typeof captureRef>[0], { format: 'png', quality: 1, result: 'tmpfile' })
       if (!(await Sharing.isAvailableAsync())) {
-        Alert.alert('Sharing is not available on this device')
+        showAlert('Sharing is not available on this device')
         return
       }
       await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: 'Share your progress' })
     } catch {
-      Alert.alert('The image could not be made. Take a screenshot of the card instead.')
+      showAlert('The image could not be made. Take a screenshot of the card instead.')
     }
   }
 
@@ -109,12 +110,13 @@ export default function ShareScreen() {
         </View>
       </View>
 
-      <Button title="Share image" onPress={share} />
+      <Button testID="share-image" title="Share image" onPress={share} />
       <Body muted>
         For TikTok, Reels or Shorts: start a screen recording, then play the journey. The controls stay hidden until the
         end.
       </Body>
       <Button
+        testID="share-record"
         title="Play the journey for a recording"
         variant="secondary"
         onPress={() => router.push({ pathname: '/journey', params: { clean: '1', privacy } })}

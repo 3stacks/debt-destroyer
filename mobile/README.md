@@ -73,7 +73,11 @@ npm run web
 ```bash
 npm run typecheck
 npm test
+npm run e2e:web    # the end-to-end flows in a browser
 ```
+
+The end-to-end flows also run on an iOS simulator and an Android emulator. Read
+[maestro/README.md](maestro/README.md).
 
 ## Shared code
 

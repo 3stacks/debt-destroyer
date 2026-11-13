@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { Alert, Pressable, Text, View } from 'react-native'
+import { Pressable, Text, View } from 'react-native'
+import { showAlert } from '../../../lib/alert'
 import { SymbolView } from 'expo-symbols'
 import { PlanGate } from '../../../components/PlanGate'
 import { ScenarioCard } from '../../../components/ScenarioCard'
@@ -35,7 +36,7 @@ function ViceCard({ vice }: { vice: Vice }) {
   const c = useColors()
   const { updateVice, removeVice } = usePlan()
   const remove = () =>
-    Alert.alert('Remove this vice?', vice.name || undefined, [
+    showAlert('Remove this vice?', vice.name || undefined, [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Remove', style: 'destructive', onPress: () => removeVice(vice.id) },
     ])

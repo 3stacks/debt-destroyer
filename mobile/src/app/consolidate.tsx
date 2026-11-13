@@ -55,6 +55,7 @@ export default function Consolidate() {
             <Fragment key={d.id}>
               {i > 0 ? <Divider /> : null}
               <Pressable
+                testID={`consolidate-pick-${d.id}`}
                 onPress={() => toggle(d.id)}
                 accessibilityRole="checkbox"
                 accessibilityState={{ checked: on }}
@@ -77,7 +78,7 @@ export default function Consolidate() {
 
       <SectionHeader title="New loan" />
       <Card>
-        <Field label="Name" value={name} onChangeText={setName} />
+        <Field label="Name" testID="consolidate-name" value={name} onChangeText={setName} />
         <Field
           label="Balance"
           prefix="$"
@@ -86,9 +87,10 @@ export default function Consolidate() {
           onChangeText={v => setAmount(clean(v))}
           hint="The total of the debts. Add any fees for the new loan."
         />
-        <Field label="Interest rate" suffix="% p.a." value={rate} placeholder="0" keyboardType="decimal-pad" onChangeText={v => setRate(clean(v))} />
+        <Field label="Interest rate" testID="consolidate-rate" suffix="% p.a." value={rate} placeholder="0" keyboardType="decimal-pad" onChangeText={v => setRate(clean(v))} />
         <Field
           label="Minimum monthly repayment"
+          testID="consolidate-repayment"
           prefix="$"
           value={repayment}
           placeholder="0"
@@ -97,7 +99,7 @@ export default function Consolidate() {
         />
       </Card>
       {picked.length < 2 ? <Body muted>Choose two or more debts.</Body> : null}
-      {ready ? <Button title={`Combine ${picked.length} debts`} onPress={save} /> : null}
+      {ready ? <Button testID="consolidate-save" title={`Combine ${picked.length} debts`} onPress={save} /> : null}
     </Screen>
   )
 }

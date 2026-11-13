@@ -2,6 +2,7 @@
 // components (insights, opportunity-cost, vice-simulator). The payoff engine
 // itself is shared: see ../../../src/utils.
 import { addMonths, format } from 'date-fns'
+import { now } from './clock'
 import {
   calculateDebts,
   DEBT_PAYOFF_METHODS,
@@ -158,11 +159,11 @@ export function formatMonthsAsTime(months: number): string {
   return `${years}y ${rest}m`
 }
 
-export function payoffDate(months: number, from = new Date()): string {
+export function payoffDate(months: number, from = now()): string {
   return format(addMonths(from, months), 'MMM yyyy')
 }
 
-export function monthLabel(months: number, from = new Date()): string {
+export function monthLabel(months: number, from = now()): string {
   return format(addMonths(from, months), "MMM ''yy")
 }
 

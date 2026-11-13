@@ -1,0 +1,53 @@
+appId: ${APP_ID}
+name: Consolidate two debts into one loan
+tags: [revision]
+---
+- runFlow:
+    file: ../common/seed.yaml
+    env:
+      SCENARIO: three-months
+- scrollUntilVisible:
+    element:
+      id: track-revise
+- tapOn:
+    id: track-revise
+- scrollUntilVisible:
+    element:
+      id: revise-consolidate
+- tapOn:
+    id: revise-consolidate
+
+- tapOn:
+    id: consolidate-pick-card
+- tapOn:
+    id: consolidate-pick-store
+- tapOn:
+    id: consolidate-rate
+- inputText: "9.9"
+- tapOn:
+    id: consolidate-repayment
+- inputText: "220"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: consolidate-save
+- tapOn:
+    id: consolidate-save
+
+- assertVisible: "Consolidation loan"
+- scrollUntilVisible:
+    element:
+      id: revise-save
+- tapOn:
+    id: revise-save
+
+# The old debts keep their history, and link to the new loan.
+- scrollUntilVisible:
+    element:
+      id: closed-row-store
+- tapOn:
+    id: closed-row-store
+- assertVisible: "Consolidated into Consolidation loan"
+- tapOn: "Open Consolidation loan"
+- assertVisible: "Consolidated Credit card and Store card into one loan.*"
+- takeScreenshot: 04-consolidated

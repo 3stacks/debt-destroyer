@@ -110,4 +110,14 @@ describe('analyse', () => {
     expect(a2.balances).toEqual({ a: 800, b: 1800, c: 450 })
     expect(a2.lastReconciled).toBe('2026-02')
   })
+
+  it('moves an unused revision back to the reconciled month before it', () => {
+    const recs = { '2026-01': rec('2026-01', '100', '100'), '2026-02': rec('2026-02', '100', '100') }
+    const v2 = { ...v1, id: 'v2', startMonth: '2026-03', debts: [...v1.debts, { id: 'c', name: 'Store card', amount: '500', rate: '0', repayment: '50' }] }
+    const a = analyse({ versions: [v1, v2], recs }, '2026-02')!
+    expect(a.lastReconciled).toBeNull()
+    expect(revisionStarts(a)).toEqual(['2026-02', '2026-03'])
+    // February starts at the balances after January. The store card has none.
+    expect(openingBalances(a, '2026-02')).toEqual({ a: 900, b: 1900 })
+  })
 })

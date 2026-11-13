@@ -24,7 +24,8 @@ export default function Revise() {
 
   const starts = revisionStarts(analysis)
   const start = revisionMonth && starts.includes(revisionMonth) ? revisionMonth : starts[starts.length - 1]
-  const redo = start === analysis.lastReconciled
+  // The revision starts in a month that is already reconciled.
+  const redo = analysis.rows.some(r => r.month === start && r.reconciled)
   const newPayoff = draftResult.ok ? shiftMonth(start, getPayoffMonths(draftResult.schedule) - 1) : null
   const change = newPayoff && analysis.projectedPayoff ? monthDiff(analysis.projectedPayoff, newPayoff) : null
 

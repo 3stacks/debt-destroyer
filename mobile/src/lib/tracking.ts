@@ -127,8 +127,8 @@ export interface Analysis {
   dueMonths: string[]
   lastReconciled: string | null
   balances: Record<string, number>
-  // The balances after each reconciled month of the current version, in a row
-  // from its start.
+  // The balances after each reconciled month, in a row from the start of its
+  // version.
   balanceHistory: Record<string, Record<string, number>>
   totalPlannedPaid: number
   totalActualPaid: number
@@ -188,10 +188,8 @@ export function analyse(t: Tracking, today: string): Analysis | null {
       if (contiguous) {
         balances = applyMonth(v.debts, balances, rec)
         actualBalance = Object.values(balances).reduce((a, b) => a + b, 0)
-        if (v === current) {
-          lastReconciled = m
-          balanceHistory[m] = balances
-        }
+        balanceHistory[m] = balances
+        if (v === current) lastReconciled = m
       }
     } else {
       contiguous = false
@@ -260,16 +258,19 @@ export function analyse(t: Tracking, today: string): Analysis | null {
 
 // The months that a revision can start in. After a reconciled month, the
 // revision can start in that month (to add a debt to it, for example) or in
-// the next month. With no reconciled month, it replaces the current version.
+// the next month. A version with no reconciled month can also move back to
+// the reconciled month before it.
 export function revisionStarts(a: Analysis): string[] {
-  if (!a.lastReconciled) return [a.current.startMonth]
-  return [a.lastReconciled, shiftMonth(a.lastReconciled, 1)]
+  if (a.lastReconciled) return [a.lastReconciled, shiftMonth(a.lastReconciled, 1)]
+  const before = shiftMonth(a.current.startMonth, -1)
+  if (a.balanceHistory[before]) return [before, a.current.startMonth]
+  return [a.current.startMonth]
 }
 
 // The balances at the start of a revision: the actual balances after the month
-// before it.
+// before it. A revision that starts with the current version keeps its balances.
 export function openingBalances(a: Analysis, start: string): Record<string, number> {
-  if (start <= a.current.startMonth) {
+  if (start === a.current.startMonth) {
     return Object.fromEntries(a.current.debts.map(d => [d.id, Math.max(0, num(d.amount) || 0)]))
   }
   return a.balanceHistory[shiftMonth(start, -1)] ?? a.balances

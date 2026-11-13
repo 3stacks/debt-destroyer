@@ -238,8 +238,9 @@ export function PlanProvider({ children }: { children: ReactNode }) {
       ...p,
       method: isMethod(analysis.current.method) ? analysis.current.method : p.method,
       extra: analysis.current.extra,
+      // A debt that the current version added has no earlier balance: keep its amount.
       debts: analysis.current.debts
-        .map(d => ({ ...d, amount: String(opening[d.id] ?? 0) }))
+        .map(d => (d.id in opening ? { ...d, amount: String(opening[d.id]) } : d))
         .filter(d => parseMoney(d.amount) > 0),
     }))
   }, [analysis, today])
@@ -263,8 +264,10 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     if (!analysis || !tracking) return
     const start = revisionMonth ?? revisionStarts(analysis).at(-1)!
     const version = versionFromDraft(start)
+    // A revision from the start of the current version, or before it, replaces
+    // that version. It has no reconciled month of its own.
     const versions =
-      start === analysis.current.startMonth
+      start <= analysis.current.startMonth
         ? [...tracking.versions.slice(0, -1), version]
         : [...tracking.versions, version]
     setTracking({ ...tracking, versions })

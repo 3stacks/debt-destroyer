@@ -41,6 +41,7 @@ export function TrackView({ analysis: a }: { analysis: Analysis }) {
   const balanceNow = Object.values(a.balances).reduce((x, y) => x + y, 0)
   const debtFree = balanceNow <= 0
   const due = a.dueMonths
+  const toCheck = a.rows.filter(r => r.version === a.current && r.reconciled && r.missing.length > 0).map(r => r.month)
   const revised = (tracking?.versions.length ?? 0) > 1
 
   const revise = () => {
@@ -98,12 +99,23 @@ export function TrackView({ analysis: a }: { analysis: Analysis }) {
         )}
       </Card>
 
+      {toCheck.length > 0 ? (
+        <Card>
+          <Text style={{ color: c.text, fontSize: 17, fontWeight: '700' }}>Check {monthName(toCheck[0])}</Text>
+          <Body muted>A debt in this month has no amount yet. Enter what you actually paid on it.</Body>
+          <Button
+            title={`Check ${monthName(toCheck[0])}`}
+            onPress={() => router.push({ pathname: '/reconcile/[month]', params: { month: toCheck[0] } })}
+          />
+        </Card>
+      ) : null}
+
       {due.length > 0 ? (
         <Card>
           <Text style={{ color: c.text, fontSize: 17, fontWeight: '700' }}>
             {due.length === 1 ? `${monthName(due[0])} is ready to reconcile` : `${due.length} months to reconcile`}
           </Text>
-          <Body muted>Enter what you paid on each debt. The fields start at the planned amounts.</Body>
+          <Body muted>Enter the amount that you actually paid on each debt.</Body>
           <Button
             title={`Reconcile ${monthName(due[0])}`}
             onPress={() => router.push({ pathname: '/reconcile/[month]', params: { month: due[0] } })}
@@ -166,8 +178,10 @@ export function TrackView({ analysis: a }: { analysis: Analysis }) {
                 accessibilityRole="button">
                 <View style={{ flex: 1, gap: 2 }}>
                   <Text style={{ color: c.text, fontSize: 16, fontWeight: '600' }}>{monthName(r.month)}</Text>
-                  <Text style={{ color: isDue ? c.warn : c.muted, fontSize: 13 }}>
-                    {r.reconciled
+                  <Text style={{ color: isDue || r.missing.length > 0 ? c.warn : c.muted, fontSize: 13 }}>
+                    {r.reconciled && r.missing.length > 0
+                      ? 'A debt has no amount: tap to add it'
+                      : r.reconciled
                       ? `Paid ${money(r.actualPaid ?? 0)} of ${money(r.plannedPaid)} planned`
                       : upcoming
                         ? 'Upcoming'

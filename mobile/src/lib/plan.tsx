@@ -18,7 +18,7 @@ import {
   useState,
 } from 'react'
 import { Debt, DEBT_PAYOFF_METHODS, Frequency, parseMoney, PlanResult, runPlan } from './metrics'
-import { analyse, Analysis, DebtEntry, monthKey, PlanVersion, revisionStart, Tracking } from './tracking'
+import { analyse, Analysis, DebtEntry, monthKey, openingBalances, PlanVersion, revisionStarts, Tracking } from './tracking'
 
 const LEGACY_KEY = 'debt-destroyer:plan:v1'
 const STORAGE_KEY = 'debt-destroyer:state:v2'
@@ -57,6 +57,8 @@ interface PlanContextValue extends StoredPlan {
   saveReconciliation: (month: string, entries: Record<string, DebtEntry>) => void
   deleteReconciliation: (month: string) => void
   beginRevision: () => void
+  revisionMonth: string | null
+  setRevisionMonth: (month: string) => void
   saveRevision: () => void
   endPlan: () => void
   setMethod: (m: DEBT_PAYOFF_METHODS) => void
@@ -222,26 +224,51 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  const [revisionMonth, setRevisionMonthState] = useState<string | null>(null)
+
+  // Load the actual position into the draft. The revision starts in this month
+  // when that is a choice, so that a new debt shows in this month's reconciliation.
   const beginRevision = useCallback(() => {
     if (!analysis) return
+    const starts = revisionStarts(analysis)
+    const start = starts.includes(today) ? today : starts[starts.length - 1]
+    const opening = openingBalances(analysis, start)
+    setRevisionMonthState(start)
     setPlan(p => ({
       ...p,
       method: isMethod(analysis.current.method) ? analysis.current.method : p.method,
       extra: analysis.current.extra,
-      debts: analysis.forecastDebts.filter(d => parseMoney(d.amount) > 0),
+      debts: analysis.current.debts
+        .map(d => ({ ...d, amount: String(opening[d.id] ?? 0) }))
+        .filter(d => parseMoney(d.amount) > 0),
     }))
-  }, [analysis])
+  }, [analysis, today])
+
+  // Change the start month, and move the balances of the existing debts to that
+  // month. Keep the other changes in the draft, such as a new debt.
+  const setRevisionMonth = useCallback(
+    (month: string) => {
+      if (!analysis) return
+      const opening = openingBalances(analysis, month)
+      setRevisionMonthState(month)
+      setPlan(p => ({
+        ...p,
+        debts: p.debts.map(d => (d.id in opening ? { ...d, amount: String(opening[d.id]) } : d)),
+      }))
+    },
+    [analysis],
+  )
 
   const saveRevision = useCallback(() => {
     if (!analysis || !tracking) return
-    const start = revisionStart(analysis)
+    const start = revisionMonth ?? revisionStarts(analysis).at(-1)!
     const version = versionFromDraft(start)
     const versions =
       start === analysis.current.startMonth
         ? [...tracking.versions.slice(0, -1), version]
         : [...tracking.versions, version]
     setTracking({ ...tracking, versions })
-  }, [analysis, tracking, versionFromDraft])
+  }, [analysis, tracking, versionFromDraft, revisionMonth])
 
   const endPlan = useCallback(() => setTracking(null), [])
 
@@ -268,10 +295,12 @@ export function PlanProvider({ children }: { children: ReactNode }) {
       saveReconciliation,
       deleteReconciliation,
       beginRevision,
+      revisionMonth,
+      setRevisionMonth,
       saveRevision,
       endPlan,
     }),
-    [plan, ready, result, draftResult, calcMethod, extraAmount, tracking, analysis, today, setMethod, setExtra, addDebt, updateDebt, removeDebt, addVice, updateVice, removeVice, startPlan, saveReconciliation, deleteReconciliation, beginRevision, saveRevision, endPlan],
+    [plan, ready, result, draftResult, calcMethod, extraAmount, tracking, analysis, today, setMethod, setExtra, addDebt, updateDebt, removeDebt, addVice, updateVice, removeVice, startPlan, saveReconciliation, deleteReconciliation, beginRevision, revisionMonth, setRevisionMonth, saveRevision, endPlan],
   )
 
   return <PlanContext.Provider value={value}>{children}</PlanContext.Provider>

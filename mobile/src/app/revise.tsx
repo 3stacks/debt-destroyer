@@ -2,17 +2,17 @@ import { router, Stack } from 'expo-router'
 import { Text } from 'react-native'
 import { HeaderText } from '../components/HeaderButton'
 import { PlanSetup } from '../components/PlanSetup'
-import { Body, Button, Callout, Card, Row, Screen } from '../components/ui'
+import { Body, Button, Callout, Card, Row, Screen, Segmented } from '../components/ui'
 import { getPayoffMonths, getTotalInterestPaid, money } from '../lib/metrics'
 import { usePlan } from '../lib/plan'
 import { space, useColors } from '../lib/theme'
-import { monthDiff, monthName, monthShort, revisionStart, shiftMonth } from '../lib/tracking'
+import { monthDiff, monthName, monthShort, revisionStarts, shiftMonth } from '../lib/tracking'
 
 // Revise a started plan. The draft starts at the actual balances (see
 // beginRevision). Saving adds the draft as a new plan version.
 export default function Revise() {
   const c = useColors()
-  const { analysis, draftResult, saveRevision } = usePlan()
+  const { analysis, draftResult, saveRevision, revisionMonth, setRevisionMonth } = usePlan()
 
   if (!analysis) {
     return (
@@ -22,13 +22,17 @@ export default function Revise() {
     )
   }
 
-  const start = revisionStart(analysis)
+  const starts = revisionStarts(analysis)
+  const start = revisionMonth && starts.includes(revisionMonth) ? revisionMonth : starts[starts.length - 1]
+  const redo = start === analysis.lastReconciled
   const newPayoff = draftResult.ok ? shiftMonth(start, getPayoffMonths(draftResult.schedule) - 1) : null
   const change = newPayoff && analysis.projectedPayoff ? monthDiff(analysis.projectedPayoff, newPayoff) : null
 
   const save = () => {
     saveRevision()
-    router.back()
+    // A revision of a reconciled month can add a debt to it: go to that month.
+    if (redo) router.replace({ pathname: '/reconcile/[month]', params: { month: start } })
+    else router.back()
   }
 
   return (
@@ -40,10 +44,24 @@ export default function Revise() {
           headerRight: draftResult.ok ? () => <HeaderText title="Save" bold onPress={save} /> : undefined,
         }}
       />
+      {starts.length > 1 ? (
+        <Card>
+          <Text style={{ color: c.text, fontSize: 17, fontWeight: '700' }}>Start the revision in</Text>
+          <Segmented
+            value={start}
+            options={starts.map(m => ({ value: m, label: monthName(m) }))}
+            onChange={setRevisionMonth}
+          />
+          <Body muted>
+            {redo
+              ? `${monthName(start)} is already reconciled. The revision changes it, so you can add a debt to that month. Then check the reconciliation of ${monthName(start)}.`
+              : `${monthName(start)} is the first month of the revision. ${monthName(starts[0])} stays as it is.`}
+          </Body>
+        </Card>
+      ) : null}
       <Body muted>
-        The balances are your actual balances
-        {analysis.lastReconciled ? ` after ${monthName(analysis.lastReconciled)}` : ''}. Change the debts, the method or
-        the extra amount. The revised plan starts in {monthName(start)}. Your history stays.
+        The balances are your actual balances at the start of {monthName(start)}. Change the debts, the method or the
+        extra amount. Your history stays.
       </Body>
 
       {draftResult.ok && newPayoff ? (

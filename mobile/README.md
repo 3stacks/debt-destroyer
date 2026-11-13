@@ -21,13 +21,15 @@ app does not send data to a server.
 1. Make the plan on the Plan tab.
 2. Choose the first payment month: this month or next month. Then tap **Start**. The app saves the
    plan as version 1.
-3. At the end of each month, tap **Reconcile**. Enter what you paid on each debt. Each field starts
-   at the planned amount. If the statement shows a different balance, enter that statement balance.
+3. At the end of each month, tap **Reconcile**. Enter the amount that you actually paid on each
+   debt. If you paid the planned amounts, tap **I paid the planned amounts**. If the statement shows
+   a different balance, enter that statement balance.
 4. The Plan tab then shows the difference from the plan for each month and in total. It also shows
    the payoff date for your actual payments.
-5. Tap **Revise plan** to change the plan. The revision starts from your actual balances after the
-   last reconciled month. The app keeps the earlier versions and compares the forecast with the
-   original plan.
+5. Tap **Revise plan** to change the plan. The revision starts in the last reconciled month or in
+   the next month, from your actual balances. To add a debt to a month that you reconciled, start
+   the revision in that month. The app keeps the earlier versions and compares the forecast with
+   the original plan.
 
 While a plan is active, the other tabs show the forecast from your actual balances.
 

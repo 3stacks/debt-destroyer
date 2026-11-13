@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { analyse, monthDiff, revisionStart, shiftMonth, Tracking } from './tracking'
+import { analyse, monthDiff, openingBalances, revisionStarts, shiftMonth, Tracking } from './tracking'
 
 const debts = [
   { id: 'a', name: 'Card', amount: '1000', rate: '0', repayment: '100' },
@@ -65,11 +65,11 @@ describe('analyse', () => {
   it('compares a revision with the original plan', () => {
     const t: Tracking = { versions: [v1], recs: { '2026-01': rec('2026-01', '0', '0') } }
     const a1 = analyse(t, '2026-02')!
-    expect(revisionStart(a1)).toBe('2026-02')
+    expect(revisionStarts(a1)).toEqual(['2026-01', '2026-02'])
     const v2 = {
       ...v1,
       id: 'v2',
-      startMonth: revisionStart(a1),
+      startMonth: '2026-02',
       extra: '100',
       debts: a1.forecastDebts,
     }
@@ -80,5 +80,34 @@ describe('analyse', () => {
     expect(a2.plannedPayoff).toBe('2026-11')
     expect(a2.monthsBehindOriginal).toBe(-4)
     expect(a2.rows[0].variance).toBe(-200)
+  })
+
+  it('adds a debt to a month that is already reconciled', () => {
+    const t: Tracking = {
+      versions: [v1],
+      recs: { '2026-01': rec('2026-01', '100', '100'), '2026-02': rec('2026-02', '100', '100') },
+    }
+    const a1 = analyse(t, '2026-02')!
+    expect(revisionStarts(a1)).toEqual(['2026-02', '2026-03'])
+    // A revision from February starts at the balances after January.
+    const opening = openingBalances(a1, '2026-02')
+    expect(opening).toEqual({ a: 900, b: 1900 })
+    const v2 = {
+      ...v1,
+      id: 'v2',
+      startMonth: '2026-02',
+      debts: [
+        ...v1.debts.map(d => ({ ...d, amount: String(opening[d.id]) })),
+        { id: 'c', name: 'Store card', amount: '500', rate: '0', repayment: '50' },
+      ],
+    }
+    const t2: Tracking = {
+      versions: [v1, v2],
+      recs: { ...t.recs, '2026-02': { month: '2026-02', savedAt: '', entries: { a: { paid: '100' }, b: { paid: '100' }, c: { paid: '50' } } } },
+    }
+    const a2 = analyse(t2, '2026-02')!
+    expect(a2.rows[1].version.id).toBe('v2')
+    expect(a2.balances).toEqual({ a: 800, b: 1800, c: 450 })
+    expect(a2.lastReconciled).toBe('2026-02')
   })
 })

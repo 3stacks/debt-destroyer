@@ -109,6 +109,9 @@ export interface MonthRow {
   month: string
   version: PlanVersion
   reconciled: boolean
+  // Debts of a reconciled month with no amount, for example a debt that a
+  // revision added after the month was reconciled.
+  missing: string[]
   plannedPaid: number
   actualPaid: number | null
   // Paid minus planned. A negative value means less than the plan.
@@ -124,6 +127,9 @@ export interface Analysis {
   dueMonths: string[]
   lastReconciled: string | null
   balances: Record<string, number>
+  // The balances after each reconciled month of the current version, in a row
+  // from its start.
+  balanceHistory: Record<string, Record<string, number>>
   totalPlannedPaid: number
   totalActualPaid: number
   totalVariance: number
@@ -155,6 +161,7 @@ export function analyse(t: Tracking, today: string): Analysis | null {
   let contiguous = false
   let activeVersion: PlanVersion | null = null
   let lastReconciled: string | null = null
+  const balanceHistory: Record<string, Record<string, number>> = {}
   let totalPlannedPaid = 0
   let totalActualPaid = 0
 
@@ -181,7 +188,10 @@ export function analyse(t: Tracking, today: string): Analysis | null {
       if (contiguous) {
         balances = applyMonth(v.debts, balances, rec)
         actualBalance = Object.values(balances).reduce((a, b) => a + b, 0)
-        if (v === current) lastReconciled = m
+        if (v === current) {
+          lastReconciled = m
+          balanceHistory[m] = balances
+        }
       }
     } else {
       contiguous = false
@@ -191,6 +201,7 @@ export function analyse(t: Tracking, today: string): Analysis | null {
       month: m,
       version: v,
       reconciled: !!rec,
+      missing: rec ? v.debts.filter(d => (rec.entries[d.id]?.paid ?? '').trim() === '').map(d => d.id) : [],
       plannedPaid,
       actualPaid,
       variance: actualPaid === null ? null : round2(actualPaid - plannedPaid),
@@ -232,6 +243,7 @@ export function analyse(t: Tracking, today: string): Analysis | null {
     dueMonths: rows.filter(r => r.version === current && !r.reconciled && r.month <= today).map(r => r.month),
     lastReconciled,
     balances: forecastBalances,
+    balanceHistory,
     totalPlannedPaid,
     totalActualPaid,
     totalVariance: round2(totalActualPaid - totalPlannedPaid),
@@ -246,8 +258,19 @@ export function analyse(t: Tracking, today: string): Analysis | null {
   }
 }
 
-// The month that a revision starts: the month after the last reconciled month,
-// or the start of the current version when nothing is reconciled.
-export function revisionStart(a: Analysis): string {
-  return a.lastReconciled ? shiftMonth(a.lastReconciled, 1) : a.current.startMonth
+// The months that a revision can start in. After a reconciled month, the
+// revision can start in that month (to add a debt to it, for example) or in
+// the next month. With no reconciled month, it replaces the current version.
+export function revisionStarts(a: Analysis): string[] {
+  if (!a.lastReconciled) return [a.current.startMonth]
+  return [a.lastReconciled, shiftMonth(a.lastReconciled, 1)]
+}
+
+// The balances at the start of a revision: the actual balances after the month
+// before it.
+export function openingBalances(a: Analysis, start: string): Record<string, number> {
+  if (start <= a.current.startMonth) {
+    return Object.fromEntries(a.current.debts.map(d => [d.id, Math.max(0, num(d.amount) || 0)]))
+  }
+  return a.balanceHistory[shiftMonth(start, -1)] ?? a.balances
 }

@@ -23,12 +23,9 @@ export default function ReconcileSheet() {
   }, [version, month])
   const existing = tracking?.recs[month]
 
-  const [entries, setEntries] = useState<Record<string, DebtEntry>>(() => {
-    if (existing) return existing.entries
-    return Object.fromEntries(
-      (version?.debts ?? []).map(d => [d.id, { paid: (planned[d.id]?.paid ?? 0).toFixed(2) }]),
-    )
-  })
+  // The paid fields start empty, so that the user enters the real amounts. A
+  // saved month shows its amounts. A debt that a revision added to it is empty.
+  const [entries, setEntries] = useState<Record<string, DebtEntry>>(() => existing?.entries ?? {})
 
   if (!tracking || !version) {
     return (
@@ -45,7 +42,22 @@ export default function ReconcileSheet() {
   const paidTotal = version.debts.reduce((a, d) => a + (Number(entries[d.id]?.paid) || 0), 0)
   const variance = paidTotal - plannedTotal
 
+  const missing = version.debts.filter(d => (entries[d.id]?.paid ?? '').trim() === '')
+  const fillPlanned = () =>
+    setEntries(e =>
+      Object.fromEntries(
+        version.debts.map(d => [d.id, { ...e[d.id], paid: (planned[d.id]?.paid ?? 0).toFixed(2) }]),
+      ),
+    )
+
   const save = () => {
+    if (missing.length > 0) {
+      Alert.alert(
+        'Enter what you paid',
+        `Enter the amount that you actually paid on ${missing.map(d => d.name || 'each debt').join(', ')}. Enter 0 if you paid nothing.`,
+      )
+      return
+    }
     saveReconciliation(month, entries)
     router.back()
   }
@@ -72,31 +84,34 @@ export default function ReconcileSheet() {
           headerRight: () => <HeaderText title="Save" bold onPress={save} />,
         }}
       />
-      <Body muted>
-        Enter what you paid on each debt in {monthName(month)}. Each field starts at the planned amount.
+      <Body>
+        How much did you actually pay on each debt in {monthName(month)}? Check your bank or your statements, and enter the
+        real amounts.
       </Body>
+      <Button title="I paid the planned amounts" variant="secondary" onPress={fillPlanned} />
 
       {version.debts.map(d => {
         const p = planned[d.id]
         const entry = entries[d.id] ?? { paid: '' }
+        const empty = entry.paid.trim() === ''
         return (
           <Card key={d.id}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: space.md }}>
               <Text style={{ color: c.text, fontSize: 17, fontWeight: '600', flex: 1 }} numberOfLines={1}>
                 {d.name || 'Unnamed debt'}
               </Text>
-              <Text style={{ color: c.muted, fontSize: 15 }}>Plan: ${(p?.paid ?? 0).toFixed(2)}</Text>
+              <Text style={{ color: c.muted, fontSize: 15 }}>Planned: ${(p?.paid ?? 0).toFixed(2)}</Text>
             </View>
-            <View style={{ flexDirection: 'row', gap: space.md }}>
+            <View style={{ flexDirection: 'row', gap: space.md, alignItems: 'flex-start' }}>
               <View style={{ flex: 1 }}>
                 <Field
-                  label="Paid"
+                  label="Actually paid"
                   prefix="$"
                   value={entry.paid}
-                  placeholder="0"
+                  placeholder="Amount"
                   keyboardType="decimal-pad"
-                  selectTextOnFocus
                   onChangeText={v => set(d.id, { paid: clean(v) })}
+                  hint={empty ? 'Enter 0 if you paid nothing' : undefined}
                 />
               </View>
               <View style={{ flex: 1 }}>
@@ -116,7 +131,7 @@ export default function ReconcileSheet() {
 
       <Card style={{ gap: space.sm }}>
         <Row label="Planned" value={money(plannedTotal)} />
-        <Row label="Paid" value={money(paidTotal)} />
+        <Row label="Actually paid" value={missing.length > 0 ? `${money(paidTotal)} so far` : money(paidTotal)} />
         <Divider />
         <Row
           label={variance < 0 ? 'Under the plan' : 'Over the plan'}

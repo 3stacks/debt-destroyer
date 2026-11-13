@@ -11,4 +11,4 @@ export const APP_STORE_URL = process.env.NEXT_PUBLIC_APP_STORE_URL?.trim() ?? ''
 export const PLAY_STORE_URL = process.env.NEXT_PUBLIC_PLAY_STORE_URL?.trim() ?? ''
 
 /** The public address of the site, for canonical URLs and the sitemap. */
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://debt-destroyer.pages.dev').replace(/\/+$/, '')
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://debtdestroyer.app').replace(/\/+$/, '')

@@ -21,6 +21,7 @@ export const metadata: Metadata = {
   description:
     'Plan your debt payoff with the snowball or avalanche method, see your debt-free date, and track each month against the plan. Free on the web, iPhone and Android.',
   icons: { icon: '/icon.png', apple: '/icon.png' },
+  alternates: { canonical: '/' },
 }
 
 // The web app was at the root before the homepage. An old shared link such as

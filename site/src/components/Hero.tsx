@@ -9,12 +9,15 @@ function Quote() {
     <figure className="relative mx-auto max-w-md text-center lg:mx-0 lg:text-left">
       <blockquote>
         <p className="font-display text-xl font-medium text-slate-900">
-          “The rich ruleth over the poor, and the borrower is servant to the
-          lender.”
+          Pay the minimum on each debt. Put every extra dollar on one debt.
+          When you pay off that debt, add its payment to the next.
         </p>
       </blockquote>
       <figcaption className="mt-2 text-sm text-slate-500">
-        <strong className="font-semibold text-brand-600">Proverbs 22:7</strong>
+        <strong className="font-semibold text-brand-600">
+          The snowball and avalanche methods
+        </strong>{' '}
+        in three steps
       </figcaption>
     </figure>
   )

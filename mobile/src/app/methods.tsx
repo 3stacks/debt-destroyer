@@ -15,7 +15,7 @@ function Link({ href, children }: { href: string; children: string }) {
 export default function Methods() {
   const c = useColors()
   return (
-    <ScrollView style={{ backgroundColor: c.bg }} contentContainerStyle={{ padding: space.lg, gap: space.md }}>
+    <ScrollView style={{ backgroundColor: c.bg }} contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ padding: space.lg, gap: space.md }}>
       <Card>
         <Body>
           <Em color={c.text}>Snowball</Em> sorts debts from the lowest to the highest balance.

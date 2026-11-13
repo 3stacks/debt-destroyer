@@ -71,7 +71,9 @@ export default function DebtSheet() {
     <ScrollView
       style={{ flex: 1, backgroundColor: c.bg }}
       contentContainerStyle={{ padding: space.lg, gap: space.lg }}
-      keyboardShouldPersistTaps="handled">
+      keyboardShouldPersistTaps="handled"
+      contentInsetAdjustmentBehavior="automatic"
+      automaticallyAdjustKeyboardInsets>
       <Stack.Screen
         options={{
           title: isNew ? 'New debt' : debt.name || 'Debt',

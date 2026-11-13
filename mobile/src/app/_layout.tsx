@@ -27,11 +27,10 @@ function Root() {
           contentStyle: { backgroundColor: c.bg },
         }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="debt/[id]"
-          options={{ presentation: 'formSheet', title: 'Debt', sheetAllowedDetents: [0.75, 1], sheetGrabberVisible: true }}
-        />
-        <Stack.Screen name="methods" options={{ presentation: 'formSheet', title: 'Payoff methods', sheetGrabberVisible: true, sheetAllowedDetents: [0.6, 1] }} />
+        {/* Full-height modals: a part-height form sheet does not scroll its content on iOS, so the keyboard
+            and the header hid the first field. */}
+        <Stack.Screen name="debt/[id]" options={{ presentation: 'modal', title: 'Debt' }} />
+        <Stack.Screen name="methods" options={{ presentation: 'modal', title: 'Payoff methods' }} />
         <Stack.Screen name="about" options={{ presentation: 'modal', title: 'About' }} />
         <Stack.Screen name="reconcile/[month]" options={{ presentation: 'modal', title: 'Reconcile' }} />
         <Stack.Screen name="revise" options={{ presentation: 'modal', title: 'Revise plan' }} />

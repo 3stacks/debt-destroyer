@@ -67,6 +67,8 @@ export default function ReconcileSheet() {
       style={{ flex: 1, backgroundColor: c.bg }}
       contentContainerStyle={{ padding: space.lg, gap: space.lg }}
       keyboardShouldPersistTaps="handled"
+      contentInsetAdjustmentBehavior="automatic"
+      automaticallyAdjustKeyboardInsets
       keyboardDismissMode="interactive">
       <Stack.Screen
         options={{

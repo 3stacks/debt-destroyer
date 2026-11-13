@@ -127,7 +127,20 @@ export default function DebtSheet() {
         <Button small variant="secondary" title={`Use $${suggested.toFixed(2)}`} onPress={() => set({ repayment: suggested.toFixed(2) })} />
       ) : null}
       <View style={{ height: space.md }} />
-      <Button title="Delete debt" variant="destructive" onPress={confirmDelete} />
+      {/* A visible button: the header button is easy to miss, and Android can hide it. */}
+      <Button title={isNew ? 'Add debt' : 'Done'} onPress={() => router.back()} />
+      {isNew ? (
+        <Button
+          title="Discard"
+          variant="destructive"
+          onPress={() => {
+            removeDebt(debt.id)
+            router.back()
+          }}
+        />
+      ) : (
+        <Button title="Delete debt" variant="destructive" onPress={confirmDelete} />
+      )}
     </ScrollView>
   )
 }

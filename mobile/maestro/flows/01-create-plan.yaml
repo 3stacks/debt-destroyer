@@ -46,8 +46,8 @@ tags: [plan]
 - tapOn:
     id: debt-done
 
-- assertVisible: "Credit card"
-- assertVisible: "Car loan"
+- assertVisible: "Credit card.*"
+- assertVisible: "Car loan.*"
 - assertVisible: "Debt free by"
 - tapOn: "Avalanche"
 

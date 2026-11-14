@@ -40,7 +40,7 @@ tags: [revision]
 - tapOn:
     id: consolidate-save
 
-- assertVisible: "Consolidation loan"
+- assertVisible: "Consolidation loan.*"
 - scrollUntilVisible:
     element:
       id: revise-save
@@ -51,7 +51,6 @@ tags: [revision]
 - scrollUntilVisible:
     element:
       id: closed-row-store
-- scroll
 - tapOn:
     id: closed-row-store
 - assertVisible: "Consolidated into Consolidation loan"

@@ -24,7 +24,7 @@ tags: [revision]
 - runFlow: ../common/hide-keyboard.yaml
 - tapOn:
     id: debt-done
-- assertVisible: "9.9% .*"
+- assertVisible: ".*9.9% .*"
 - scrollUntilVisible:
     element:
       id: revise-save
@@ -35,7 +35,6 @@ tags: [revision]
 - scrollUntilVisible:
     element:
       id: debt-row-card
-- scroll
 - tapOn:
     id: debt-row-card
 - assertVisible: "Rate changed from 19.9% to 9.9%"

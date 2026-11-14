@@ -28,6 +28,10 @@ A scenario also fixes the clock to November 2026, so the month names in the flow
 The seed link works only in a test build, which has `EXPO_PUBLIC_E2E=1`. In a store build, the link
 shows a message and changes nothing.
 
+On iOS, `common/seed.yaml` does not use the link. iOS asks before it opens a link in the app, and
+the question comes at a different time on each run. Maestro starts the app with the launch argument
+`e2eScenario` instead. `src/app/_layout.tsx` reads it from the user defaults in a test build.
+
 `src/e2e/scenarios.test.ts` checks the facts that the flows need, for example "November is due".
 
 ## Watch the flows on your devices

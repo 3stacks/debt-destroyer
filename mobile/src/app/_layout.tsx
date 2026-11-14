@@ -1,19 +1,38 @@
 import { Stack } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { Platform, Settings } from 'react-native'
+import { SCENARIOS, TODAY } from '../e2e/scenarios'
+import { E2E } from '../lib/clock'
 import { PlanProvider, usePlan } from '../lib/plan'
 import { useColors } from '../lib/theme'
 
 SplashScreen.preventAutoHideAsync().catch(() => {})
 
+// The end-to-end tests on iOS start the app with the launch argument
+// "-e2eScenario <name>", and iOS puts it in the user defaults. The seed link
+// (e2e/seed) works too, but iOS asks the user before it opens a link, and that
+// question comes at a different time on each run.
+const launchScenario: string | undefined =
+  E2E && Platform.OS === 'ios' ? (Settings.get('e2eScenario') ?? undefined) : undefined
+
 function Root() {
   const c = useColors()
-  const { ready } = usePlan()
+  const { ready, loadScenario } = usePlan()
+  const [seeded, setSeeded] = useState(!launchScenario)
+  // Load the scenario after the app reads its saved state. Otherwise that read
+  // can end later, and replace the scenario.
   useEffect(() => {
-    if (ready) SplashScreen.hideAsync().catch(() => {})
-  }, [ready])
-  if (!ready) return null
+    if (!ready || seeded || !launchScenario) return
+    const make = SCENARIOS[launchScenario]
+    if (make) loadScenario(make(), TODAY)
+    setSeeded(true)
+  }, [ready, seeded, loadScenario])
+  useEffect(() => {
+    if (ready && seeded) SplashScreen.hideAsync().catch(() => {})
+  }, [ready, seeded])
+  if (!ready || !seeded) return null
 
   return (
     <>

@@ -136,6 +136,10 @@ async function run(page, steps, env, dir, dialogs, log) {
         if (el !== 'dialog') await el.scrollIntoViewIfNeeded()
         break
       }
+      case 'scroll':
+        // On iOS, this lifts an element above the floating tab bar. The web
+        // build has no tab bar over the page, so do nothing.
+        break
       case 'assertVisible':
         await waitVisible(page, arg, STEP_TIMEOUT, dialogs)
         break

@@ -52,7 +52,6 @@ tags: [plan]
 - tapOn: "Avalanche"
 
 - scrollUntilVisible:
-    centerElement: true
     element:
       id: plan-extra
 - tapOn:
@@ -61,7 +60,6 @@ tags: [plan]
 - runFlow: ../common/hide-keyboard.yaml
 
 - scrollUntilVisible:
-    centerElement: true
     element:
       id: plan-start
 - assertVisible: "Start in November 2026"

@@ -20,21 +20,25 @@ import { Colors, radius, space, useColors } from '../lib/theme'
 // A scrolling screen that keeps the focused field above the keyboard. Android
 // apps are edge to edge, so the window does not shrink for the keyboard: pad
 // the screen by the keyboard height instead. iOS adjusts the scroll insets.
+// On iOS, the ScrollView must be the first view of the screen. If it is not,
+// the large title does not collapse, and it covers the content.
 export function Screen({ children }: { children: ReactNode }) {
   const c = useColors()
-  return (
-    <KeyboardAvoidingView
+  const scroll = (
+    <ScrollView
       style={{ flex: 1, backgroundColor: c.bg }}
-      behavior={Platform.OS === 'android' ? 'padding' : undefined}>
-      <ScrollView
-        style={{ flex: 1, backgroundColor: c.bg }}
-        contentInsetAdjustmentBehavior="automatic"
-        automaticallyAdjustKeyboardInsets
-        keyboardDismissMode="interactive"
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.screen}>
-        {children}
-      </ScrollView>
+      contentInsetAdjustmentBehavior="automatic"
+      automaticallyAdjustKeyboardInsets
+      keyboardDismissMode="interactive"
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={styles.screen}>
+      {children}
+    </ScrollView>
+  )
+  if (Platform.OS === 'ios') return scroll
+  return (
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: c.bg }} behavior={Platform.OS === 'android' ? 'padding' : undefined}>
+      {scroll}
     </KeyboardAvoidingView>
   )
 }

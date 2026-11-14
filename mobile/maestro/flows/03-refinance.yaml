@@ -7,9 +7,9 @@ tags: [revision]
     env:
       SCENARIO: three-months
 - scrollUntilVisible:
-    centerElement: true
     element:
       id: track-revise
+- scroll
 - tapOn:
     id: track-revise
 - assertVisible: "Start the revision in"
@@ -26,7 +26,6 @@ tags: [revision]
     id: debt-done
 - assertVisible: "9.9% .*"
 - scrollUntilVisible:
-    centerElement: true
     element:
       id: revise-save
 - tapOn:
@@ -34,15 +33,14 @@ tags: [revision]
 
 # The debt shows the new rate, and the months before the revision.
 - scrollUntilVisible:
-    centerElement: true
     element:
       id: debt-row-card
+- scroll
 - tapOn:
     id: debt-row-card
 - assertVisible: "Rate changed from 19.9% to 9.9%"
 - assertVisible: "9.9%"
 - scrollUntilVisible:
-    centerElement: true
     element:
-      text: "Paid .* of .* planned"
+      text: ".*Paid .* of .* planned.*"
 - takeScreenshot: 03-refinanced

@@ -46,9 +46,14 @@ the workflows of Hearers:
 Add the secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` to the repository. The token
 needs the permission Account > Cloudflare Pages > Edit.
 
+The Pages project is also connected to the repository in Cloudflare. That build runs
+`npm run build` and publishes `dist/`. In that build, `scripts/cf-pages.mjs` puts the full site in
+`dist/`, so the two deploys publish the same files.
+
 Analytics goes through a proxy in `functions/`. Set `ANALYTICS_FORWARDING_URL` and
-`ANALYTICS_WEBSITE_ID` in the Pages project to turn it on. Add a custom domain to
-`ANALYTICS_HOSTS`.
+`ANALYTICS_WEBSITE_ID` in the Pages project to turn it on. The proxy counts `debtdestroyer.app`
+and `debt-destroyer.pages.dev`. Add another domain to `ANALYTICS_HOSTS`. The phone app sends its
+usage counts to the same proxy (see `mobile/README.md`).
 
 ## Licence
 

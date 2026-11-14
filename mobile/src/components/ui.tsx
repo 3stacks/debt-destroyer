@@ -1,5 +1,7 @@
-import { ReactNode } from 'react'
+import { ReactNode, useId } from 'react'
 import {
+  InputAccessoryView,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -18,21 +20,25 @@ import { Colors, radius, space, useColors } from '../lib/theme'
 // A scrolling screen that keeps the focused field above the keyboard. Android
 // apps are edge to edge, so the window does not shrink for the keyboard: pad
 // the screen by the keyboard height instead. iOS adjusts the scroll insets.
+// On iOS, the ScrollView must be the first view of the screen. If it is not,
+// the large title does not collapse, and it covers the content.
 export function Screen({ children }: { children: ReactNode }) {
   const c = useColors()
-  return (
-    <KeyboardAvoidingView
+  const scroll = (
+    <ScrollView
       style={{ flex: 1, backgroundColor: c.bg }}
-      behavior={Platform.OS === 'android' ? 'padding' : undefined}>
-      <ScrollView
-        style={{ flex: 1, backgroundColor: c.bg }}
-        contentInsetAdjustmentBehavior="automatic"
-        automaticallyAdjustKeyboardInsets
-        keyboardDismissMode="interactive"
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.screen}>
-        {children}
-      </ScrollView>
+      contentInsetAdjustmentBehavior="automatic"
+      automaticallyAdjustKeyboardInsets
+      keyboardDismissMode="interactive"
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={styles.screen}>
+      {children}
+    </ScrollView>
+  )
+  if (Platform.OS === 'ios') return scroll
+  return (
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: c.bg }} behavior={Platform.OS === 'android' ? 'padding' : undefined}>
+      {scroll}
     </KeyboardAvoidingView>
   )
 }
@@ -159,6 +165,10 @@ export function Field({
   ...input
 }: TextInputProps & { label: string; prefix?: string; suffix?: string; error?: string; hint?: string }) {
   const c = useColors()
+  // The iOS number pads have no Return key. Put a Done key above them, so that
+  // the user can close the keyboard.
+  const accessoryID = `field-${useId()}`
+  const numberPad = Platform.OS === 'ios' && /pad$/.test(input.keyboardType ?? '')
   return (
     <View style={styles.field}>
       <Text style={[styles.fieldLabel, { color: c.muted }]}>{label}</Text>
@@ -171,8 +181,18 @@ export function Field({
         <TextInput
           placeholderTextColor={c.muted}
           style={[styles.input, { color: c.text }]}
+          inputAccessoryViewID={numberPad ? accessoryID : undefined}
           {...input}
         />
+        {numberPad ? (
+          <InputAccessoryView nativeID={accessoryID}>
+            <View style={[styles.keyboardBar, { backgroundColor: c.surface2, borderColor: c.line }]}>
+              <Pressable onPress={Keyboard.dismiss} hitSlop={8} accessibilityRole="button" testID="keyboard-done">
+                <Text style={[styles.keyboardDone, { color: c.info }]}>Done</Text>
+              </Pressable>
+            </View>
+          </InputAccessoryView>
+        ) : null}
         {suffix ? <Text style={[styles.affix, { color: c.muted }]}>{suffix}</Text> : null}
       </View>
       {error ? (
@@ -295,6 +315,14 @@ const styles = StyleSheet.create({
   input: { flex: 1, fontSize: 17, paddingVertical: space.sm },
   affix: { fontSize: 17 },
   fieldHint: { fontSize: 12 },
+  keyboardBar: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: space.lg,
+    paddingVertical: space.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  keyboardDone: { fontSize: 17, fontWeight: '600' },
   button: {
     borderRadius: radius.md,
     paddingVertical: 13,

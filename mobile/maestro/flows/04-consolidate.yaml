@@ -9,6 +9,7 @@ tags: [revision]
 - scrollUntilVisible:
     element:
       id: track-revise
+- scroll
 - tapOn:
     id: track-revise
 - scrollUntilVisible:
@@ -24,17 +25,22 @@ tags: [revision]
 - tapOn:
     id: consolidate-rate
 - inputText: "9.9"
+# On a phone, the keyboard covers the next field.
+- runFlow: ../common/hide-keyboard.yaml
+- scrollUntilVisible:
+    element:
+      id: consolidate-repayment
 - tapOn:
     id: consolidate-repayment
 - inputText: "220"
-- hideKeyboard
+- runFlow: ../common/hide-keyboard.yaml
 - scrollUntilVisible:
     element:
       id: consolidate-save
 - tapOn:
     id: consolidate-save
 
-- assertVisible: "Consolidation loan"
+- assertVisible: "Consolidation loan.*"
 - scrollUntilVisible:
     element:
       id: revise-save

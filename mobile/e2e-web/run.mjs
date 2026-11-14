@@ -97,7 +97,14 @@ async function run(page, steps, env, dir, dialogs, log) {
         await page.waitForTimeout(900)
         break
       case 'runFlow': {
-        const file = resolve(dir, arg.file)
+        // A condition, for example an iOS system question. Skip the flow if it is not met.
+        if (arg.when?.platform !== undefined && arg.when.platform !== 'Web') break
+        if (arg.when?.visible !== undefined && !(await visible(page, arg.when.visible))) break
+        if (arg.commands) {
+          await run(page, arg.commands, { ...env, ...(arg.env ?? {}) }, dir, dialogs, log)
+          break
+        }
+        const file = resolve(dir, typeof arg === 'string' ? arg : arg.file)
         const sub = loadFlow(file)
         await run(page, sub.steps, { ...env, ...(arg.env ?? {}) }, dirname(file), dialogs, log)
         break
@@ -129,6 +136,10 @@ async function run(page, steps, env, dir, dialogs, log) {
         if (el !== 'dialog') await el.scrollIntoViewIfNeeded()
         break
       }
+      case 'scroll':
+        // On iOS, this lifts an element above the floating tab bar. The web
+        // build has no tab bar over the page, so do nothing.
+        break
       case 'assertVisible':
         await waitVisible(page, arg, STEP_TIMEOUT, dialogs)
         break

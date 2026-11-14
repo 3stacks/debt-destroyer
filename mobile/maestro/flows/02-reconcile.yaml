@@ -31,7 +31,7 @@ tags: [tracking]
     id: paid-car
 - eraseText
 - inputText: "200"
-- hideKeyboard
+- runFlow: ../common/hide-keyboard.yaml
 - assertVisible: "Under the plan"
 - scrollUntilVisible:
     element:
@@ -41,7 +41,11 @@ tags: [tracking]
 
 - scrollUntilVisible:
     element:
-      text: "November 2026"
-- assertVisible: "Paid .* of .* planned"
-- assertVisible: "Under the plan"
+      text: "November 2026.*"
+- assertVisible: ".*Paid .* of .* planned.*"
+# The totals are at the top. On a phone, the list scrolls them off the screen.
+- scrollUntilVisible:
+    element:
+      text: "Under the plan"
+    direction: UP
 - takeScreenshot: 02-reconciled

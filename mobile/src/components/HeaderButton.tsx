@@ -8,15 +8,17 @@ export function HeaderIcon({
   ios,
   android,
   label,
+  testID,
 }: {
   onPress: () => void
   ios: 'info.circle' | 'plus'
   android: 'info' | 'add'
   label: string
+  testID?: string
 }) {
   const c = useColors()
   return (
-    <Pressable onPress={onPress} hitSlop={10} accessibilityRole="button" accessibilityLabel={label}>
+    <Pressable onPress={onPress} hitSlop={10} accessibilityRole="button" accessibilityLabel={label} testID={testID}>
       <SymbolView name={{ ios, android, web: android }} tintColor={c.accent} size={24} />
     </Pressable>
   )

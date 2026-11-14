@@ -9,6 +9,7 @@ tags: [revision]
 - scrollUntilVisible:
     element:
       id: track-revise
+- scroll
 - tapOn:
     id: track-revise
 - assertVisible: "November 2026 is already reconciled.*"
@@ -30,7 +31,7 @@ tags: [revision]
 - tapOn:
     id: debt-repayment
 - inputText: "50"
-- hideKeyboard
+- runFlow: ../common/hide-keyboard.yaml
 - tapOn:
     id: debt-done
 - scrollUntilVisible:
@@ -40,7 +41,7 @@ tags: [revision]
     id: revise-save
 
 # The reconciliation of November opens, with the new debt in it.
-- assertVisible: "Pay later"
+- assertVisible: "Pay later.*"
 - tapOn:
     id: reconcile-planned
 - scrollUntilVisible:
@@ -49,5 +50,5 @@ tags: [revision]
 - tapOn:
     id: reconcile-save
 - assertNotVisible: "A debt has no amount.*"
-- assertVisible: "Pay later"
+- assertVisible: "Pay later.*"
 - takeScreenshot: 05-debt-added

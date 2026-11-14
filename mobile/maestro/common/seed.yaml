@@ -2,7 +2,41 @@
 # Each scenario also fixes the clock to November 2026.
 appId: ${APP_ID}
 ---
-- launchApp:
-    stopApp: true
-- openLink: ${LINK}e2e/seed?scenario=${SCENARIO}
+# iOS: give the scenario as a launch argument. A link does not work well on
+# iOS: iOS asks before it opens the link, and the question comes at a
+# different time on each run.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - launchApp:
+          stopApp: true
+          arguments:
+            e2eScenario: ${SCENARIO}
+      - extendedWaitUntil:
+          visible: { id: about-button }
+          timeout: 30000
+# Android and the web: open the seed link. Wait for the first screen before
+# the link. On Android, a link that comes before the app loads its
+# JavaScript is lost.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - launchApp:
+          stopApp: true
+      - extendedWaitUntil:
+          visible: { id: about-button }
+          timeout: 30000
+      - openLink: ${LINK}e2e/seed?scenario=${SCENARIO}
+- runFlow:
+    when:
+      platform: Web
+    commands:
+      - launchApp:
+          stopApp: true
+      - extendedWaitUntil:
+          visible: { id: about-button }
+          timeout: 30000
+      - openLink: ${LINK}e2e/seed?scenario=${SCENARIO}
 - waitForAnimationToEnd

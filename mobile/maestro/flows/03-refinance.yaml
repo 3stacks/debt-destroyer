@@ -9,6 +9,7 @@ tags: [revision]
 - scrollUntilVisible:
     element:
       id: track-revise
+- scroll
 - tapOn:
     id: track-revise
 - assertVisible: "Start the revision in"
@@ -20,10 +21,10 @@ tags: [revision]
     id: debt-rate
 - eraseText
 - inputText: "9.9"
-- hideKeyboard
+- runFlow: ../common/hide-keyboard.yaml
 - tapOn:
     id: debt-done
-- assertVisible: "9.9% .*"
+- assertVisible: ".*9.9% .*"
 - scrollUntilVisible:
     element:
       id: revise-save
@@ -40,5 +41,5 @@ tags: [revision]
 - assertVisible: "9.9%"
 - scrollUntilVisible:
     element:
-      text: "Paid .* of .* planned"
+      text: ".*Paid .* of .* planned.*"
 - takeScreenshot: 03-refinanced

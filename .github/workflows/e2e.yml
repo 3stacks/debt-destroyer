@@ -89,7 +89,11 @@ jobs:
           profile: pixel_7
           disable-animations: true
           working-directory: mobile
+          # A slow emulator can show "Pixel Launcher isn't responding" over the
+          # app. Hide such dialogs, so that Maestro sees the app.
           script: |
+            adb shell settings put global hide_error_dialogs 1
+            adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS
             adb install android/app/build/outputs/apk/release/app-release.apk
             maestro test -e APP_ID=$APP_ID -e LINK=debtdestroyer:// --format junit --output maestro-output/android.xml --test-output-dir maestro-output/android maestro
       - uses: actions/upload-artifact@v4
@@ -100,7 +104,8 @@ jobs:
 
   ios:
     needs: web
-    runs-on: macos-15
+    # Expo SDK 58 builds with Xcode 27, which macos-15 does not have.
+    runs-on: macos-26
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
@@ -113,6 +118,13 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+      # The default Xcode of the runner can be older than the newest one.
+      - name: Use the newest Xcode
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_*.app | grep -vi beta | sort -V | tail -1)
+          echo "Using $XCODE"
+          sudo xcode-select -s "$XCODE"
+          xcrun swift --version
       - run: npm ci
       - run: npx expo prebuild --platform ios
       - name: Build the release app for the simulator
@@ -134,6 +146,9 @@ jobs:
           curl -fsSL "https://get.maestro.mobile.dev" | bash
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
       - name: Run the flows on the iOS simulator
+        env:
+          # The default start time of the iOS driver is too short for a slow runner.
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: '240000'
         run: maestro --device "$UDID" test -e APP_ID=$APP_ID -e LINK=debtdestroyer:// --format junit --output maestro-output/ios.xml --test-output-dir maestro-output/ios maestro
       - uses: actions/upload-artifact@v4
         if: always()

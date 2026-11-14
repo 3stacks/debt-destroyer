@@ -76,7 +76,7 @@ export function TrackView({ analysis: a }: { analysis: Analysis }) {
         options={{
           headerRight: () => (
             <HeaderActions>
-              <HeaderIcon onPress={() => router.push('/about')} ios="info.circle" android="info" label="About" />
+              <HeaderIcon onPress={() => router.push('/about')} ios="info.circle" android="info" label="About" testID="about-button" />
             </HeaderActions>
           ),
         }}

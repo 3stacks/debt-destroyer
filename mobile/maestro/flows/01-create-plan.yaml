@@ -23,7 +23,7 @@ tags: [plan]
 - tapOn:
     id: debt-repayment
 - inputText: "150"
-- hideKeyboard
+- runFlow: ../common/hide-keyboard.yaml
 - tapOn:
     id: debt-done
 
@@ -42,12 +42,12 @@ tags: [plan]
 - tapOn:
     id: debt-repayment
 - inputText: "320"
-- hideKeyboard
+- runFlow: ../common/hide-keyboard.yaml
 - tapOn:
     id: debt-done
 
-- assertVisible: "Credit card"
-- assertVisible: "Car loan"
+- assertVisible: "Credit card.*"
+- assertVisible: "Car loan.*"
 - assertVisible: "Debt free by"
 - tapOn: "Avalanche"
 
@@ -57,7 +57,7 @@ tags: [plan]
 - tapOn:
     id: plan-extra
 - inputText: "200"
-- hideKeyboard
+- runFlow: ../common/hide-keyboard.yaml
 
 - scrollUntilVisible:
     element:

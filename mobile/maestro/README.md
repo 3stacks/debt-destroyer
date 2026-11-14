@@ -14,6 +14,7 @@ same flows on both platforms.
 | `06-countdown` | Show the countdown near the end of the plan |
 | `07-payoff-journey` | Finish the plan, play the journey and share it |
 | `08-creator-share` | Make a share card, and a clean replay for a screen recording |
+| `09-your-data` | Show the backup and restore actions |
 
 ## Scenarios
 
@@ -26,6 +27,10 @@ debtdestroyer://e2e/seed?scenario=three-months
 A scenario also fixes the clock to November 2026, so the month names in the flows never change.
 The seed link works only in a test build, which has `EXPO_PUBLIC_E2E=1`. In a store build, the link
 shows a message and changes nothing.
+
+On iOS, `common/seed.yaml` does not use the link. iOS asks before it opens a link in the app, and
+the question comes at a different time on each run. Maestro starts the app with the launch argument
+`e2eScenario` instead. `src/app/_layout.tsx` reads it from the user defaults in a test build.
 
 `src/e2e/scenarios.test.ts` checks the facts that the flows need, for example "November is due".
 
@@ -84,3 +89,11 @@ JUnit report.
 - A section header shows in capital letters. Find the row below it by its `testID`.
 - Start with `runFlow: ../common/seed.yaml` and a scenario. Add a scenario to
   `src/e2e/scenarios.ts` if no scenario fits.
+- On iOS, the floating tab bar covers the bottom of a tab screen. An element under the tab bar is
+  "visible", but a tap on it opens a tab. On a tab screen, add `scroll` after `scrollUntilVisible`
+  and before the tap. Do not use `centerElement`. It fails for an element near the end of the page.
+- On iOS, a row that you can tap is one element. Its text is the text of all the parts of the row.
+  To find a row by its text, put `.*` after the text.
+- Close the keyboard with `runFlow: ../common/hide-keyboard.yaml`, not with `hideKeyboard`. The iOS
+  number pad has no Return key, so `hideKeyboard` fails on iOS. The subflow taps the `Done` key
+  above the number pad.

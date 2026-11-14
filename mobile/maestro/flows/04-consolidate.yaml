@@ -7,11 +7,13 @@ tags: [revision]
     env:
       SCENARIO: three-months
 - scrollUntilVisible:
+    centerElement: true
     element:
       id: track-revise
 - tapOn:
     id: track-revise
 - scrollUntilVisible:
+    centerElement: true
     element:
       id: revise-consolidate
 - tapOn:
@@ -25,15 +27,17 @@ tags: [revision]
     id: consolidate-rate
 - inputText: "9.9"
 # On a phone, the keyboard covers the next field.
-- hideKeyboard
+- runFlow: ../common/hide-keyboard.yaml
 - scrollUntilVisible:
+    centerElement: true
     element:
       id: consolidate-repayment
 - tapOn:
     id: consolidate-repayment
 - inputText: "220"
-- hideKeyboard
+- runFlow: ../common/hide-keyboard.yaml
 - scrollUntilVisible:
+    centerElement: true
     element:
       id: consolidate-save
 - tapOn:
@@ -41,6 +45,7 @@ tags: [revision]
 
 - assertVisible: "Consolidation loan"
 - scrollUntilVisible:
+    centerElement: true
     element:
       id: revise-save
 - tapOn:
@@ -48,6 +53,7 @@ tags: [revision]
 
 # The old debts keep their history, and link to the new loan.
 - scrollUntilVisible:
+    centerElement: true
     element:
       id: closed-row-store
 - tapOn:

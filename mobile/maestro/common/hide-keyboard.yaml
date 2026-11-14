@@ -1,0 +1,21 @@
+# Close the keyboard. The iOS number pad has no Return key, so the hideKeyboard
+# command fails on iOS. Tap the Done key above the number pad instead.
+appId: ${APP_ID}
+---
+- runFlow:
+    when:
+      visible:
+        id: keyboard-done
+    commands:
+      - tapOn:
+          id: keyboard-done
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
+- runFlow:
+    when:
+      platform: Web
+    commands:
+      - hideKeyboard

@@ -1,5 +1,7 @@
-import { ReactNode } from 'react'
+import { ReactNode, useId } from 'react'
 import {
+  InputAccessoryView,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -159,6 +161,10 @@ export function Field({
   ...input
 }: TextInputProps & { label: string; prefix?: string; suffix?: string; error?: string; hint?: string }) {
   const c = useColors()
+  // The iOS number pads have no Return key. Put a Done key above them, so that
+  // the user can close the keyboard.
+  const accessoryID = `field-${useId()}`
+  const numberPad = Platform.OS === 'ios' && /pad$/.test(input.keyboardType ?? '')
   return (
     <View style={styles.field}>
       <Text style={[styles.fieldLabel, { color: c.muted }]}>{label}</Text>
@@ -171,8 +177,18 @@ export function Field({
         <TextInput
           placeholderTextColor={c.muted}
           style={[styles.input, { color: c.text }]}
+          inputAccessoryViewID={numberPad ? accessoryID : undefined}
           {...input}
         />
+        {numberPad ? (
+          <InputAccessoryView nativeID={accessoryID}>
+            <View style={[styles.keyboardBar, { backgroundColor: c.surface2, borderColor: c.line }]}>
+              <Pressable onPress={Keyboard.dismiss} hitSlop={8} accessibilityRole="button" testID="keyboard-done">
+                <Text style={[styles.keyboardDone, { color: c.info }]}>Done</Text>
+              </Pressable>
+            </View>
+          </InputAccessoryView>
+        ) : null}
         {suffix ? <Text style={[styles.affix, { color: c.muted }]}>{suffix}</Text> : null}
       </View>
       {error ? (
@@ -295,6 +311,14 @@ const styles = StyleSheet.create({
   input: { flex: 1, fontSize: 17, paddingVertical: space.sm },
   affix: { fontSize: 17 },
   fieldHint: { fontSize: 12 },
+  keyboardBar: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: space.lg,
+    paddingVertical: space.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  keyboardDone: { fontSize: 17, fontWeight: '600' },
   button: {
     borderRadius: radius.md,
     paddingVertical: 13,

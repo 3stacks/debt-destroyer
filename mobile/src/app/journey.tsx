@@ -99,7 +99,11 @@ export default function JourneyScreen() {
       <Pressable
         style={[styles.fill, { paddingTop: insets.top + space.lg, paddingBottom: insets.bottom + space.lg }]}
         onPress={phase === 'ready' ? () => setPhase('count') : undefined}
-        accessibilityLabel={phase === 'ready' ? 'Tap to play the journey' : undefined}>
+        // Only the ready screen is one big button. In the other phases, iOS must
+        // see the text and the Replay and Share buttons inside it.
+        accessible={phase === 'ready'}
+        accessibilityRole={phase === 'ready' ? 'button' : undefined}
+        accessibilityLabel={phase === 'ready' ? 'Start your screen recording, then tap to play' : undefined}>
         <View style={styles.top}>
           <Text style={styles.brand}>MY DEBT PAYOFF</Text>
           {showControls ? (

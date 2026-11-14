@@ -23,7 +23,7 @@ tags: [plan]
 - tapOn:
     id: debt-repayment
 - inputText: "150"
-- hideKeyboard
+- runFlow: ../common/hide-keyboard.yaml
 - tapOn:
     id: debt-done
 
@@ -42,7 +42,7 @@ tags: [plan]
 - tapOn:
     id: debt-repayment
 - inputText: "320"
-- hideKeyboard
+- runFlow: ../common/hide-keyboard.yaml
 - tapOn:
     id: debt-done
 
@@ -52,14 +52,16 @@ tags: [plan]
 - tapOn: "Avalanche"
 
 - scrollUntilVisible:
+    centerElement: true
     element:
       id: plan-extra
 - tapOn:
     id: plan-extra
 - inputText: "200"
-- hideKeyboard
+- runFlow: ../common/hide-keyboard.yaml
 
 - scrollUntilVisible:
+    centerElement: true
     element:
       id: plan-start
 - assertVisible: "Start in November 2026"

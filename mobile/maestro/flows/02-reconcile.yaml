@@ -13,6 +13,7 @@ tags: [tracking]
 
 # An empty field stops the save.
 - scrollUntilVisible:
+    centerElement: true
     element:
       id: reconcile-save
 - tapOn:
@@ -22,6 +23,7 @@ tags: [tracking]
 
 # Pay as planned, then pay less on the car loan.
 - scrollUntilVisible:
+    centerElement: true
     element:
       id: reconcile-planned
     direction: UP
@@ -31,20 +33,23 @@ tags: [tracking]
     id: paid-car
 - eraseText
 - inputText: "200"
-- hideKeyboard
+- runFlow: ../common/hide-keyboard.yaml
 - assertVisible: "Under the plan"
 - scrollUntilVisible:
+    centerElement: true
     element:
       id: reconcile-save
 - tapOn:
     id: reconcile-save
 
 - scrollUntilVisible:
+    centerElement: true
     element:
       text: "November 2026"
 - assertVisible: "Paid .* of .* planned"
 # The totals are at the top. On a phone, the list scrolls them off the screen.
 - scrollUntilVisible:
+    centerElement: true
     element:
       text: "Under the plan"
     direction: UP

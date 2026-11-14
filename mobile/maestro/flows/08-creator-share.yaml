@@ -19,6 +19,7 @@ tags: [share]
 
 # The replay for a recording waits for a tap, and hides the controls.
 - scrollUntilVisible:
+    centerElement: true
     element:
       id: share-record
 - tapOn:

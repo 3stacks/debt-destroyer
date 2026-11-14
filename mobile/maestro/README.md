@@ -85,3 +85,8 @@ JUnit report.
 - A section header shows in capital letters. Find the row below it by its `testID`.
 - Start with `runFlow: ../common/seed.yaml` and a scenario. Add a scenario to
   `src/e2e/scenarios.ts` if no scenario fits.
+- Use `centerElement: true` in each `scrollUntilVisible`. On iOS, the floating tab bar covers the
+  bottom of the screen. An element under the tab bar is "visible", but a tap on it opens a tab.
+- Close the keyboard with `runFlow: ../common/hide-keyboard.yaml`, not with `hideKeyboard`. The iOS
+  number pad has no Return key, so `hideKeyboard` fails on iOS. The subflow taps the `Done` key
+  above the number pad.

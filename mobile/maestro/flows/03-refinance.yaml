@@ -7,6 +7,7 @@ tags: [revision]
     env:
       SCENARIO: three-months
 - scrollUntilVisible:
+    centerElement: true
     element:
       id: track-revise
 - tapOn:
@@ -20,11 +21,12 @@ tags: [revision]
     id: debt-rate
 - eraseText
 - inputText: "9.9"
-- hideKeyboard
+- runFlow: ../common/hide-keyboard.yaml
 - tapOn:
     id: debt-done
 - assertVisible: "9.9% .*"
 - scrollUntilVisible:
+    centerElement: true
     element:
       id: revise-save
 - tapOn:
@@ -32,6 +34,7 @@ tags: [revision]
 
 # The debt shows the new rate, and the months before the revision.
 - scrollUntilVisible:
+    centerElement: true
     element:
       id: debt-row-card
 - tapOn:
@@ -39,6 +42,7 @@ tags: [revision]
 - assertVisible: "Rate changed from 19.9% to 9.9%"
 - assertVisible: "9.9%"
 - scrollUntilVisible:
+    centerElement: true
     element:
       text: "Paid .* of .* planned"
 - takeScreenshot: 03-refinanced
